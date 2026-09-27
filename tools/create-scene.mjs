@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const editor=process.env.COCOS_EDITOR||'C:/ProgramData/cocos/editors/Creator/3.8.8/CocosCreator.exe';
+const base=path.join(path.dirname(editor),'resources/resources/3d/engine/editor/assets/default_file_content/scene/scene-2d.scene');
+const scene=JSON.parse(fs.readFileSync(base,'utf8'));
+const scriptId='b97a83ab-41ae-4879-b793-a249f370ff4b';
+const hex=scriptId.replaceAll('-',''),chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+let compressed=hex.slice(0,5);
+for(let i=5;i<32;i+=3){const v=parseInt(hex.slice(i,i+3),16);compressed+=chars[v>>6]+chars[v&63];}
+scene[0]._name=scene[1]._name='Farm';
+scene[2]._lpos={__type__:'cc.Vec3',x:360,y:640,z:0};
+scene[5]._contentSize={__type__:'cc.Size',width:720,height:1280};
+scene[7]._top=0;
+scene[2]._components.push({__id__:scene.length});
+scene.push({__type__:compressed,_name:'',_objFlags:0,node:{__id__:2},_enabled:true,__prefab:null,_id:'farm-demo-controller'});
+const write=(p,v)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(v,null,2));};
+write('assets/scenes/Farm.scene',scene);
+write('assets/scenes/Farm.scene.meta',{ver:'1.1.50',importer:'scene',imported:true,uuid:'a19249d6-5843-41a4-9a48-263359b6ac41',files:['.json'],subMetas:{},userData:{}});
+write('assets/scripts/FarmDemo.ts.meta',{ver:'4.0.24',importer:'typescript',imported:true,uuid:scriptId,files:[],subMetas:{},userData:{}});
+write('settings/v2/packages/project.json',{__version__:'1.0.6',general:{designResolution:{width:720,height:1280,fitWidth:true,fitHeight:false}}});
+write('build-config.json',{name:'ShanjuFarm',platform:'web-mobile',buildPath:'project://build',outputName:'web-mobile',startScene:'a19249d6-5843-41a4-9a48-263359b6ac41',scenes:[{url:'db://assets/scenes/Farm.scene',uuid:'a19249d6-5843-41a4-9a48-263359b6ac41'}],debug:true,sourceMaps:false,md5Cache:false,orientation:'portrait',webOrientation:'portrait'});
+console.log('Scene and build configuration created.');

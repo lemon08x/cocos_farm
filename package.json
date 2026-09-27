@@ -1,0 +1,26 @@
+{
+  "name": "cocos-farm",
+  "version": "0.1.0",
+  "private": true,
+  "uuid": "809c947e-45a6-4f53-9291-29b35af73139",
+  "creator": {
+    "version": "3.8.8"
+  },
+  "scripts": {
+    "core": "node tools/build-core.mjs",
+    "start": "node tools/serve.mjs",
+    "build": "powershell -ExecutionPolicy Bypass -File tools/build.ps1",
+    "test:ui": "node tools/test-ui.mjs"
+  },
+  "dependencies": {
+    "lunar-typescript": "1.8.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.6",
+    "@babel/plugin-transform-destructuring": "^8.0.5",
+    "@babel/plugin-transform-for-of": "^8.0.1",
+    "@babel/plugin-transform-spread": "^8.0.5",
+    "esbuild": "0.25.12",
+    "sharp": "^0.35.4"
+  }
+}

@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "id": "custom",
+  "name": "自定义 · 替换这里",
+  "palette": {
+    "ink": "#354a3e",
+    "muted": "#77806b",
+    "paper": "#f6f0db",
+    "cream": "#fff9e8",
+    "green": "#526e50",
+    "gold": "#c6a367",
+    "line": "#dbd4b7",
+    "status": "#eff0d9",
+    "caption": "#5b7466",
+    "disabled": "#eae7d5",
+    "warning": "#9a694b",
+    "shade": "#203a30",
+    "base": "#a4bd90"
+  },
+  "images": {
+    "landscape": {
+      "file": "landscape.png",
+      "width": 720,
+      "height": 1280
+    },
+    "cottage": {
+      "file": "cottage.png",
+      "width": 310,
+      "height": 272
+    },
+    "cloud": {
+      "file": "cloud.png",
+      "width": 180,
+      "height": 70
+    },
+    "terrain.wild": {
+      "file": "terrain-wild.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.unknown": {
+      "file": "terrain-unknown.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.fieldDry": {
+      "file": "terrain-fieldDry.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.fieldWet": {
+      "file": "terrain-fieldWet.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.water": {
+      "file": "terrain-water.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.story": {
+      "file": "terrain-story.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.rock": {
+      "file": "terrain-rock.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.tree": {
+      "file": "terrain-tree.png",
+      "width": 116,
+      "height": 72
+    },
+    "selection": {
+      "file": "selection.png",
+      "width": 116,
+      "height": 64
+    },
+    "crop.default.growing": {
+      "file": "crop-default-growing.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "crop.default.mature": {
+      "file": "crop-default-mature.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "icon.background": {
+      "file": "icon-background.png",
+      "width": 76,
+      "height": 76
+    },
+    "icon.calendar": {
+      "file": "icon-calendar.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.book": {
+      "file": "icon-book.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.basket": {
+      "file": "icon-basket.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.leaf": {
+      "file": "icon-leaf.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.rest": {
+      "file": "icon-rest.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.home": {
+      "file": "icon-home.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.more": {
+      "file": "icon-more.png",
+      "width": 48,
+      "height": 48
+    },
+    "ui.panel": {
+      "file": "ui-panel.png",
+      "width": 64,
+      "height": 64,
+      "borders": [
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    "ui.card": {
+      "file": "ui-card.png",
+      "width": 64,
+      "height": 64,
+      "borders": [
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    "ui.primary": {
+      "file": "ui-primary.png",
+      "width": 64,
+      "height": 64,
+      "borders": [
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    "ui.disabled": {
+      "file": "ui-disabled.png",
+      "width": 64,
+      "height": 64,
+      "borders": [
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    "ui.status": {
+      "file": "ui-status.png",
+      "width": 64,
+      "height": 64,
+      "borders": [
+        16,
+        16,
+        16,
+        16
+      ]
+    },
+    "icon.food": {
+      "file": "icon-food.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.coin": {
+      "file": "icon-coin.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.pressure": {
+      "file": "icon-pressure.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.sun": {
+      "file": "icon-sun.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.rain": {
+      "file": "icon-rain.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.cloud": {
+      "file": "icon-cloud.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.snow": {
+      "file": "icon-snow.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.wind": {
+      "file": "icon-wind.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.hoe": {
+      "file": "icon-hoe.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.target": {
+      "file": "icon-target.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.info": {
+      "file": "icon-info.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.list": {
+      "file": "icon-list.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.settings": {
+      "file": "icon-settings.png",
+      "width": 48,
+      "height": 48
+    },
+    "icon.lotus": {
+      "file": "icon-lotus.png",
+      "width": 48,
+      "height": 48
+    }
+  },
+  "scene": [
+    {
+      "slot": "landscape",
+      "x": 0,
+      "y": 0,
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "slot": "cottage",
+      "x": 117,
+      "y": 55,
+      "width": 310,
+      "height": 272
+    }
+  ],
+  "clouds": true
+}

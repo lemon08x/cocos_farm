@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {"skipLibCheck":true,"lib":["ES2022","DOM"],"noEmit":true},
+  "include":["assets/scripts/**/*.ts"]
+}

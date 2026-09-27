@@ -1,0 +1,410 @@
+{
+  "version": 1,
+  "id": "qinghe",
+  "name": "清和田院 · 连续场景",
+  "palette": {
+    "ink": "#374b40",
+    "muted": "#72765f",
+    "paper": "#f2ead5",
+    "cream": "#fff9e9",
+    "green": "#496753",
+    "gold": "#b69555",
+    "line": "#d7caaa",
+    "status": "#e7e7cd",
+    "caption": "#536953",
+    "disabled": "#dedbcb",
+    "warning": "#936244",
+    "shade": "#25392f",
+    "base": "#c3cba8"
+  },
+  "images": {
+    "landscape": {
+      "file": "landscape-continuous.png",
+      "width": 864,
+      "height": 1536
+    },
+    "cottage": {
+      "file": "cottage.png",
+      "width": 310,
+      "height": 272
+    },
+    "cloud": {
+      "file": "cloud.png",
+      "width": 180,
+      "height": 70
+    },
+    "terrain.wild": {
+      "file": "terrain-wild.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.unknown": {
+      "file": "terrain-unknown.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.fieldDry": {
+      "file": "terrain-fieldDry.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.fieldWet": {
+      "file": "terrain-fieldWet.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.water": {
+      "file": "terrain-water.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.story": {
+      "file": "terrain-story.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.rock": {
+      "file": "terrain-rock.png",
+      "width": 116,
+      "height": 72
+    },
+    "terrain.tree": {
+      "file": "terrain-tree.png",
+      "width": 116,
+      "height": 100,
+      "y": 14
+    },
+    "selection": {
+      "file": "selection-continuous.png",
+      "width": 116,
+      "height": 64
+    },
+    "crop.default.growing": {
+      "file": "crop-default-growing.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "crop.default.mature": {
+      "file": "crop-default-mature.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "icon.background": {
+      "file": "icon-background.png",
+      "width": 76,
+      "height": 76
+    },
+    "icon.calendar": {
+      "file": "painted-calendar.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.book": {
+      "file": "painted-book.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.basket": {
+      "file": "painted-basket.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.leaf": {
+      "file": "painted-hoe.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.rest": {
+      "file": "painted-rest.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.home": {
+      "file": "painted-market.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.more": {
+      "file": "painted-settings.png",
+      "width": 64,
+      "height": 64
+    },
+    "ui.panel": {
+      "file": "ui-panel.png",
+      "width": 128,
+      "height": 128,
+      "borders": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    "ui.card": {
+      "file": "ui-card.png",
+      "width": 128,
+      "height": 128,
+      "borders": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    "ui.primary": {
+      "file": "ui-primary.png",
+      "width": 128,
+      "height": 128,
+      "borders": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    "ui.disabled": {
+      "file": "ui-disabled.png",
+      "width": 128,
+      "height": 128,
+      "borders": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    "ui.status": {
+      "file": "ui-status.png",
+      "width": 128,
+      "height": 128,
+      "borders": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    "cottage.shadow": {
+      "file": "cottage-shadow.png",
+      "width": 240,
+      "height": 50
+    },
+    "crop.wheat.growing": {
+      "file": "crop-wheat-growing.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "crop.wheat.mature": {
+      "file": "crop-wheat-mature.png",
+      "width": 116,
+      "height": 100,
+      "y": 20
+    },
+    "icon.food": {
+      "file": "painted-food.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.coin": {
+      "file": "painted-coin.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.pressure": {
+      "file": "painted-pressure.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.sun": {
+      "file": "painted-sun.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.rain": {
+      "file": "painted-rain.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.cloud": {
+      "file": "painted-cloud.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.snow": {
+      "file": "painted-snow.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.wind": {
+      "file": "painted-wind.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.hoe": {
+      "file": "painted-hoe.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.target": {
+      "file": "painted-target.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.info": {
+      "file": "painted-info.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.list": {
+      "file": "painted-list.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.settings": {
+      "file": "painted-settings.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.lotus": {
+      "file": "painted-lotus.png",
+      "width": 64,
+      "height": 64
+    },
+    "surface.fieldDry": {
+      "file": "surface-fieldDry.png",
+      "width": 116,
+      "height": 72.0
+    },
+    "surface.fieldWet": {
+      "file": "surface-fieldWet.png",
+      "width": 116,
+      "height": 72.0
+    },
+    "surface.water": {
+      "file": "surface-water.png",
+      "width": 116,
+      "height": 72.0
+    },
+    "surface.story": {
+      "file": "surface-story.png",
+      "width": 20,
+      "height": 24,
+      "y": 9
+    },
+    "surface.rock": {
+      "file": "surface-rock.png",
+      "width": 116,
+      "height": 72.0
+    },
+    "surface.tree": {
+      "file": "surface-tree.png",
+      "width": 116,
+      "height": 100.0,
+      "y": 14
+    },
+    "icon.market": {
+      "file": "painted-market.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.water": {
+      "file": "painted-water.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-wheat": {
+      "file": "painted-crop-wheat.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-soy": {
+      "file": "painted-crop-soy.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-flax": {
+      "file": "painted-crop-flax.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-rice": {
+      "file": "painted-crop-rice.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-millet": {
+      "file": "painted-crop-millet.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-adzuki": {
+      "file": "painted-crop-adzuki.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-mallow": {
+      "file": "painted-crop-mallow.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-mustard": {
+      "file": "painted-crop-mustard.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.seed": {
+      "file": "painted-seed.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.sickle": {
+      "file": "painted-sickle.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.compost": {
+      "file": "painted-compost.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.spade": {
+      "file": "painted-spade.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.wood": {
+      "file": "painted-wood.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.clay": {
+      "file": "painted-clay.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.flour": {
+      "file": "painted-flour.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.straw": {
+      "file": "painted-straw.png",
+      "width": 64,
+      "height": 64
+    }
+  },
+  "scene": [
+    {
+      "slot": "landscape",
+      "x": 0,
+      "y": 0,
+      "width": 864,
+      "height": 1536
+    }
+  ],
+  "clouds": false,
+  "groundMode": "continuous"
+}

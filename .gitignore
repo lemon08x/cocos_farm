@@ -1,0 +1,14 @@
+node_modules/
+library/
+temp/
+local/
+profiles/
+build/
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Editor service metadata, unrelated to the game project.
+settings/v2/packages/information.json
