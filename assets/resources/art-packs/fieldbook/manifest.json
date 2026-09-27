@@ -1,0 +1,343 @@
+{
+  "version": 1,
+  "id": "fieldbook",
+  "name": "田格手账 · 新版",
+  "groundMode": "board",
+  "palette": {
+    "ink": "#24483d",
+    "muted": "#69796c",
+    "paper": "#f4efe0",
+    "cream": "#fffaf0",
+    "green": "#315b4b",
+    "gold": "#bd9254",
+    "line": "#d5cfb7",
+    "status": "#e6ebd8",
+    "caption": "#476955",
+    "disabled": "#e7e4d8",
+    "warning": "#9b674b",
+    "shade": "#203e35",
+    "base": "#e6e9d6"
+  },
+  "images": {
+    "icon.background": {
+      "file": "icon-background.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.field": {
+      "file": "icon-field.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.calendar": {
+      "file": "icon-calendar.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.list": {
+      "file": "icon-list.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.basket": {
+      "file": "icon-basket.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.more": {
+      "file": "icon-more.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.hoe": {
+      "file": "icon-hoe.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.book": {
+      "file": "icon-book.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.leaf": {
+      "file": "icon-leaf.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.rest": {
+      "file": "icon-rest.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.home": {
+      "file": "icon-home.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.coin": {
+      "file": "icon-coin.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.food": {
+      "file": "icon-food.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.pressure": {
+      "file": "icon-pressure.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.sun": {
+      "file": "icon-sun.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.rain": {
+      "file": "icon-rain.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.cloud": {
+      "file": "icon-cloud.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.snow": {
+      "file": "icon-snow.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.wind": {
+      "file": "icon-wind.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.target": {
+      "file": "icon-target.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.info": {
+      "file": "icon-info.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.settings": {
+      "file": "icon-settings.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.lotus": {
+      "file": "icon-lotus.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.market": {
+      "file": "icon-market.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.seed": {
+      "file": "icon-seed.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.sickle": {
+      "file": "icon-sickle.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.spade": {
+      "file": "icon-spade.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.water": {
+      "file": "icon-water.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.wood": {
+      "file": "icon-wood.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.clay": {
+      "file": "icon-clay.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.flour": {
+      "file": "icon-flour.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.straw": {
+      "file": "icon-straw.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.compost": {
+      "file": "icon-compost.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-wheat": {
+      "file": "icon-crop-wheat.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-soy": {
+      "file": "icon-crop-soy.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-flax": {
+      "file": "icon-crop-flax.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-rice": {
+      "file": "icon-crop-rice.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-millet": {
+      "file": "icon-crop-millet.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-adzuki": {
+      "file": "icon-crop-adzuki.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-mallow": {
+      "file": "icon-crop-mallow.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.crop-mustard": {
+      "file": "icon-crop-mustard.png",
+      "width": 64,
+      "height": 64
+    },
+    "board.environment": {
+      "file": "board-environment.png",
+      "width": 686,
+      "height": 535
+    },
+    "board.ground": {
+      "file": "board-ground.png",
+      "width": 676,
+      "height": 580
+    },
+    "board.canalH": {
+      "file": "board-canal-h.png",
+      "width": 672,
+      "height": 110
+    },
+    "board.canalV": {
+      "file": "board-canal-v.png",
+      "width": 120,
+      "height": 576
+    },
+    "board.home": {
+      "file": "board-home.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.fieldDry": {
+      "file": "board-fieldDry.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.wild": {
+      "file": "board-wild.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.fieldWet": {
+      "file": "board-fieldWet.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.wheatGrowing": {
+      "file": "board-wheatGrowing.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.wheatMature": {
+      "file": "board-wheatMature.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.tree": {
+      "file": "board-tree.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.rock": {
+      "file": "board-rock.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.water": {
+      "file": "board-water.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.yard": {
+      "file": "board-yard.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.garden": {
+      "file": "board-garden.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.compost": {
+      "file": "board-compost.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "board.shed": {
+      "file": "board-shed.png",
+      "width": 116,
+      "height": 88,
+      "fit": "contain"
+    },
+    "icon.back": {
+      "file": "icon-back.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.close": {
+      "file": "icon-close.png",
+      "width": 64,
+      "height": 64
+    },
+    "icon.next": {
+      "file": "icon-next.png",
+      "width": 64,
+      "height": 64
+    }
+  },
+  "scene": [],
+  "clouds": false
+}

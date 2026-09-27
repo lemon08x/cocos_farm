@@ -5,7 +5,7 @@ export const num=(n:unknown)=>Number(n??0).toLocaleString('zh-CN',{maximumFracti
 export function plotName(id:string){
   if(id==='p2q2')return '院前田';
   const m=/^p(-?\d+)q(-?\d+)$/.exec(id);
-  return m?`田地 ${Number(m[1])+1}·${Number(m[2])+1}`:id;
+  return m?`田地 ${Number(m[1])}·${Number(m[2])}`:id;
 }
 export function playerText(text:string=''){
   return text.replace(/p-?\d+q-?\d+/g,plotName).replace(/年度农时/g,'农历').replace(/压力已为0/g,'压力已经恢复');

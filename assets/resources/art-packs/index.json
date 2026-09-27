@@ -1,6 +1,10 @@
 {
   "packs": [
     {
+      "id": "fieldbook",
+      "name": "田格手账 · 新版"
+    },
+    {
       "id": "qinghe",
       "name": "清和田院 · 连续场景"
     },

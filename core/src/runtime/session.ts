@@ -77,7 +77,7 @@ export function parseSession(value: unknown): Session {
   if(!isRecord(farm.rules)||canonical(farm.rules)!==canonical(record.manifest.ruleset.farm)||!isRecord(farm.plots)||!Array.isArray(farm.discovered)||!farm.discovered.includes('wheat')||new Set(farm.discovered).size!==farm.discovered.length||farm.discovered.some((c:unknown)=>!Object.keys(CROPS).includes(String(c)))||!Number.isSafeInteger(farm.explored)||farm.explored<0)farmInvalid();
   if(!validField((economy as Record<string,any>).field)||farm.plots.p2q2?.kind!=='field')farmInvalid();
   for(const [id,raw] of Object.entries(farm.plots)){
-    if(!isRecord(raw)||raw.id!==id||!Number.isSafeInteger(raw.x)||!Number.isSafeInteger(raw.y)||Number(raw.x)<0||Number(raw.y)<0||id!==`p${raw.x}q${raw.y}`||!['unknown','wild','field','tree','rock','brush','story','water'].includes(String(raw.kind)))farmInvalid();
+    if(!isRecord(raw)||raw.id!==id||!Number.isSafeInteger(raw.x)||!Number.isSafeInteger(raw.y)||id!==`p${raw.x}q${raw.y}`||!['unknown','wild','field','tree','rock','brush','story','water'].includes(String(raw.kind)))farmInvalid();
     const p=raw as Record<string,any>;
     if(p.kind==='field'?!['sowing','other'].includes(p.purpose):p.purpose!==undefined)farmInvalid();
     if(p.kind==='field'&&id!=='p2q2'?!validField(p.field):p.field!==undefined)farmInvalid();

@@ -19,10 +19,16 @@ export interface ArtManifest {
   images: Record<string, ImageSlot>;
   scene: Array<{ slot: string; x: number; y: number; width?: number; height?: number }>;
   clouds: boolean;
-  groundMode?: 'tiles' | 'continuous';
+  groundMode?: 'tiles' | 'continuous' | 'board';
 }
 export interface PackInfo { id: string; name: string; }
 const requiredSlots = ['landscape','cottage','cloud','terrain.wild','terrain.unknown','terrain.fieldDry','terrain.fieldWet','terrain.water','terrain.story','terrain.rock','terrain.tree','selection','crop.default.growing','crop.default.mature','icon.background','icon.calendar','icon.book','icon.basket','icon.leaf','icon.rest','icon.home','icon.more'];
+const boardSlots = [
+  'icon.field','icon.calendar','icon.list','icon.basket','icon.more','icon.hoe','icon.rest','icon.back','icon.close','icon.next',
+  'board.ground','board.canalH','board.canalV','board.home','board.wild','board.fieldDry','board.fieldWet',
+  'board.wheatGrowing','board.wheatMature','board.tree','board.rock','board.water',
+  'board.yard','board.garden','board.compost','board.shed'
+];
 const requiredColors = ['ink','muted','paper','cream','green','gold','line','status','caption','disabled','warning','shade','base'];
 const safeId = (s: unknown): s is string => typeof s === 'string' && /^[a-z0-9][a-z0-9_-]{0,47}$/.test(s);
 const safeFile = (s: unknown): s is string => typeof s === 'string' && /^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+\.(png|jpg|jpeg|webp)$/.test(s);
@@ -78,9 +84,9 @@ export class ArtPack {
 
   private static validate(m:any,id:string) {
     if (m?.version !== 1 || m.id !== id || typeof m.name !== 'string' || !m.images || !m.palette || !Array.isArray(m.scene)) throw new Error('manifest.json 格式或 id 不正确');
-    if(m.groundMode && !['tiles','continuous'].includes(m.groundMode)) throw new Error('groundMode 无效');
+    if(m.groundMode && !['tiles','continuous','board'].includes(m.groundMode)) throw new Error('groundMode 无效');
     for (const key of requiredColors) if (!/^#[0-9a-fA-F]{6}$/.test(m.palette[key] || '')) throw new Error(`缺少有效颜色 palette.${key}`);
-    for (const key of requiredSlots) if (!m.images[key]) throw new Error(`缺少图片槽位 ${key}`);
+    for (const key of m.groundMode==='board'?boardSlots:requiredSlots) if (!m.images[key]) throw new Error(`缺少图片槽位 ${key}`);
     for (const [key,s] of Object.entries(m.images) as [string,ImageSlot][]) {
       if (!safeFile(s.file) || !Number.isFinite(s.width) || !Number.isFinite(s.height) || s.width<=0 || s.height<=0 || s.width>4096 || s.height>4096) throw new Error(`图片配置无效：${key}`);
       if ((s.x!==undefined&&!Number.isFinite(s.x)) || (s.y!==undefined&&!Number.isFinite(s.y))) throw new Error(`图片偏移无效：${key}`);

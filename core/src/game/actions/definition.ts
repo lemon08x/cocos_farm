@@ -6,6 +6,7 @@ import { branchActionNeeds } from '../systems/branches.js';
 import { activePerson } from '../model/state.js';
 import { lifeCost, sectCosts, calendarCost, pressureTime, relaxationRate } from '../systems/life.js';
 import { HOME_PLOT, shedCovers } from '../systems/agriculture.js';
+import { plotTargetId } from '../model/farm-coordinates.js';
 import { parseActionId } from '../model/action.js';
 import type { ActionCost, ActionOffer } from '../model/action.js';
 import type { GameState } from '../model/state.js';
@@ -18,7 +19,7 @@ export interface ActionDefinition { deferred?:boolean; prepare?: (draft:GameStat
 function shedCoversPlot(state:GameState,id:string):boolean {
   const op=id.split(':')[1];if(op!=='farm'&&op!=='farmplot'&&op!=='farmrare')return false;
   const plots=state.economy?.farm?.plots;if(!plots)return false;
-  const plot=plots[op==='farm'?HOME_PLOT:id.split(':')[2]?.split('-')[0]??''];
+  const plot=plots[op==='farm'?HOME_PLOT:plotTargetId(id.split(':')[2]??'')];
   return !!plot&&shedCovers(state,plot);
 }
 export function defineAction(state: GameState, id: string, label: string, group: string, costs: Partial<ActionCost>, blockers: string[], description: string, execute: ActionDefinition['execute']): ActionDefinition {

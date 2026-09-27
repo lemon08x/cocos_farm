@@ -19,6 +19,16 @@ export class UiKit {
     n.on(Node.EventType.TOUCH_END,(e:EventTouch)=>{e.propagationStopped=true;if(enabled&&!moved)fn();});
     return n;
   }
+  iconButton(parent:Node,kind:string,x:number,y:number,size:number,fn:()=>void){
+    const n=visualNode('Icon button '+kind,parent,x,y,size,size);
+    this.art.surface(n,size,size,this.art.palette.cream,18,this.art.palette.line);
+    if(!this.art.image('icon.'+kind,n,0,0,size-12,size-12))this.text(n,kind==='back'?'‹':'×',0,0,34,this.art.palette.ink,size-12,size-12);
+    let moved=false;
+    n.on(Node.EventType.TOUCH_START,()=>{moved=false;});
+    n.on(Node.EventType.TOUCH_MOVE,(e:EventTouch)=>{if(e.getUILocation().subtract(e.getUIStartLocation()).length()>12)moved=true;});
+    n.on(Node.EventType.TOUCH_END,(e:EventTouch)=>{e.propagationStopped=true;if(!moved)fn();});
+    return n;
+  }
   scrollText(parent:Node,s:string,x:number,y:number,w:number,h:number,size=27,fill=this.art.palette.ink){
     const viewport=visualNode('Scrollable text',parent,x,y,w,h);viewport.addComponent(Mask);
     const scroll=viewport.addComponent(ScrollView);scroll.horizontal=false;scroll.vertical=true;scroll.elastic=false;

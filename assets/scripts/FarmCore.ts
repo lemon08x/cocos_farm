@@ -2898,6 +2898,12 @@ var COOKING = [{
   energy: 0
 }];
 
+// core/src/game/model/farm-coordinates.ts
+var plotTargetId = target => /^p-?\d+q-?\d+/.exec(target)?.[0] ?? target;
+var FARM_UNIT_SIZE = 3;
+var farmUnitOf = coordinate => Math.floor((coordinate - 1) / FARM_UNIT_SIZE);
+var farmUnitStart = coordinate => farmUnitOf(coordinate) * FARM_UNIT_SIZE + 1;
+
 // core/src/game/systems/landscapes.ts
 var LANDSCAPE_NAMES = {
   landmark: "\u65E7\u754C\u5730\u6807",
@@ -2918,7 +2924,7 @@ function landscapeEffect(s, id) {
     target = _id$split2[2],
     r = s.economy?.farm?.rules;
   let source;
-  if (op === "branchlearn") source = landscapeSource(s, "reading");else if (["farm", "farmplot", "farmrare", "farmfertilize", "fertilize"].includes(op)) source = landscapeSource(s, "garden", op === "farm" || op === "fertilize" ? "p2q2" : target.split("-")[0]);else if (["branchteach", "sectteach", "teach", "consult"].includes(op) || op === "neighbor" && target === "learn") source = landscapeSource(s, "memorial");
+  if (op === "branchlearn") source = landscapeSource(s, "reading");else if (["farm", "farmplot", "farmrare", "farmfertilize", "fertilize"].includes(op)) source = landscapeSource(s, "garden", op === "farm" || op === "fertilize" ? "p2q2" : plotTargetId(target));else if (["branchteach", "sectteach", "teach", "consult"].includes(op) || op === "neighbor" && target === "learn") source = landscapeSource(s, "memorial");
   const upgraded = source?.landscape?.level === 3;
   return {
     source,
@@ -4233,7 +4239,7 @@ function farmCoverage(p, range = 4) {
   const radius = range >= 12 ? 2 : 1,
     out = [];
   for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) {
-    if (!dx && !dy || p.x + dx < 0 || p.y + dy < 0) continue;
+    if (!dx && !dy) continue;
     if (range === 4 && Math.abs(dx) + Math.abs(dy) !== 1 || range === 12 && Math.abs(dx) + Math.abs(dy) > 2) continue;
     out.push({
       id: plotId(p.x + dx, p.y + dy),
@@ -4664,24 +4670,32 @@ function plotField(s, id) {
   return id === HOME_PLOT ? s.economy.field : s.economy?.farm?.plots[id]?.field;
 }
 function farmNeighbors(p) {
-  return [[p.x - 1, p.y], [p.x + 1, p.y], [p.x, p.y - 1], [p.x, p.y + 1]].filter(([x, y]) => x >= 0 && y >= 0).map(([x, y]) => ({
+  return [[p.x - 1, p.y], [p.x + 1, p.y], [p.x, p.y - 1], [p.x, p.y + 1]].map(([x, y]) => ({
     id: plotId(x, y),
     x,
     y
   }));
 }
 function extendFarm(s, p) {
-  var _a;
   const plots = s.economy.farm.plots;
   var _iterator15 = _createForOfIteratorHelper(farmNeighbors(p)),
     _step15;
   try {
     for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
       const n = _step15.value;
-      plots[_a = n.id] ?? (plots[_a] = {
-        ...n,
-        kind: "unknown"
-      });
+      const startX = farmUnitStart(n.x),
+        startY = farmUnitStart(n.y);
+      for (let dy = 0; dy < FARM_UNIT_SIZE; dy++) for (let dx = 0; dx < FARM_UNIT_SIZE; dx++) {
+        const x = startX + dx,
+          y = startY + dy,
+          id = plotId(x, y);
+        plots[id] ?? (plots[id] = {
+          id,
+          x,
+          y,
+          kind: "unknown"
+        });
+      }
     }
   } catch (err) {
     _iterator15.e(err);
@@ -5819,7 +5833,7 @@ function lifeCost(s, id, oldAp, useLearningPoint = true) {
     energy = s.life.renewal.farmEnergy;
   }
   if (s.economy?.farm && ["farm", "farmplot"].includes(op) && equipped(s, "W01")) {
-    const f = op === "farm" ? s.economy.field : plotField(s, target.split("-")[0]);
+    const f = op === "farm" ? s.economy.field : plotField(s, plotTargetId(target));
     if (f?.crop && f.growth < f.duration) energy /= 2;
   }
   const v = activePerson(s).vitality;
@@ -18621,7 +18635,7 @@ function shedCoversPlot(state, id) {
   if (op !== "farm" && op !== "farmplot" && op !== "farmrare") return false;
   const plots = state.economy?.farm?.plots;
   if (!plots) return false;
-  const plot = plots[op === "farm" ? HOME_PLOT : id.split(":")[2]?.split("-")[0] ?? ""];
+  const plot = plots[op === "farm" ? HOME_PLOT : plotTargetId(id.split(":")[2] ?? "")];
   return !!plot && shedCovers(state, plot);
 }
 function defineAction(state, id, label, group, costs, blockers, description, execute) {
@@ -22406,7 +22420,7 @@ function parseSession(value) {
     const _Object$entries33$_i = _slicedToArray(_Object$entries33[_i147], 2),
       id = _Object$entries33$_i[0],
       raw = _Object$entries33$_i[1];
-    if (!isRecord(raw) || raw.id !== id || !Number.isSafeInteger(raw.x) || !Number.isSafeInteger(raw.y) || Number(raw.x) < 0 || Number(raw.y) < 0 || id !== `p${raw.x}q${raw.y}` || !["unknown", "wild", "field", "tree", "rock", "brush", "story", "water"].includes(String(raw.kind))) farmInvalid();
+    if (!isRecord(raw) || raw.id !== id || !Number.isSafeInteger(raw.x) || !Number.isSafeInteger(raw.y) || id !== `p${raw.x}q${raw.y}` || !["unknown", "wild", "field", "tree", "rock", "brush", "story", "water"].includes(String(raw.kind))) farmInvalid();
     const p = raw;
     if (p.kind === "field" ? !["sowing", "other"].includes(p.purpose) : p.purpose !== void 0) farmInvalid();
     if (p.kind === "field" && id !== "p2q2" ? !validField(p.field) : p.field !== void 0) farmInvalid();

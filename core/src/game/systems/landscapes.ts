@@ -2,6 +2,7 @@ import {LANDSCAPE_INPUTS} from './economy-catalog.js';
 import type {GameState} from '../model/state.js';
 import type {GameEvent} from '../model/events.js';
 import type {LandscapeKind,FarmPlot} from '../model/economy.js';
+import {plotTargetId} from '../model/farm-coordinates.js';
 export const LANDSCAPE_NAMES:Record<LandscapeKind,string>={landmark:'旧界地标',tea:'古树茶亭',reading:'静读小院',garden:'田畔花园',memorial:'乡土纪念园'};
 export function landscapeSource(s:GameState,kind:LandscapeKind,plotId?:string):FarmPlot|undefined {
  const plots=Object.values(s.economy?.farm?.plots??{}),target=plotId?s.economy?.farm?.plots[plotId]:undefined;
@@ -11,7 +12,7 @@ export function landscapeSource(s:GameState,kind:LandscapeKind,plotId?:string):F
 export function landscapeEffect(s:GameState,id:string):{source?:FarmPlot;pressurePercent:number;timePercent:number} {
  const [,op,target]=id.split(':'),r=s.economy?.farm?.rules;let source:FarmPlot|undefined;
  if(op==='branchlearn')source=landscapeSource(s,'reading');
- else if(['farm','farmplot','farmrare','farmfertilize','fertilize'].includes(op))source=landscapeSource(s,'garden',op==='farm'||op==='fertilize'?'p2q2':target.split('-')[0]);
+ else if(['farm','farmplot','farmrare','farmfertilize','fertilize'].includes(op))source=landscapeSource(s,'garden',op==='farm'||op==='fertilize'?'p2q2':plotTargetId(target));
  else if(['branchteach','sectteach','teach','consult'].includes(op)||op==='neighbor'&&target==='learn')source=landscapeSource(s,'memorial');
  const upgraded=source?.landscape?.level===3;
  return {source,pressurePercent:source&&r&&source.landscape!.kind!=='memorial'?(upgraded?r.landscapePressurePercentUpgraded:r.landscapePressurePercent):0,timePercent:source?.landscape?.kind==='memorial'&&r?(upgraded?r.landscapeTeachingPercentUpgraded:r.landscapeTeachingPercent):0};

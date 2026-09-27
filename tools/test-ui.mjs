@@ -1,9 +1,34 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {build} from 'esbuild';
 async function moduleAt(entry){const result=await build({entryPoints:[entry],bundle:true,write:false,platform:'node',format:'esm',target:'node24'});return import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'));}
 const {FarmCore}=await moduleAt('core/bridge.ts');
-const {taskView,playerText,actionSummary}=await moduleAt('assets/scripts/view/FarmPresentation.ts');
+const {taskView,playerText,actionSummary,plotName}=await moduleAt('assets/scripts/view/FarmPresentation.ts');
 const {PanelStack}=await moduleAt('assets/scripts/view/PanelStack.ts');
+const {districtOf,districtOrigin,localPlotOf,plotAtDistrict,plotPosition,cameraForDistrict,districtAtCamera,HOME_PLOT_ID}=await moduleAt('assets/scripts/view/FarmDistrict.ts');
+const {farmUnitOf,farmUnitStart,farmLocalOf}=await moduleAt('core/src/game/model/farm-coordinates.ts');
+assert.equal(HOME_PLOT_ID,'p2q2');
+assert.equal(plotName('p1q1'),'田地 1·1');
+assert.equal(plotName('p0q2'),'田地 0·2');
+assert.equal(plotName('p-1q2'),'田地 -1·2');
+assert.deepEqual(plotPosition(2,2),{x:0,y:0},'farmhouse and home field must anchor the world origin');
+for(const value of [-7,-2,-1,0,1,2,3,4,8]){
+  const district=districtOf(value,2);
+  assert.equal(district.x,farmUnitOf(value));
+  assert.equal(districtOrigin(district).x,farmUnitStart(value));
+  assert.equal(localPlotOf(value,2).x,farmLocalOf(value));
+  assert.deepEqual(plotAtDistrict(district,localPlotOf(value,2)),{x:value,y:2});
+}
+const fieldbook=JSON.parse(await readFile('assets/resources/art-packs/fieldbook/manifest.json','utf8'));
+assert.equal(fieldbook.images['board.home']?.file,'board-home.png');
+for(const name of ['field','calendar','basket','more','back','close','next','leaf','coin','food','pressure'])
+  assert.ok(fieldbook.images['icon.'+name]?.file.endsWith('.png'),'missing image icon '+name);
+assert.deepEqual(districtOf(1,3),{x:0,y:0});
+assert.deepEqual(districtOf(3,3),{x:0,y:0});
+assert.deepEqual(districtOf(4,3),{x:1,y:0});
+assert.deepEqual(districtOf(0,2),{x:-1,y:0});
+assert.ok(plotPosition(4,2).x-plotPosition(3,2).x>plotPosition(3,2).x-plotPosition(2,2).x,'adjacent districts keep a connected path corridor');
+assert.deepEqual(districtAtCamera(...Object.values(cameraForDistrict({x:-2,y:3},.82)),.82),{x:-2,y:3});
 const stack=new PanelStack();let selected='a';
 const node=()=>({active:true,destroy(){this.destroyed=true;}});
 const first=stack.push('calendar',node,()=>{selected='a';});
@@ -16,6 +41,17 @@ stack.back();selected='b';stack.back();
 assert.equal(stack.current,first);assert.equal(selected,'a','back must restore selected field context');
 stack.clear();assert.equal(stack.depth,0);assert.equal(first.destroyed,true);
 const core=new FarmCore();let obs=await core.start();
+const unitCounts=new Map();for(const p of obs.game.economy.farm.plots){const d=districtOf(p.x,p.y),key=d.x+','+d.y;unitCounts.set(key,(unitCounts.get(key)??0)+1);}
+assert.ok([...unitCounts.values()].every(count=>count===9),'each initialized district must contain exactly nine plots');
+assert.ok(obs.game.economy.farm.plots.some(p=>p.id==='p0q2'&&p.reachable),'farm frontier must extend west across a district edge');
+assert.ok(obs.game.actions.some(a=>a.id==='economy:farmexplore:p0q2'),'the west frontier must remain actionable');
+const frontierCore=new FarmCore();let frontier=await frontierCore.start();
+const west=frontier.game.actions.find(a=>a.id==='economy:farmexplore:p0q2');
+assert.ok(west?.enabled,'westward exploration must be available in a new game');
+frontier=await frontierCore.act(west.id);
+assert.ok(frontier.game.economy.farm.plots.some(p=>p.id==='p-1q2'&&p.reachable),'exploring a boundary plot must create the next district frontier');
+assert.equal(frontier.game.economy.farm.plots.filter(p=>districtOf(p.x,p.y).x===-1&&districtOf(p.x,p.y).y===0).length,9,'an expanded district must contain exactly nine plots');
+assert.ok((await new FarmCore().start(frontierCore.save())).game.economy.farm.plots.some(p=>p.id==='p-1q2'),'signed-coordinate districts must survive save loading');
 const before=obs.game.life.calendar.absoluteDay;
 const plan=obs.game.actions.find(a=>a.id.startsWith('economy:plotplan:p2q2-add-')&&a.enabled);
 assert.ok(plan,'new game must expose a plan');
@@ -41,4 +77,4 @@ const warning='此行动将跨过农时截止：p2q2 小麦。';
 assert.ok(actionSummary({id:'economy:test:x',description:warning+' 行动耗费1天'}).includes('农时截止'),'deadline warnings must survive cleanup');
 const saved=core.save(),restored=new FarmCore();const loaded=await restored.start(saved);
 assert.deepEqual(loaded.game.economy.farm.schedule.tasks,obs.game.economy.farm.schedule.tasks,'existing save format must roundtrip');
-console.log('UI regression checks passed: plan/date, task routing and guards, deadline, copy and save compatibility.');
+console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards.');

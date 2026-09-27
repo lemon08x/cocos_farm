@@ -7,6 +7,7 @@ import { activePerson, type GameState } from '../model/state.js';
 import type { GameEvent } from '../model/events.js';
 import {FARM_DISCOVERIES,FARM_PROJECT_TECH,type FarmDiscovery} from '../model/economy.js';
 import type { Crop, Worker, Field, FarmRules, FarmPlot, PlotLand } from '../model/economy.js';
+import {FARM_UNIT_SIZE,farmUnitStart} from '../model/farm-coordinates.js';
 import { CROPS, WORKER_NAMES } from './economy-catalog.js';
 import { amount, changeGoods, consumeEquipment, equipped, missingGoods } from './inventory.js';
 import { level, recordEvidence, requirements } from './knowledge.js';
@@ -24,7 +25,7 @@ export function revealLand(s:GameState,p:FarmPlot):void {
 export function farmCoverage(p:FarmPlot,range:4|8|12|24=4){
  const radius=range>=12?2:1,out:{id:string;x:number;y:number}[]=[];
  for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
-  if(!dx&&!dy||p.x+dx<0||p.y+dy<0)continue;
+  if(!dx&&!dy)continue;
   if(range===4&&Math.abs(dx)+Math.abs(dy)!==1||range===12&&Math.abs(dx)+Math.abs(dy)>2)continue;
   out.push({id:plotId(p.x+dx,p.y+dy),x:p.x+dx,y:p.y+dy});
  }
@@ -45,7 +46,7 @@ export function drainOutlet(s:GameState,p:FarmPlot):boolean {
  if(!p.land)return false;
  const plots=s.economy!.farm!.plots,seen=new Set<string>(),queue=[p];
  while(queue.length){const at=queue.shift()!;if(seen.has(at.id))continue;seen.add(at.id);
-  // The west/north map edge is the explicit downstream boundary.
+  // Preserve the original homestead outlets for existing drainage rules and saves.
   if(at.x===0||at.y===0)return true;
   for(const n of farmNeighbors(at)){const next=plots[n.id];if(!next?.land||next.kind==='unknown')continue;
    if(next.land.elevation<at.land!.elevation)return true;
@@ -235,8 +236,17 @@ export const HOME_PLOT='p2q2';
 export const plotId=(x:number,y:number)=>`p${x}q${y}`;
 export function blankField():Field{return {crop:null,planted:0,moisture:0,growth:0,stress:0,fertility:2,lastCrop:null,tended:0,composted:false,bonus:0,duration:2};}
 export function plotField(s:GameState,id:string):Field|undefined{return id===HOME_PLOT?s.economy!.field:s.economy?.farm?.plots[id]?.field;}
-export function farmNeighbors(p:FarmPlot){return [[p.x-1,p.y],[p.x+1,p.y],[p.x,p.y-1],[p.x,p.y+1]].filter(([x,y])=>x>=0&&y>=0).map(([x,y])=>({id:plotId(x,y),x,y}));}
-export function extendFarm(s:GameState,p:FarmPlot):void{const plots=s.economy!.farm!.plots;for(const n of farmNeighbors(p))plots[n.id]??={...n,kind:'unknown'};}
+export function farmNeighbors(p:FarmPlot){return [[p.x-1,p.y],[p.x+1,p.y],[p.x,p.y-1],[p.x,p.y+1]].map(([x,y])=>({id:plotId(x,y),x,y}));}
+export function extendFarm(s:GameState,p:FarmPlot):void{
+ const plots=s.economy!.farm!.plots;
+ for(const n of farmNeighbors(p)){
+  const startX=farmUnitStart(n.x),startY=farmUnitStart(n.y);
+  for(let dy=0;dy<FARM_UNIT_SIZE;dy++)for(let dx=0;dx<FARM_UNIT_SIZE;dx++){
+   const x=startX+dx,y=startY+dy,id=plotId(x,y);
+   plots[id]??={id,x,y,kind:'unknown'};
+  }
+ }
+}
 export function initializeFarm(s:GameState,rules:FarmRules):void{
  const plots:Record<string,FarmPlot>={};
  for(let y=1;y<=4;y++)for(let x=1;x<=5;x++){const id=plotId(x,y);plots[id]={id,x,y,kind:x<=3?'wild':'unknown'};}

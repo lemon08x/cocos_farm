@@ -1,14 +1,15 @@
-import { _decorator, Component, Node, UITransform, Label, view, screen, ResolutionPolicy, sys, Vec3, EventTouch, BlockInputEvents, profiler, Mask } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, Graphics, view, screen, ResolutionPolicy, sys, Vec3, EventTouch, BlockInputEvents, profiler, Mask } from 'cc';
 import { ArtPack, PackInfo } from './art/ArtPack';
-import { ArtRenderer, visualNode } from './art/ArtRenderer';
-import { FarmWorldView } from './view/FarmWorldView';
+import { ArtRenderer, visualNode, tint } from './art/ArtRenderer';
+import { FarmWorldView, boardTileSlot } from './view/FarmWorldView';
+import { cameraForDistrict, coordinatesOf, districtAtCamera, districtOf, HOME_PLOT_ID, type District } from './view/FarmDistrict';
 import { UiKit } from './view/UiKit';
 import { PanelStack } from './view/PanelStack';
 import { FarmHud } from './view/FarmHud';
 import { cropNames, goodNames, num, plotName, playerText, actionVisual, actionSummary, taskView } from './view/FarmPresentation';
 import { FarmCore } from './FarmCore';
 const { ccclass } = _decorator;
-const W=720, SAVE='shanju.cocos.farm.v1', STYLE='shanju.cocos.art.v1';
+const W=720, SAVE='shanju.cocos.farm.v1', STYLE='shanju.cocos.art.v2';
 
 @ccclass('FarmDemo')
 export class FarmDemo extends Component {
@@ -16,9 +17,10 @@ export class FarmDemo extends Component {
   private base!:Node; private map!:Node; private hud!:Node; private overlay!:Node; private fx!:Node;
   private art!:ArtRenderer; private ui!:UiKit; private world!:FarmWorldView;
   private panels=new PanelStack(); private hudView:FarmHud|null=null;
-  private packs:PackInfo[]=[]; private selected='p2q2';
+  private packs:PackInfo[]=[]; private selected=HOME_PLOT_ID;
   private busy=false; private motion=true; private saveBlocked=false;
-  private panX=0; private panY=0; private drag=0; private height=1280; private safeTop=20; private safeBottom=20;
+  private panX=0; private panY=0; private zoom=.82; private district:District={x:0,y:0};
+  private drag=0; private pinchDistance=0; private height=1280; private safeTop=20; private safeBottom=20;
   private toastNode:Node|null=null;
   private get C(){return this.art.palette;}
 
@@ -31,13 +33,13 @@ export class FarmDemo extends Component {
     profiler.hideStats();
     const viewport=visualNode('World viewport',this.node,0,0,W,this.height);viewport.addComponent(Mask);
     this.base=visualNode('World',viewport,0,0,W,this.height);
-    this.map=visualNode('Farm map',viewport,0,-165,W,this.height);
+    this.map=visualNode('Farm map',viewport,0,0,W,this.height);
     this.hud=visualNode('HUD',this.node,0,0,W,this.height);
     this.overlay=visualNode('Panels',this.node,0,0,W,this.height);
     this.fx=visualNode('Feedback',this.node,0,0,W,this.height);
     this.packs=await ArtPack.catalog();let pack:ArtPack;
-    try{pack=await ArtPack.load(sys.localStorage.getItem(STYLE)||'paper');}
-    catch(error){console.warn(error);pack=await ArtPack.load('paper');}
+    try{pack=await ArtPack.load(sys.localStorage.getItem(STYLE)||'fieldbook');}
+    catch(error){console.warn(error);pack=await ArtPack.load('fieldbook');}
     this.art=new ArtRenderer(pack);this.ui=new UiKit(this.art);
     this.world=new FarmWorldView(this.base,this.map,this.art);this.world.background();this.bindMap();
     try{this.obs=await this.core.start(sys.localStorage.getItem(SAVE)||undefined);}
@@ -56,28 +58,70 @@ export class FarmDemo extends Component {
     n.on(Node.EventType.TOUCH_END,(e:EventTouch)=>{this.unschedule(hint);e.propagationStopped=true;if(!moved&&!held&&!this.busy)fn();});
   }
   private bindMap(){
-    this.map.on(Node.EventType.TOUCH_START,()=>{this.drag=0;});
-    this.map.on(Node.EventType.TOUCH_MOVE,(e:EventTouch)=>{
-      if(this.panels.current||this.busy)return;const d=e.getUIDelta();this.drag+=Math.abs(d.x)+Math.abs(d.y);
-      if(this.drag>10){this.panX=Math.max(-this.world.panLimits.x,Math.min(this.world.panLimits.x,this.panX+d.x));this.panY=Math.max(-this.world.panLimits.y,Math.min(this.world.panLimits.y,this.panY+d.y));this.renderPlots();}
+    const span=(e:EventTouch)=>{const touches=e.getTouches();if(touches.length<2)return 0;
+      const a=touches[0].getUILocation(),b=touches[1].getUILocation();return Math.hypot(a.x-b.x,a.y-b.y);};
+    // Listen above both the world and HUD. Decorative cards and image sprites must not create dead drag zones.
+    this.node.on(Node.EventType.TOUCH_START,(e:EventTouch)=>{this.drag=e.getTouches().length>1?999:0;this.pinchDistance=span(e);});
+    this.node.on(Node.EventType.TOUCH_MOVE,(e:EventTouch)=>{
+      if(this.panels.current||this.busy)return;
+      const distance=span(e);
+      if(this.world.board&&distance){
+        if(this.pinchDistance){const old=this.zoom;this.zoom=Math.max(.65,Math.min(1.8,this.zoom*distance/this.pinchDistance));
+          const ratio=this.zoom/old;this.panX*=ratio;this.panY=(this.panY+80)*ratio-80;}
+        this.pinchDistance=distance;this.drag=999;this.clampCamera();this.renderPlots();return;
+      }
+      if(this.pinchDistance){this.pinchDistance=0;this.drag=999;return;}
+      const d=e.getUIDelta();this.drag+=Math.abs(d.x)+Math.abs(d.y);
+      if(this.drag>10){this.panX+=d.x;this.panY+=d.y;this.clampCamera();this.renderPlots();}
     });
-    this.map.on(Node.EventType.TOUCH_END,(e:EventTouch)=>{
-      if(this.panels.current||this.busy||this.drag>10)return;
+    this.node.on(Node.EventType.TOUCH_END,(e:EventTouch)=>{
+      if(e.getTouches().length<2)this.pinchDistance=0;
+      if(this.panels.current||this.busy)return;
+      if(this.drag>10){
+        if(this.world.board){
+          const at=coordinatesOf(this.selected),unit=at?districtOf(at.x,at.y):null;
+          if(!unit||unit.x!==this.district.x||unit.y!==this.district.y){
+            const visible=this.obs.game.economy.farm.plots.filter((p:any)=>{const d=districtOf(p.x,p.y);return d.x===this.district.x&&d.y===this.district.y&&(p.kind!=='unknown'||p.reachable);});
+            this.selected=(this.district.x===0&&this.district.y===0?visible.find((p:any)=>p.id===HOME_PLOT_ID):null)?.id
+              ||(visible.find((p:any)=>p.kind!=='unknown')||visible[0])?.id||'';
+          }
+          this.refresh();
+        }
+        return;
+      }
+      for(let target=e.target as Node|null;target;target=target.parent)
+        if(target===this.hud||target===this.overlay||target===this.fx)return;
       const p=this.map.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(e.getUILocation().x,e.getUILocation().y,0));
       const id=this.world.hit(p.x,p.y);if(id){this.selected=id;this.refresh();}
     });
+    this.node.on(Node.EventType.TOUCH_CANCEL,()=>{this.drag=0;this.pinchDistance=0;});
   }
-  private plotTitle(p:any){return !p?'田院':p.field?.crop?cropNames[p.field.crop]||p.field.crop:p.kind==='field'?'空闲田地':p.kind==='unknown'?'未探索':p.kind==='water'?'溪涧水源':p.discovery?.title||({wild:'待垦荒地',rock:'山石',tree:'树木',story:'田间见闻'} as any)[p.kind]||'田地';}
-  private renderPlots(){this.world.render(this.obs.game.economy.farm.plots,this.selected,this.panX,this.panY);}
+  private clampCamera(){if(this.world.board)return;const limit=this.world.panLimits;
+    this.panX=Math.max(-limit.x,Math.min(limit.x,this.panX));this.panY=Math.max(-limit.y,Math.min(limit.y,this.panY));}
+  private selectAndFocus(id:string){this.selected=id;const c=coordinatesOf(id);if(c){this.district=districtOf(c.x,c.y);const camera=cameraForDistrict(this.district,this.zoom);this.panX=camera.x;this.panY=camera.y;}this.refresh();}
+  private plotTitle(p:any){
+    if(!p)return '田院';
+    if(p.landscape)return p.landscape.name||'园地';
+    if(p.improvement)return ({yard:'晒场',cellar:'种子窖',shed:'窝棚',pit:'堆肥坑',retting:'沤麻塘',canal:'水渠',drain:'排水沟',shelter:'护田林'} as any)[p.improvement]||'其他用途';
+    return p.field?.crop?cropNames[p.field.crop]||p.field.crop:p.kind==='field'?(p.purpose==='other'?'其他用途':'空闲田地'):p.kind==='unknown'?'未探索':p.kind==='water'?'溪涧水源':p.discovery?.title||({wild:'待垦荒地',rock:'山石',tree:'树木',story:'田间见闻'} as any)[p.kind]||'田地';
+  }
+  private renderPlots(){
+    if(this.world.board)this.district=districtAtCamera(this.panX,this.panY,this.zoom);
+    this.world.render(this.obs.game.economy.farm.plots,this.selected,this.panX,this.panY,this.zoom);
+  }
   private refresh(){
     this.renderPlots();const g=this.obs.game,c=g.life.calendar,p=g.economy.farm.plots.find((p:any)=>p.id===this.selected);
     const tasks=g.economy.farm.schedule.tasks,ready=tasks.filter((t:any)=>taskView(t,this.obs).ready);
-    const next=ready.length?'有 '+ready.length+' 项农事可以执行':tasks.length?playerText(tasks[0].name)+'\n'+tasks[0].date:'先选田，查看农事与条件\n未到农时可学习或安排计划';
+    const next=this.world.board?
+      ready.length?'今日有 '+ready.length+' 项待办可执行':tasks.length?'农历待办 '+tasks.length+' 项 · '+taskView(tasks[0],this.obs).status:'未安排农事 · 可先查看农历':
+      ready.length?'有 '+ready.length+' 项农事可以执行':tasks.length?playerText(tasks[0].name)+'\n'+tasks[0].date:'先选田，查看农事与条件\n未到农时可学习或安排计划';
     if(!this.hudView)this.hudView=new FarmHud(this.hud,this.art,this.ui,this.height,this.safeTop,this.safeBottom,{
-      farm:()=>{if(!this.busy)this.openPlot();},inventory:()=>{if(!this.busy)this.openInventory();},calendar:()=>{if(!this.busy)this.openSchedule();},more:()=>{if(!this.busy)this.openMore();},tasks:()=>{if(!this.busy)this.openTasks();},rest:()=>{if(!this.busy)this.openRest();},plots:()=>{if(!this.busy)this.openPlots();}
+      farm:()=>{if(!this.busy){if(this.selected)this.openPlot();else this.openPlots();}},inventory:()=>{if(!this.busy)this.openInventory();},calendar:()=>{if(!this.busy)this.openSchedule();},more:()=>{if(!this.busy)this.openMore();},tasks:()=>{if(!this.busy)this.openTasks();},rest:()=>{if(!this.busy)this.openRest();},plots:()=>{if(!this.busy)this.openPlots();}
     });
-    const detail=p?.field?.crop?this.plotTitle(p)+' · '+((p.maturity?.days??1)<=0?'可以收获':'预计 '+(p.maturity?.date||'农时')+' 成熟'):p?.kind==='field'?'空田 · 查看播种条件\n未到农时可提前安排':this.plotTitle(p)+' · 点农事查看';
-    this.hudView.update({date:c.lunarDate,term:c.currentTerm+' · '+g.world.weatherName,money:'钱 '+num(g.family.money),food:'口粮 '+num(g.economy.foodTotal),pressure:'压力 '+num(g.life.person.pressure),field:plotName(this.selected),detail,next});
+    const detail=(p?.field?.crop?this.plotTitle(p)+' · '+((p.maturity?.days??1)<=0?'可以收获':'预计 '+(p.maturity?.date||'农时')+' 成熟'):
+      p?.kind==='field'?(this.world.board?'空田 · 水分'+(p.land?.waterName||'未知'):'空田 · 查看播种条件\n未到农时可提前安排'):
+      this.plotTitle(p)+(this.world.board?' · 查看农事条件':' · 点农事查看'));
+    this.hudView.update({date:this.world.board?c.lunarDate+' · '+c.currentTerm:c.lunarDate,term:c.currentTerm+' · '+g.world.weatherName,money:'钱 '+num(g.family.money),food:'口粮 '+num(g.economy.foodTotal),pressure:'压力 '+num(g.life.person.pressure),field:p?plotName(this.selected):'地块单元',detail:this.world.board?(!p||p.kind==='unknown'?'未探索':p.kind==='field'&&p.purpose!=='other'?detail:this.plotTitle(p)):detail,next,thumbnail:boardTileSlot(p)});
   }
   private panel(title:string,subtitle='',height=1080,key=title){
     let body!:Node;const selected=this.selected;
@@ -85,11 +129,19 @@ export class FarmDemo extends Component {
       const shade=visualNode('Modal '+key,this.overlay,0,0,W,this.height);this.art.shade(shade,W,this.height);shade.addComponent(BlockInputEvents);
       body=visualNode(title,shade,0,(this.safeBottom-this.safeTop)/2,664,height);this.art.surface(body,664,height,this.C.paper,28);
       this.text(body,title,0,height/2-65,32,this.C.ink,420,80);
-      if(this.panels.depth>0)this.button(body,'‹',-279,height/2-64,80,80,()=>this.panels.back());
-      this.button(body,'×',279,height/2-64,80,80,()=>this.close());
-      if(subtitle)this.text(body,subtitle,0,height/2-151,26,this.C.ink,592,100);
+      if(this.world.board){
+        const rule=visualNode('Journal rule',body,0,height/2-126,580,3),g=rule.addComponent(Graphics);
+        g.strokeColor=tint(this.C.gold);g.lineWidth=2;g.moveTo(-290,0);g.lineTo(290,0);g.stroke();
+      }
+      if(this.panels.depth>0){
+        if(this.world.board)this.ui.iconButton(body,'back',-279,height/2-64,80,()=>this.panels.back());
+        else this.button(body,'‹',-279,height/2-64,80,80,()=>this.panels.back());
+      }
+      if(this.world.board)this.ui.iconButton(body,'close',279,height/2-64,80,()=>this.close());
+      else this.button(body,'×',279,height/2-64,80,80,()=>this.close());
+      if(subtitle)this.text(body,subtitle,0,height/2-(this.world.board?160:151),this.world.board?23:26,this.C.ink,592,this.world.board?58:100);
       return shade;
-    },()=>{this.selected=selected;this.refresh();});
+    },()=>this.selectAndFocus(selected));
     return body;
   }
   private close(){this.panels.clear();}
@@ -105,10 +157,12 @@ export class FarmDemo extends Component {
   }
   private openMore(){this.menu('更多','田院工具与个人成长',[
     {label:'农业所学',run:()=>this.openLearning()},{label:'静修日课',run:()=>this.openPractice()},
-    {label:'田间记事',run:()=>this.openEvents()},{label:'场景居中',run:()=>{this.panX=this.panY=0;this.close();this.refresh();}},
+    {label:'田间记事',run:()=>this.openEvents()},
+    {label:'休养',run:()=>this.openRest()},{label:'待办',run:()=>this.openTasks()},
+    {label:'回到房屋',run:()=>{this.close();this.selectAndFocus(HOME_PLOT_ID);}},
     {label:'操作帮助',run:()=>this.openHelp()},{label:'设置',run:()=>this.openSettings()}
   ]);}
-  private openHelp(){const body=this.panel('操作帮助','从一块田开始');this.ui.scrollText(body,'1. 点击地面选田，边框表示当前选择；拖动可移动场景。\n\n2. 在下方田况卡或「农事」查看能做什么。缺条件的行动也能点开了解原因。\n\n3. 农历中点击作物，给选中田地安排计划。保存计划不推进日期。\n\n4. 待办中点击任务，查看日期与条件，到期后手动执行。\n\n5. 左上箭头回上一页，右上 × 回到田院。长说明可以上下滑动。\n\n6. 仓储里可进入商店；更多里有学习、修行和设置。',0,-20,590,730,28);}
+  private openHelp(){const body=this.panel('操作帮助','从一块地开始');this.ui.scrollText(body,(this.world.board?'1. 房屋与院前田位于中心单元中央。每个单元固定 3×3 块地，向任意方向拖动可连续浏览。\n\n2. 双指张合缩放地图。':'1. 点击地面选田，边框表示当前选择；拖动可移动场景。')+'\n\n3. 下方卡片显示所选地块；查看农事可看到真实条件和用途。\n\n4. 农历中点击作物，给已开垦的田地安排计划。\n\n5. 待办中的任务到期后仍需手动执行。\n\n6. 仓储里可进入商店；更多里有学习、修行和设置。',0,-20,590,730,28);}
   private openPlots(page=0){
     const plots=this.obs.game.economy.farm.plots.filter((p:any)=>p.kind!=='unknown'||p.reachable),pages=Math.max(1,Math.ceil(plots.length/6));page=Math.max(0,Math.min(page,pages-1));
     const body=this.panel('选择田地','包含远处田地；点选后查看该田农事。');
@@ -116,7 +170,7 @@ export class FarmDemo extends Component {
       const row=visualNode('Plot '+p.id,body,-150+(i%2)*300,247-Math.floor(i/2)*215,280,182);this.box(row,280,182);
       this.text(row,plotName(p.id),0,52,28,this.C.ink,256,54);this.icon(row,p.kind==='field'?'hoe':p.kind==='unknown'?'target':'leaf',-85,-15,62);
       this.text(row,this.plotTitle(p),34,-25,26,this.C.ink,174,100);
-      this.tap(row,plotName(p.id),()=>{this.selected=p.id;this.refresh();this.openPlot();});
+      this.tap(row,plotName(p.id),()=>{this.selectAndFocus(p.id);this.openPlot();});
     });this.pager(body,page,pages,-400,p=>this.openPlots(p));
   }
   private plotActions(plan=false){const p=this.selected;return this.obs.game.actions.filter((a:any)=>{const parts=a.id.split(':');return parts[0]==='economy'&&(parts[2]===p||parts[2]?.startsWith(p+'-'))&&(plan?parts[1]==='plotplan':!['plotplan','farmuse','wait'].includes(parts[1]));});}
@@ -134,7 +188,8 @@ export class FarmDemo extends Component {
       const row=visualNode(a.id,body,0,252-i*210,600,188);this.box(row,600,188);const v=actionVisual(a);this.icon(row,v.icon,-233,34,78);
       this.text(row,v.label,45,41,28,this.C.ink,440,78,Label.HorizontalAlign.LEFT);
       this.text(row,(a.time?num(a.time)+'天':'不推进日期')+' · '+(a.pressureRelief!==undefined?'恢复压力 '+num(a.pressureRelief):'压力 +'+num(a.energy)),20,-24,25,this.C.ink,520,36);
-      this.text(row,a.enabled?'查看并确认 ›':this.shortReason(a)+' · 查看条件 ›',0,-66,25,a.enabled?this.C.green:this.C.warning,555,36);
+      this.text(row,a.enabled?'查看并确认':this.shortReason(a)+' · 查看条件',-12,-66,25,a.enabled?this.C.green:this.C.warning,495,36);
+      if(this.world.board)this.icon(row,'next',248,-66,40);
       this.tap(row,playerText(a.label),()=>this.confirm(a));
     });this.pager(body,page,pages,-366,p=>this.actionList(title,subtitle,actions,p,plan));
     if(plan)this.button(body,'安排这块田的计划',0,-464,550,80,plan,true);
@@ -194,14 +249,37 @@ export class FarmDemo extends Component {
   private openPlans(){const p=this.obs.game.economy.farm.plots.find((p:any)=>p.id===this.selected);if(p?.kind!=='field'){this.openPlots();this.toast('先选择一块已开垦田地，再安排作物。');return;}this.actionList(plotName(this.selected)+' · 作物安排','保存计划不消耗时间和物资；到期后需手动执行。',this.plotActions(true));}
   private openSchedule(page=0){
     const s=this.obs.game.economy.farm.schedule,batches=s.batches.filter((b:any)=>b.year===s.year),pages=Math.max(1,Math.ceil(batches.length/3));page=Math.max(0,Math.min(page,pages-1));
-    const body=this.panel('四时农历','点击作物安排计划 · 当前选中 '+plotName(this.selected));
+    const body=this.panel('四时农历',this.world.board?'当前选中 '+plotName(this.selected)+' · 加入计划不耗时间，到期后手动执行':'点击作物安排计划 · 当前选中 '+plotName(this.selected));
     if(!batches.length)this.text(body,'当前没有作物窗口',0,80);
+    if(this.world.board){
+      const spine=visualNode('Season timeline',body,-267,43,3,436),line=spine.addComponent(Graphics);
+      line.strokeColor=tint(this.C.line);line.lineWidth=4;line.moveTo(0,-218);line.lineTo(0,218);line.stroke();
+      batches.slice(page*3,page*3+3).forEach((b:any,i:number)=>{
+        const y=246-i*204,row=visualNode(b.name,body,44,y,516,180);this.box(row,516,180);
+        const marker=visualNode('Season '+b.sowTerm,body,-267,y,94,54);
+        this.art.surface(marker,94,54,this.C.status,16,this.C.gold);
+        this.text(marker,b.sowTerm,0,0,23,this.C.ink,86,43);
+        this.icon(row,'crop-'+b.crop,-207,24,66);
+        this.text(row,b.name,35,45,29,this.C.ink,404,60,Label.HorizontalAlign.LEFT);
+        this.text(row,'播种 '+b.sowTerm+' → 收获 '+b.harvestTerm,18,-11,25,this.C.caption,432,43);
+        const now=this.obs.game.life.calendar.absoluteDay;
+        const status=now>=b.end?'今年窗口已过':now<b.start?'尚未到期':'当前播种窗口';
+        this.text(row,status+' · 查看安排',8,-59,24,now>=b.end?this.C.warning:this.C.green,410,39);
+        this.icon(row,'next',222,-59,38);
+        this.tap(row,b.name,()=>this.openBatch(b));
+        this.tap(marker,b.name,()=>this.openBatch(b));
+      });
+      this.pager(body,page,pages,-368,p=>this.openSchedule(p));
+      this.button(body,'田地计划',-152,-464,282,80,()=>this.openPlans());
+      this.button(body,'计划与待办',152,-464,282,80,()=>this.openTasks(),true);
+      return;
+    }
     batches.slice(page*3,page*3+3).forEach((b:any,i:number)=>{
       const row=visualNode(b.name,body,0,246-i*204,600,182);this.box(row,600,182);this.icon(row,'crop-'+b.crop,-236,28,78);
       this.text(row,b.name,44,42,28,this.C.ink,438,60,Label.HorizontalAlign.LEFT);
       this.text(row,'播种 '+b.sowTerm+' → 收获 '+b.harvestTerm,30,-13,26,this.C.ink,530,40);
       const now=this.obs.game.life.calendar.absoluteDay,status=now>=b.end?'今年窗口已过':now<b.start?'尚未到期':'当前播种窗口';
-      this.text(row,status+' · 查看安排 ›',0,-62,25,this.C.green,554,38);this.tap(row,b.name,()=>this.openBatch(b));
+      this.text(row,status+' · 查看安排',-12,-62,25,this.C.green,500,38);if(this.world.board)this.icon(row,'next',248,-62,40);this.tap(row,b.name,()=>this.openBatch(b));
     });this.pager(body,page,pages,-368,p=>this.openSchedule(p));
     this.button(body,'田地计划',-152,-464,282,80,()=>this.openPlans());this.button(body,'计划与待办',152,-464,282,80,()=>this.openTasks(),true);
   }
@@ -219,8 +297,9 @@ export class FarmDemo extends Component {
     tasks.slice(page*3,page*3+3).forEach((task:any,i:number)=>{
       const v=taskView(task,this.obs),row=visualNode(task.id,body,0,251-i*210,600,188);this.box(row,600,188);
       this.text(row,v.title,0,48,28,this.C.ink,554,70,Label.HorizontalAlign.LEFT);this.text(row,task.date,0,-13,25,this.C.ink,554,50,Label.HorizontalAlign.LEFT);
-      this.text(row,v.status+' · 点击处理 ›',0,-65,26,v.ready?this.C.green:this.C.warning,554,38,Label.HorizontalAlign.LEFT);
-      this.tap(row,v.title,()=>{this.selected=task.plotId;this.refresh();if(v.action)this.confirm(v.action,task);else this.openTaskUnavailable(task);});
+      this.text(row,v.status+' · 点击处理',-12,-65,26,v.ready?this.C.green:this.C.warning,500,38,Label.HorizontalAlign.LEFT);
+      if(this.world.board)this.icon(row,'next',248,-65,40);
+      this.tap(row,v.title,()=>{this.selectAndFocus(task.plotId);if(v.action)this.confirm(v.action,task);else this.openTaskUnavailable(task);});
     });this.pager(body,page,pages,-365,p=>this.openTasks(p));this.button(body,'去农历安排作物',0,-464,552,80,()=>this.openSchedule(),true);
   }
   private openTaskUnavailable(task:any){const v=taskView(task,this.obs),body=this.panel('任务详情',v.title,900,'task-detail');this.ui.scrollText(body,v.status+'\n\n'+v.reason+'\n\n当前没有对应行动，可查看田况或调整计划。',0,0,582,400,28);this.button(body,'查看这块田',-151,-357,282,80,()=>this.openPlot(),true);this.button(body,'调整计划',151,-357,282,80,()=>this.openPlans());}
@@ -246,7 +325,7 @@ export class FarmDemo extends Component {
     if(this.busy)return;this.busy=true;
     try{this.packs=await ArtPack.catalog();}catch(e){this.toast('风格目录读取失败');return;}finally{this.busy=false;}
     this.menu('美术风格','切换风格保留日期、资源和计划',[
-      ...this.packs.map(p=>({label:(p.id===this.art.pack.manifest.id?'✓ ':'')+p.name,run:()=>void this.switchStyle(p.id)})),
+      ...this.packs.map(p=>({label:(p.id===this.art.pack.manifest.id?'当前 · ':'')+p.name,run:()=>void this.switchStyle(p.id)})),
       {label:'重新加载当前风格',run:()=>void this.switchStyle(this.art.pack.manifest.id)}
     ]);
   }
@@ -255,13 +334,14 @@ export class FarmDemo extends Component {
     try{
       const pack=await ArtPack.load(id),old=this.art.pack;this.close();this.clearChildren(this.fx);this.toastNode=null;this.clearChildren(this.hud);this.hudView=null;
       this.art=new ArtRenderer(pack);this.ui=new UiKit(this.art);this.world.setArt(this.art);
-      this.panX=Math.max(-this.world.panLimits.x,Math.min(this.world.panLimits.x,this.panX));this.panY=Math.max(-this.world.panLimits.y,Math.min(this.world.panLimits.y,this.panY));this.refresh();this.scheduleOnce(()=>old.dispose(),0);
+      for(const node of [...this.hud.children])node.destroy();this.hudView=null;
+      this.clampCamera();this.refresh();this.scheduleOnce(()=>old.dispose(),0);
       try{sys.localStorage.setItem(STYLE,id);}catch(e){console.warn(e);}this.toast('已切换：'+pack.manifest.name);
     }catch(e){console.warn(e);this.toast('美术加载失败，已保留原画面。');}finally{this.busy=false;}
   }
   private openEvents(){const events=this.obs.recentEvents.filter((e:any)=>e.detail||e.message||e.reason),body=this.panel('田间记事','最近实际发生的事件');this.ui.scrollText(body,playerText(events.map((e:any)=>e.detail||e.message||e.reason).join('\n\n'))||'新的一年，从一块田开始。',0,-40,590,750,28);}
   private confirmReset(){const body=this.panel('重新开始','旧存档会先保留为备份',660);this.text(body,'是否新开一局？\n日期将回到第一年正月初一。',0,-10,28,this.C.ink,560,170);this.button(body,'返回',-151,-236,282,80,()=>this.panels.back());this.button(body,'备份并新开',151,-236,282,80,()=>void this.reset(),true);}
-  private async reset(){if(this.busy)return;this.busy=true;try{const old=sys.localStorage.getItem(SAVE);if(old)sys.localStorage.setItem(SAVE+'.backup.'+Date.now(),old);this.obs=await this.core.start(undefined);this.saveBlocked=false;this.selected='p2q2';this.panX=this.panY=0;const saved=this.persist();this.close();this.refresh();this.toast(saved?'新局已开始，原档已备份。':'新局已开始，但保存失败，请重试。');}catch(e){this.toast(String(e));}finally{this.busy=false;}}
+  private async reset(){if(this.busy)return;this.busy=true;try{const old=sys.localStorage.getItem(SAVE);if(old)sys.localStorage.setItem(SAVE+'.backup.'+Date.now(),old);this.obs=await this.core.start(undefined);this.saveBlocked=false;this.selected=HOME_PLOT_ID;this.district={x:0,y:0};this.panX=this.panY=0;this.zoom=.82;const saved=this.persist();this.close();this.refresh();this.toast(saved?'新局已开始，原档已备份。':'新局已开始，但保存失败，请重试。');}catch(e){this.toast(String(e));}finally{this.busy=false;}}
   private clearChildren(parent:Node){for(const n of [...parent.children]){n.active=false;n.destroy();}}
   onDestroy(){this.panels.clear();this.world?.destroy();this.art?.pack.dispose();}
 }
