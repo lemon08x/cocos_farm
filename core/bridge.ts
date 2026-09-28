@@ -28,3 +28,7 @@ export class FarmCore {
     } finally { this.busy=false; }
   }
 }
+
+export * from './src/game/scene/geometry';
+export * from './src/game/scene/layout';
+export * from './src/game/scene/world';

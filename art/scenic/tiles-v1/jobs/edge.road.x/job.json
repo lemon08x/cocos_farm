@@ -1,0 +1,13 @@
+{
+  "id": "edge.road.x",
+  "kind": "edge",
+  "socket": "road",
+  "axis": "x",
+  "width": 352,
+  "height": 96,
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "templateHashes": [
+    "03024527d72dc0a80e57dafaa7e902a9d4afb1f2a130116dd09e6ca96195310f",
+    "182546dca10a74298ef728f629c262df7358547215c4c38b4f9a37b422b66720"
+  ]
+}

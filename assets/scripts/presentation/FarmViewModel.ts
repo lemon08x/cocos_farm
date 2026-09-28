@@ -9,6 +9,7 @@ export interface HudViewModel {date:string;term:string;money:string;food:string;
  * the homestead image must not stand in for field condition (plan §7). */
 export function scenicThumbnail(p:any):string[]{
   if(!p||p.kind==='unknown')return ['field.unknown'];
+  if(p.landscape||p.improvement||p.purpose==='other'||(p.project&&p.project.done<p.project.total))return [];
   if(p.kind==='field'){
     const slots=[(p.land?.water??0)>=2?'field.soil.wet':'field.soil.dry'];
     if(p.field?.crop){const stage=(p.maturity?.days??1)<=0?'mature':'growing';slots.push(p.field.crop==='wheat'?`crop.wheat.${stage}`:`crop.default.${stage}`);}
@@ -22,6 +23,7 @@ export function scenicThumbnail(p:any):string[]{
 
 export function plotTitle(p:any):string{
   if(!p)return '田院';
+  if(p.project&&p.project.done<p.project.total)return (p.project.name||'设施')+' · '+(p.project.stage||'建设中');
   if(p.landscape)return p.landscape.name||'园地';
   if(p.improvement)return ({yard:'晒场',cellar:'种子窖',shed:'窝棚',pit:'堆肥坑',retting:'沤麻塘',canal:'水渠',drain:'排水沟',shelter:'护田林'} as any)[p.improvement]||'其他用途';
   return p.field?.crop?cropNames[p.field.crop]||p.field.crop:p.kind==='field'?(p.purpose==='other'?'其他用途':'空闲田地'):p.kind==='unknown'?'未探索':p.kind==='water'?'溪涧水源':p.discovery?.title||({wild:'待垦荒地',rock:'山石',tree:'树木',story:'田间见闻'} as any)[p.kind]||'田地';
@@ -41,7 +43,7 @@ export function fieldDetailText(board:boolean,p:any):string{
  * 不使用旧版多行文案，也不依赖 CLAMP 截断。 */
 export function fieldShortText(p:any):string{
   if(!p)return '';
-  if(p.kind==='unknown')return '未探索';
+  if(p.kind==='unknown')return p.explorationReason||'未探索';
   if(p.kind==='field'&&p.purpose!=='other'){
     const water='水分'+(p.land?.waterName||'未知');
     if(p.field?.crop)return (cropNames[p.field.crop]||p.field.crop)+((p.maturity?.days??1)<=0?' · 可以收获':' · 生长中')+' · '+water;
@@ -70,4 +72,15 @@ export function buildHudViewModel(obs:any,selected:string,board:boolean):HudView
     water:p?.land?.waterName?'水分 '+p.land.waterName:'',todoCount:g.economy.farm.schedule.tasks.length,
     fieldShort:fieldShortText(p),todoBadge:todoBadgeText(selected,g.economy.farm.schedule.tasks,obs)
   };
+}
+
+export function spatialDescription(p:any):string{
+ if(p.kind==='unknown')return p.explorationReason||'先探索相邻区域';
+ const v=p.spatial;if(!v)return '';
+ const source=(id:string)=>id.startsWith('river.')?'河流':id==='env.spring'?'河源':plotName(id);
+ const water=p.waterAccess?'可引水：'+Array.from(new Set(v.waterSources.map(source))).join('、'):'尚未接通水源';
+ const drainage=p.improvement==='drain'?(v.drainOutlet?'有有效排水出口':'没有低处排水出口'):'';
+ const names:any={shelter:'护田林',yard:'晒场',cellar:'种子窖',shed:'窝棚',garden:'田畔花园'};
+ const coverage=v.coverage.map((c:any)=>names[c.kind]+'（'+plotName(c.plotId)+'）').join('、');
+ return [water,drainage,coverage?'受益：'+coverage:''].filter(Boolean).join('；');
 }

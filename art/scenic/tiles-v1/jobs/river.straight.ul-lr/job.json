@@ -1,0 +1,44 @@
+{
+  "id": "river.straight.ul-lr",
+  "kind": "ground",
+  "entry": {
+    "id": "river.straight.ul-lr",
+    "family": "river",
+    "layer": "ground",
+    "sockets": {
+      "ul": "river",
+      "ur": "grass",
+      "lr": "river",
+      "ll": "grass"
+    },
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "templateHashes": [
+    "b2b30f0420bacbfd34e1a5bc2318c2ecc442dc6df1ccb6758fffbe5837a936c8",
+    "f27ec8772a46d0c872fe3c071d8b241e7b2cde3758a23d7173d6860c7738b486"
+  ]
+}

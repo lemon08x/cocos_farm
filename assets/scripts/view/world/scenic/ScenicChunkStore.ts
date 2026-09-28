@@ -200,7 +200,7 @@ export function chunkContent(cx: number, cy: number, occupied: ReadonlySet<strin
   }
   const ports: ChunkPort[] = [];
   for (const edge of ['n', 's', 'e', 'w'] as ChunkEdge[]) ports.push(...edgePorts(cx, cy, edge));
-  return { cx, cy, key: chunkKey(cx, cy), groundTiles, rivers, spring: inChunk(layout.RIVER_SPRING), streets, bridges, homestead, signposts, fences, trees, flowerCells, ports };
+  return { cx, cy, key: chunkKey(cx, cy), groundTiles, rivers, spring: inChunk(layout.RIVER_SPRING), streets, bridges, homestead, signposts, fences, trees:trees.filter(t=>!insideOccupied(t,occupied)), flowerCells:flowerCells.filter(c=>!occupied.has(c.x+','+c.y)), ports };
 }
 
 /** Tracks which chunks currently have live nodes. sync() reports which chunk

@@ -90,7 +90,7 @@ export class ScenicHud {
     if (badge) badge.color = tint(model.todoBadge && model.todoBadge !== '暂无待办' ? this.art.palette.warning : this.art.palette.muted);
     if (this.thumbnailParent) {
       const slots = model.thumbnailScenic ?? [];
-      const key = slots.join('|');
+      const key = slots.join('|')+'|'+model.fieldShort;
       if (key !== this.lastThumbnail) {
         this.thumbnail?.destroy(); this.thumbnail = null;
         const stack = visualNode('Thumbnail stack', this.thumbnailParent, 0, 0, 0, 0);
@@ -108,6 +108,7 @@ export class ScenicHud {
           const g = stack.addComponent(Graphics);
           g.fillColor = tint(this.art.palette.disabled);
           g.moveTo(0, -56); g.lineTo(64, 0); g.lineTo(0, 56); g.lineTo(-64, 0); g.close(); g.fill();
+          const name=visualNode('State label',stack,0,0,130,110).addComponent(Label);name.string=model.fieldShort||'田地';name.fontSize=20;name.lineHeight=25;name.color=tint(this.art.palette.ink);
         }
         this.thumbnail = stack; this.lastThumbnail = key;
       }

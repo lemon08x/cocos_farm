@@ -1,3 +1,4 @@
+import {GAME_SAVE_KEY,prepareGameSave} from './view/world/GameSaveStorage';
 import { _decorator, Component, Node, UITransform, Label, Graphics, view, screen, ResolutionPolicy, sys, Vec3, EventTouch, BlockInputEvents, profiler, Mask } from 'cc';
 import { ArtPack, PackInfo } from './art/ArtPack';
 import { ArtRenderer, visualNode, tint } from './art/ArtRenderer';
@@ -16,10 +17,10 @@ import { UiKit } from './view/UiKit';
 import { PanelStack } from './view/PanelStack';
 import { FarmHud } from './view/FarmHud';
 import { cropNames, goodNames, num, plotName, playerText, actionVisual, actionSummary, taskView } from './view/FarmPresentation';
-import { buildHudViewModel, plotTitle } from './presentation/FarmViewModel';
+import { buildHudViewModel, plotTitle, spatialDescription } from './presentation/FarmViewModel';
 import { FarmCore } from './FarmCore';
 const { ccclass } = _decorator;
-const W=720, SAVE='shanju.cocos.farm.v1', STYLE='shanju.cocos.art.v2';
+const W=720, SAVE=GAME_SAVE_KEY, STYLE='shanju.cocos.art.v2';
 
 @ccclass('FarmDemo')
 export class FarmDemo extends Component {
@@ -61,8 +62,9 @@ export class FarmDemo extends Component {
     try{await this.mountWorldVersion(version);}
     catch(error){console.warn(error);await this.mountWorldVersion('current');this.worldPrefs.selectVersion(version);this.toast('主场景加载失败，暂时使用田格手账，可在设置中重试。');}
     this.bindMap();
-    try{this.obs=await this.core.start(sys.localStorage.getItem(SAVE)||undefined);}
+    try{const slot=prepareGameSave(sys.localStorage);this.obs=await this.core.start(slot.saved??undefined);if(slot.reset)this.toast('场景系统已更新，已重新开始游戏');}
     catch(error){this.saveBlocked=true;this.obs=await this.core.start(undefined);this.toast('原存档读取失败，已保留；当前为临时新局。');console.warn(error);}
+    const savedCamera=this.worldPrefs.cameraFor('scenic');if(this.scenicView&&savedCamera)this.scenicView.setCamera(this.clampSceneCamera(savedCamera));
     this.refresh();if(!this.saveBlocked)this.persist();
     (globalThis as any).__farmDemo=this;  // headless verification handle (tools/verify-scenic-p4.mjs)
   }
@@ -83,7 +85,7 @@ export class FarmDemo extends Component {
       pan:(dx,dy)=>{
         if(this.worldVersion==='scenic'&&this.scenicView){
           const c=this.scenicView.getCamera();c.x-=dx/c.zoom;c.y+=dy/c.zoom;
-          this.scenicView.setCamera(clampScenicCamera(c));this.renderPlots();return;
+          this.scenicView.setCamera(this.clampSceneCamera(c));this.renderPlots();return;
         }
         this.panX+=dx;this.panY+=dy;this.clampCamera();this.renderPlots();
       },
@@ -96,8 +98,8 @@ export class FarmDemo extends Component {
               // centroid fixed while zooming (plan §7); clamps stay in ScenicLayout.
               const q=this.map.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(center.x,center.y,0));
               const m=this.map.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(center.x,center.y,0));
-              this.scenicView.setCamera(clampScenicCamera(zoomCameraAboutPoint(c,{x:m.x,y:m.y},{x:q.x,y:q.y},zoom)));
-            }else this.scenicView.setCamera(clampScenicCamera({...c,zoom}));
+              this.scenicView.setCamera(this.clampSceneCamera(zoomCameraAboutPoint(c,{x:m.x,y:m.y},{x:q.x,y:q.y},zoom)));
+            }else this.scenicView.setCamera(this.clampSceneCamera({...c,zoom}));
           }
           this.renderPlots();return true;
         }
@@ -138,11 +140,12 @@ export class FarmDemo extends Component {
   private selectAndFocus(id:string){
     this.selected=id;const c=coordinatesOf(id);
     if(this.worldVersion==='scenic'){
-      if(c){const camera=this.scenicView?.focusPlot(id);if(camera)this.scenicView?.setCamera(clampScenicCamera(camera));}
+      if(c){const camera=this.scenicView?.focusPlot(id);if(camera)this.scenicView?.setCamera(this.clampSceneCamera(camera));}
       this.persistCamera();this.refresh();return;
     }
     if(c){this.district=districtOf(c.x,c.y);const camera=cameraForDistrict(this.district,this.zoom);this.panX=camera.x;this.panY=camera.y;}this.persistCamera();this.refresh();
   }
+  private clampSceneCamera(camera:{x:number;y:number;zoom:number}){return clampScenicCamera(camera,this.obs?.game?.economy?.farm?.scene?.bounds);}
   private persistCamera(){
     if(this.worldVersion==='scenic'){const c=this.scenicView?.getCamera();if(c)this.worldPrefs.rememberCamera('scenic',c);return;}
     this.worldPrefs.rememberCamera('current',{x:this.panX,y:this.panY,zoom:this.zoom});
@@ -150,8 +153,8 @@ export class FarmDemo extends Component {
   private renderPlots(){
     if(!this.obs)return;
     if(this.worldVersion==='scenic'){
-      this.scenicView?.render({plots:this.obs.game.economy.farm.plots,selected:this.selected});
-      this.navigator?.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected);
+      this.scenicView?.render({plots:this.obs.game.economy.farm.plots,selected:this.selected,scene:this.obs.game.economy.farm.scene});
+      this.navigator?.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected,this.obs.game.economy.farm.scene);
       return;
     }
     if(this.boardMode())this.district=districtAtCamera(this.panX,this.panY,this.zoom);
@@ -170,7 +173,7 @@ export class FarmDemo extends Component {
     view.resize({width:W,height:this.height});
     if(view instanceof ScenicWorldView){
       this.scenicView=view;this.worldVersion='scenic';
-      const saved=this.worldPrefs.cameraFor('scenic');if(saved)view.setCamera(clampScenicCamera(saved));
+      const saved=this.worldPrefs.cameraFor('scenic');if(saved)view.setCamera(this.clampSceneCamera(saved));
     }else{
       this.worldVersion='current';this.world=FarmWorldView.adapt(view);this.world.background();
     }
@@ -202,9 +205,9 @@ export class FarmDemo extends Component {
       this.scenicHudView.update(model);
       if(!this.navigator)this.navigator=new DistrictNavigator(this.hud,this.art,this.ui,this.height,this.safeTop,district=>{
         const camera=this.scenicView?.focusDistrict(district);if(!camera)return;
-        this.scenicView?.setCamera(clampScenicCamera(camera));this.renderPlots();this.persistCamera();
+        this.scenicView?.setCamera(this.clampSceneCamera(camera));this.renderPlots();this.persistCamera();
       });
-      this.navigator.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected);
+      this.navigator.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected,this.obs.game.economy.farm.scene);
       return;
     }
     if(!this.hudView)this.hudView=new FarmHud(this.hud,this.art,this.ui,this.height,this.safeTop,this.safeBottom,this.hudActions());
@@ -249,7 +252,7 @@ export class FarmDemo extends Component {
     {label:'回到房屋',run:()=>{this.close();this.selectAndFocus(HOME_PLOT_ID);}},
     {label:'操作帮助',run:()=>this.openHelp()},{label:'设置',run:()=>this.openSettings()}
   ]);}
-  private openHelp(){const body=this.panel('操作帮助','从一块地开始');this.ui.scrollText(body,(this.boardMode()?'1. 房屋与院前田位于中心单元中央。每个单元固定 3×3 块地，向任意方向拖动可连续浏览。\n\n2. 双指张合缩放地图。':'1. 点击地面选田，边框表示当前选择；拖动可移动场景。')+'\n\n3. 下方卡片显示所选地块；查看农事可看到真实条件和用途。\n\n4. 农历中点击作物，给已开垦的田地安排计划。\n\n5. 待办中的任务到期后仍需手动执行。\n\n6. 仓储里可进入商店；更多里有学习、修行和设置。',0,-20,590,730,28);}
+  private openHelp(){const body=this.panel('操作帮助','从一块地开始');this.ui.scrollText(body,(this.boardMode()?'1. 房屋与院前田位于中心单元中央。按田区向外扩展，道路、河流和院落不占游戏地块。\n\n2. 双指张合缩放地图。':'1. 点击地面选田，边框表示当前选择；拖动可移动场景。')+'\n\n3. 下方卡片显示所选地块；查看农事可看到真实条件和用途。\n\n4. 农历中点击作物，给已开垦的田地安排计划。\n\n5. 待办中的任务到期后仍需手动执行。\n\n6. 仓储里可进入商店；更多里有学习、修行和设置。\n\n7. 河流可供同高或较低的邻田引水；跨河探索需走桥。查看农事中的“水利与设施关系”了解实际覆盖。',0,-20,590,730,28);}
   private openPlots(page=0){
     const plots=this.obs.game.economy.farm.plots.filter((p:any)=>p.kind!=='unknown'||p.reachable),pages=Math.max(1,Math.ceil(plots.length/6));page=Math.max(0,Math.min(page,pages-1));
     const body=this.panel('选择田地','包含远处田地；点选后查看该田农事。');
@@ -263,11 +266,11 @@ export class FarmDemo extends Component {
   private plotActions(plan=false){const p=this.selected;return this.obs.game.actions.filter((a:any)=>{const parts=a.id.split(':');return parts[0]==='economy'&&(parts[2]===p||parts[2]?.startsWith(p+'-'))&&(plan?parts[1]==='plotplan':!['plotplan','farmuse','wait'].includes(parts[1]));});}
   private openPlot(page=0){
     const p=this.obs.game.economy.farm.plots.find((p:any)=>p.id===this.selected);if(!p)return;
-    const detail=p.kind==='unknown'?'探索后可查看地貌与农事':plotTitle(p)+' · '+(p.land?.soil||'')+' · 水分'+(p.land?.waterName||'未知')+(p.field?' · 肥力'+p.field.fertility:'');
-    this.actionList(plotName(p.id)+' · 农事',detail,this.plotActions(),page,p.kind==='field'?()=>this.openPlans():undefined);
+    const detail=p.kind==='unknown'?spatialDescription(p):plotTitle(p)+' · '+(p.land?.soil||'')+' · 水分'+(p.land?.waterName||'未知')+(p.field?' · 肥力'+p.field.fertility:'');
+    this.actionList(plotName(p.id)+' · 农事',detail,this.plotActions(),page,p.kind==='field'?()=>this.openPlans():undefined,()=>{const info=this.panel(plotName(p.id)+' · 场景关系','');this.ui.scrollText(info,spatialDescription(p),0,0,590,720,26);});
   }
   private shortReason(a:any){const r=a.reason||'';return /压力已为0/.test(r)?'压力已恢复':/尚未发现/.test(r)?'未发现种子':/播种窗口/.test(r)?'不在播种期':/理论|掌握|课程/.test(r)?'需先学习':/粮|食材/.test(r)?'需补给':/时间不足/.test(r)?'时间不足':'条件未满足';}
-  private actionList(title:string,subtitle:string,actions:any[],page=0,plan?:()=>void){
+  private actionList(title:string,subtitle:string,actions:any[],page=0,plan?:()=>void,details?:()=>void){
     const sorted=actions.map(a=>this.obs.game.actions.find((v:any)=>v.id===a.id)).filter(Boolean).sort((a:any,b:any)=>Number(b.enabled)-Number(a.enabled));
     const pages=Math.max(1,Math.ceil(sorted.length/3));page=Math.max(0,Math.min(page,pages-1));const body=this.panel(title,subtitle);
     if(!sorted.length)this.text(body,'当前没有对应行动。\n可查看农历、学习或选择其他田地。',0,60,28,this.C.ink,570,180);
@@ -278,8 +281,9 @@ export class FarmDemo extends Component {
       this.text(row,a.enabled?'查看并确认':this.shortReason(a)+' · 查看条件',-12,-66,25,a.enabled?this.C.green:this.C.warning,495,36);
       if(this.boardMode())this.icon(row,'next',248,-66,40);
       this.tap(row,playerText(a.label),()=>this.confirm(a));
-    });this.pager(body,page,pages,-366,p=>this.actionList(title,subtitle,actions,p,plan));
-    if(plan)this.button(body,'安排这块田的计划',0,-464,550,80,plan,true);
+    });if(details)this.ui.button(body,'水利与设施关系',0,-295,550,52,details);
+    this.pager(body,page,pages,-366,p=>this.actionList(title,subtitle,actions,p,plan,details));
+    if(plan)this.button(body,'安排这块田的计划',0,-464,550,80,plan,true);return body;
   }
   private confirm(a:any,task?:any){
     const body=this.panel(task?'处理待办':'行动确认','',1080,'action-confirm');const v=actionVisual(a);

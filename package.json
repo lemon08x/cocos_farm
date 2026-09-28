@@ -10,7 +10,13 @@
     "core": "node tools/build-core.mjs",
     "start": "node tools/serve.mjs",
     "build": "powershell -ExecutionPolicy Bypass -File tools/build.ps1",
-    "test:ui": "node tools/test-ui.mjs"
+    "test:ui": "node tools/test-ui.mjs",
+    "test:scene": "node tools/test-scene.mjs",
+    "tiles:prepare": "node tools/tile-art.mjs prepare",
+    "tiles:status": "node tools/tile-art.mjs status",
+    "tiles:normalize": "node tools/tile-art.mjs normalize",
+    "tiles:import": "node tools/tile-art.mjs import",
+    "test:tiles": "node tools/test-tile-art.mjs"
   },
   "dependencies": {
     "lunar-typescript": "1.8.6"

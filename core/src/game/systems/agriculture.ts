@@ -1,3 +1,4 @@
+import {SCENE_ID,SCENE_VERSION,isValidPlotCell,agriculturalNeighbors,explorationNeighbors,explorationStatus,adjacentSceneWater,sceneRange,buildSceneSnapshot} from '../scene/world.js';
 import {landscapeDescription,LANDSCAPE_NAMES} from './landscapes.js';
 import {discoveryText as FARM_EVENTS} from './narrative-adapter.js';
 import {solarTermDay,solarYearAt,lunarDateAt} from './calendar.js';
@@ -23,13 +24,8 @@ export function revealLand(s:GameState,p:FarmPlot):void {
 }
 /** Coverage excludes the origin; unknown cells never expose land properties. */
 export function farmCoverage(p:FarmPlot,range:4|8|12|24=4){
- const radius=range>=12?2:1,out:{id:string;x:number;y:number}[]=[];
- for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
-  if(!dx&&!dy)continue;
-  if(range===4&&Math.abs(dx)+Math.abs(dy)!==1||range===12&&Math.abs(dx)+Math.abs(dy)>2)continue;
-  out.push({id:plotId(p.x+dx,p.y+dy),x:p.x+dx,y:p.y+dy});
- }
- return out;
+ const radius=range>=12?2:1;
+ return sceneRange(p,radius).filter(id=>id!==p.id).map(id=>{const match=/^p(-?\d+)q(-?\d+)$/.exec(id)!;return {id,x:Number(match[1]),y:Number(match[2])};});
 }
 export function fieldPlot(s:GameState,f:Field){return Object.values(s.economy?.farm?.plots??{}).find(p=>plotField(s,p.id)===f);}
 export function fieldWaterLevel(s:GameState,f:Field):number {
@@ -46,8 +42,8 @@ export function drainOutlet(s:GameState,p:FarmPlot):boolean {
  if(!p.land)return false;
  const plots=s.economy!.farm!.plots,seen=new Set<string>(),queue=[p];
  while(queue.length){const at=queue.shift()!;if(seen.has(at.id))continue;seen.add(at.id);
-  // Preserve the original homestead outlets for existing drainage rules and saves.
-  if(at.x===0||at.y===0)return true;
+  // The river is an outlet only below this drain; grid axes are not outlets.
+  if(adjacentSceneWater(at).some(r=>r.capabilities.waterLevel!<at.land!.elevation))return true;
   for(const n of farmNeighbors(at)){const next=plots[n.id];if(!next?.land||next.kind==='unknown')continue;
    if(next.land.elevation<at.land!.elevation)return true;
    if(next.improvement==='drain'&&next.land.elevation===at.land!.elevation)queue.push(next);
@@ -59,7 +55,7 @@ export function drainOutlet(s:GameState,p:FarmPlot):boolean {
  *  adjacent connected plot is at equal or higher elevation (the chain never ascends). */
 function connectedCanalIds(s:GameState):Set<string>{
  const plots=s.economy?.farm?.plots??{},connected=new Set<string>(),queue:FarmPlot[]=[];
- for(const p of Object.values(plots))if(p.kind==='water'){connected.add(p.id);queue.push(p);}
+ for(const p of Object.values(plots))if(p.kind==='water'||(p.improvement==='canal'&&p.land&&adjacentSceneWater(p).some(r=>r.capabilities.waterLevel!>=p.land!.elevation))){connected.add(p.id);queue.push(p);}
  while(queue.length){const at=queue.shift()!;
   for(const n of farmNeighbors(at)){const next=plots[n.id];
    if(!next||connected.has(next.id)||next.improvement!=='canal'||!next.land||!at.land)continue;
@@ -73,9 +69,25 @@ export function waterConnected(s:GameState,p:FarmPlot):boolean{
  if(p.improvement!=='canal')return false;
  return connectedCanalIds(s).has(p.id);
 }
+/** Traverse channels before considering crop targets: canals are field-kind too. */
+export function irrigationTargets(s:GameState,start:FarmPlot):Set<string>{
+ const plots=s.economy!.farm!.plots,connected=connectedCanalIds(s),targets=new Set<string>();
+ if(start.improvement!=='canal'||!connected.has(start.id))return targets;
+ const seen=new Set([start.id]),queue=[start];
+ while(queue.length){const at=queue.shift()!;
+  for(const n of farmNeighbors(at)){const next=plots[n.id];
+   if(!next?.land||!at.land||next.land.elevation>at.land.elevation)continue;
+   if(next.improvement==='canal'&&connected.has(next.id)){
+    if(!seen.has(next.id)){seen.add(next.id);queue.push(next);}
+   }else if(next.kind==='field'&&next.purpose==='sowing')targets.add(next.id);
+  }
+ }
+ return targets;
+}
 /** Water reaches this plot: it is a spring itself or sits next to a connected one. */
 export function waterAccess(s:GameState,p:FarmPlot):boolean{
  if(p.kind==='water')return true;
+ if(p.land&&adjacentSceneWater(p).some(r=>r.capabilities.waterLevel!>=p.land!.elevation))return true;
  const plots=s.economy?.farm?.plots??{};
  return farmNeighbors(p).some(n=>{const q=plots[n.id];return !!q&&waterConnected(s,q)&&!!q.land&&!!p.land&&q.land.elevation>=p.land.elevation;});
 }
@@ -116,9 +128,9 @@ function neighborImprovement(s:GameState,p:FarmPlot,kind:FarmPlot['improvement']
  const plots=s.economy?.farm?.plots??{};
  return farmNeighbors(p).some(n=>plots[n.id]?.improvement===kind);
 }
-/** Chebyshev range ≤2 from any shed plot; used to halve base farm-work time. */
+/** Scene adjacency distance ≤2 from any shed plot; used to halve base farm-work time. */
 export function shedCovers(s:GameState,plot:FarmPlot):boolean{
- return Object.values(s.economy?.farm?.plots??{}).some(q=>q.improvement==='shed'&&Math.max(Math.abs(q.x-plot.x),Math.abs(q.y-plot.y))<=2);
+ const covered=new Set(sceneRange(plot,2));return Object.values(s.economy?.farm?.plots??{}).some(q=>q.improvement==='shed'&&covered.has(q.id));
 }
 /** Compost pits whose conversion finished by the given absolute day rot into compost. */
 export function pitReadyCheck(s:GameState,events:GameEvent[],day?:number):void{
@@ -168,7 +180,8 @@ export function farmBlocker(s: GameState, crop: Crop, worker?: Worker,f:Field=s.
   if (f.growth >= f.duration) return [];
   if (!s.life?.calendar&&f.tended === s.clock.absoluteTurn) return ['本季已管理田间'];
   if (!fieldNeedsWater(s,f)) return ['当前水分充足，等待作物生长'];
-  if (s.location.water < 1) return ['公共水不足'];
+  const at=fieldPlot(s,f);
+  if (!(at&&waterAccess(s,at))&&s.location.water < 1) return ['未接通水源且公共水不足'];
   return [];
 }
 export function farmWork(s: GameState, crop: Crop, events: GameEvent[], worker?: Worker,f:Field=s.economy!.field,heritage=false): void {
@@ -218,7 +231,7 @@ export function farmWork(s: GameState, crop: Crop, events: GameEvent[], worker?:
     f.lastCrop = f.crop;
     f.crop = null;delete f.variety;delete f.batch;
   } else {
-    s.location.water--;
+    const at=fieldPlot(s,f);if(!(at&&waterAccess(s,at)))s.location.water--;
     irrigateField(s,f);
     if (equipped(s, 'W01')) consumeEquipment(s, 'W01', events);
     f.tended = s.clock.absoluteTurn;
@@ -236,27 +249,27 @@ export const HOME_PLOT='p2q2';
 export const plotId=(x:number,y:number)=>`p${x}q${y}`;
 export function blankField():Field{return {crop:null,planted:0,moisture:0,growth:0,stress:0,fertility:2,lastCrop:null,tended:0,composted:false,bonus:0,duration:2};}
 export function plotField(s:GameState,id:string):Field|undefined{return id===HOME_PLOT?s.economy!.field:s.economy?.farm?.plots[id]?.field;}
-export function farmNeighbors(p:FarmPlot){return [[p.x-1,p.y],[p.x+1,p.y],[p.x,p.y-1],[p.x,p.y+1]].map(([x,y])=>({id:plotId(x,y),x,y}));}
+export function farmNeighbors(p:FarmPlot){return agriculturalNeighbors(p);}
 export function extendFarm(s:GameState,p:FarmPlot):void{
  const plots=s.economy!.farm!.plots;
- for(const n of farmNeighbors(p)){
+ for(const n of explorationNeighbors(p)){
   const startX=farmUnitStart(n.x),startY=farmUnitStart(n.y);
   for(let dy=0;dy<FARM_UNIT_SIZE;dy++)for(let dx=0;dx<FARM_UNIT_SIZE;dx++){
    const x=startX+dx,y=startY+dy,id=plotId(x,y);
-   plots[id]??={id,x,y,kind:'unknown'};
+   if(isValidPlotCell(x,y))plots[id]??={id,x,y,kind:'unknown'};
   }
  }
 }
 export function initializeFarm(s:GameState,rules:FarmRules):void{
  const plots:Record<string,FarmPlot>={};
- for(let y=1;y<=4;y++)for(let x=1;x<=5;x++){const id=plotId(x,y);plots[id]={id,x,y,kind:x<=3?'wild':'unknown'};}
+ for(let y=1;y<=4;y++)for(let x=1;x<=5;x++){const id=plotId(x,y);if(isValidPlotCell(x,y))plots[id]={id,x,y,kind:x<=3?'wild':'unknown'};}
  plots[HOME_PLOT].kind='field';
  plots[HOME_PLOT].purpose='sowing';
  for(const p of Object.values(plots))if(p.kind!=='unknown')revealLand(s,p);
  plots[HOME_PLOT].land!.soil='loam';plots[HOME_PLOT].land!.elevation=1;plots.p1q2.land!.elevation=2;
  for(const [id,key] of [['p1q2','spring'],['p3q2','fallow'],['p2q3','woodland']] as const){plots[id].kind='story';plots[id].discovery={id:key,resolved:false,outcome:''};}
 
- s.economy!.farm={calendarVersion:1,explorationVersion:3,landVersion:2,rareSeeds:0,rules:structuredClone(rules),plots,discovered:['wheat'],explored:0,neighbor:{personId:s.sect!.current[1],goods:{seedSoy:rules.neighborStock,seedFlax:rules.neighborStock,seedMallow:rules.neighborStock,seedRice:rules.neighborStock,wheat:0},field:{...blankField(),crop:'soy',duration:CROPS.soy.duration},talked:-1,traded:-1,helped:-1,busy:false}};
+ s.economy!.farm={scene:{id:SCENE_ID,version:SCENE_VERSION},calendarVersion:1,explorationVersion:3,landVersion:2,rareSeeds:0,rules:structuredClone(rules),plots,discovered:['wheat'],explored:0,neighbor:{personId:s.sect!.current[1],goods:{seedSoy:rules.neighborStock,seedFlax:rules.neighborStock,seedMallow:rules.neighborStock,seedRice:rules.neighborStock,wheat:0},field:{...blankField(),crop:'soy',duration:CROPS.soy.duration},talked:-1,traded:-1,helped:-1,busy:false}};
  for(const p of Object.values(plots))if(p.kind!=='unknown')extendFarm(s,p);
  s.economy!.goods.seedSoy=0;s.economy!.goods.seedFlax=0;
  const id=s.sect!.current[1];s.economy!.branches!.learned[id]=['A0','A4'];s.persons[id].practices.push('technology:A0','technology:A4');
@@ -264,7 +277,7 @@ export function initializeFarm(s:GameState,rules:FarmRules):void{
 export function farmView(s:GameState){
  const f=s.economy?.farm;if(!f)return undefined;
  const id=s.sect!.current[1],v=s.persons[id].vitality!,trust=activePerson(s).vitality?.experiences?.relationships[id]??0;
- return {otherUseUnlocked:otherFarmUseUnlocked(s),construction:Object.entries(FARM_PROJECT_TECH).map(([kind,technology])=>({kind,technology,unlocked:branchHas(s,technology)})),schedule:farmScheduleView(s),techniques:{rotation:branchHas(s,'A5'),seedSelection:branchHas(s,'A6'),scouting:branchHas(s,'A11'),paddy:branchHas(s,'A12'),dryland:branchHas(s,'A13'),relay:branchHas(s,'A14'),garden:branchHas(s,'A15'),nursery:equipped(s,'U10'),drainage:equipped(s,'U08'),harvestTools:equipped(s,'U04')},homeId:HOME_PLOT,rareSeeds:f.rareSeeds,discovered:[...f.discovered],plots:Object.values(f.plots).map(p=>{const field=plotField(s,p.id);return {...(p.landscape?{landscape:{...p.landscape,name:LANDSCAPE_NAMES[p.landscape.kind],description:landscapeDescription(s,p)}}:{}),id:p.id,x:p.x,y:p.y,kind:p.kind,purpose:p.purpose,...(p.kind==='field'&&p.purpose==='sowing'?{labor:{sow:farmLabor(s,p,'farmplot','wheat','sow'),harvest:farmLabor(s,p,'farmplot','wheat','harvest')}}:{}),category:p.kind==='field'?'production' as const:'wilderness' as const,land:landView(s,p),plans:structuredClone(p.plans??[]),...(p.wild?{wild:{kind:p.wild.kind,stock:p.wild.stock,expires:p.wild.expires,expiresDate:p.wild.stock?lunarDateAt(s.life!.calendar!.rules.referenceYear,p.wild.expires).date:null,nextSeason:p.wild.kind==='yam'?'霜降至次年立春':null}}:{}),...(p.kind==='field'&&field?{field:{...field},harvest:fieldYield(s,field),maturity:field.crop?maturityView(s,field):null}:{}),...(p.kind==='unknown'?{reachable:farmNeighbors(p).some(n=>f.plots[n.id]&&f.plots[n.id].kind!=='unknown')}:{}),...(p.project?{project:{...p.project,name:FARM_PROJECT_NAMES[p.project.kind],stage:p.project.done<p.project.total/2?'整备':'施工',remaining:p.project.total-p.project.done}}:{}),...(p.improvement?{improvement:p.improvement}:{}),...(p.pit?{pit:{readyDay:p.pit.readyDay,remainingDays:Math.max(0,Math.ceil(p.pit.readyDay-(s.life?.calendar?.absoluteDay??0)))}}:{}),...(p.kind==='water'||p.improvement==='canal'?{waterConnected:waterConnected(s,p)}:{}),waterAccess:waterAccess(s,p),...(p.discovery?{discovery:{...p.discovery,...FARM_EVENTS[p.discovery.id]}}:{}),...(p.fertility!==undefined?{fertility:p.fertility}:{})};}),neighbor:{id,title:v.sex==='female'?'师姐':'师兄',name:s.persons[id].name,alive:v.alive,trust,busy:f.neighbor.busy,offers:{seedSoy:f.neighbor.goods.seedSoy??0,seedFlax:f.neighbor.goods.seedFlax??0,seedMallow:f.neighbor.goods.seedMallow??0,...(isCanalBuilt(s)?{seedRice:f.neighbor.goods.seedRice??0}:{})},description:'独立同门，不可切换控制；自己的田地与物资独立结算'},rules:{...f.rules}};
+ return {scene:buildSceneSnapshot(Object.values(f.plots)),otherUseUnlocked:otherFarmUseUnlocked(s),construction:Object.entries(FARM_PROJECT_TECH).map(([kind,technology])=>({kind,technology,unlocked:branchHas(s,technology)})),schedule:farmScheduleView(s),techniques:{rotation:branchHas(s,'A5'),seedSelection:branchHas(s,'A6'),scouting:branchHas(s,'A11'),paddy:branchHas(s,'A12'),dryland:branchHas(s,'A13'),relay:branchHas(s,'A14'),garden:branchHas(s,'A15'),nursery:equipped(s,'U10'),drainage:equipped(s,'U08'),harvestTools:equipped(s,'U04')},homeId:HOME_PLOT,rareSeeds:f.rareSeeds,discovered:[...f.discovered],plots:Object.values(f.plots).map(p=>{const field=plotField(s,p.id);return {...(p.landscape?{landscape:{...p.landscape,name:LANDSCAPE_NAMES[p.landscape.kind],description:landscapeDescription(s,p)}}:{}),id:p.id,x:p.x,y:p.y,kind:p.kind,purpose:p.purpose,...(p.kind==='field'&&p.purpose==='sowing'?{labor:{sow:farmLabor(s,p,'farmplot','wheat','sow'),harvest:farmLabor(s,p,'farmplot','wheat','harvest')}}:{}),category:p.kind==='field'?'production' as const:'wilderness' as const,land:landView(s,p),plans:structuredClone(p.plans??[]),...(p.wild?{wild:{kind:p.wild.kind,stock:p.wild.stock,expires:p.wild.expires,expiresDate:p.wild.stock?lunarDateAt(s.life!.calendar!.rules.referenceYear,p.wild.expires).date:null,nextSeason:p.wild.kind==='yam'?'霜降至次年立春':null}}:{}),...(p.kind==='field'&&field?{field:{...field},harvest:fieldYield(s,field),maturity:field.crop?maturityView(s,field):null}:{}),...(p.kind==='unknown'?{reachable:explorationStatus(f.plots,p).reachable,explorationReason:explorationStatus(f.plots,p).reason}:{}),...(p.project?{project:{...p.project,name:FARM_PROJECT_NAMES[p.project.kind],stage:p.project.done<p.project.total/2?'整备':'施工',remaining:p.project.total-p.project.done}}:{}),...(p.improvement?{improvement:p.improvement}:{}),...(p.pit?{pit:{readyDay:p.pit.readyDay,remainingDays:Math.max(0,Math.ceil(p.pit.readyDay-(s.life?.calendar?.absoluteDay??0)))}}:{}),...(p.kind==='water'||p.improvement==='canal'?{waterConnected:waterConnected(s,p)}:{}),waterAccess:waterAccess(s,p),spatial:spatialView(s,p),...(p.discovery?{discovery:{...p.discovery,...FARM_EVENTS[p.discovery.id]}}:{}),...(p.fertility!==undefined?{fertility:p.fertility}:{})};}),neighbor:{id,title:v.sex==='female'?'师姐':'师兄',name:s.persons[id].name,alive:v.alive,trust,busy:f.neighbor.busy,offers:{seedSoy:f.neighbor.goods.seedSoy??0,seedFlax:f.neighbor.goods.seedFlax??0,seedMallow:f.neighbor.goods.seedMallow??0,...(isCanalBuilt(s)?{seedRice:f.neighbor.goods.seedRice??0}:{})},description:'独立同门，不可切换控制；自己的田地与物资独立结算'},rules:{...f.rules}};
 }
 export function growField(s:GameState,f:Field,events:GameEvent[],id:string):void{
  if(!f.crop)return;
@@ -296,6 +309,7 @@ export function settleNeighbor(s:GameState):void{
 
 export function exploreFarm(s:GameState,id:string,events:GameEvent[]):void{
  const farm=s.economy!.farm!,p=farm.plots[id];
+ if(!p||p.kind!=='unknown'||!explorationStatus(farm.plots,p).reachable)throw new Error('此区域尚不可探索');
  revealLand(s,p);
  const key:FarmDiscovery=id==='p4q1'?'mushroom':id==='p4q2'?'yam':FARM_DISCOVERIES[Math.min(FARM_DISCOVERIES.length-1,Math.floor(draw(s)*FARM_DISCOVERIES.length))];
  p.kind=key==='oldtree'?'tree':key==='boulder'?'rock':key==='brambles'?'brush':['meadow','mushroom','yam'].includes(key)?'wild':'story';
@@ -378,11 +392,11 @@ export function workFarmProject(s:GameState,id:string,kind:import('../model/econ
   if(kind==='canal'||kind==='shelter'||kind==='drain'){
    if(kind==='shelter')p.kind='rock';
    p.improvement=kind;
-   detail+='；'+(kind==='canal'?'沿高程不升的渠链通水，相邻田可开闸灌溉。':kind==='drain'?'有低位出口时，相邻田过湿退档快一天。':'正交四格失水变慢。');
+   detail+='；'+(kind==='canal'?'沿高程不升的渠链通水，相邻田可开闸灌溉。':kind==='drain'?'有低位出口时，相邻田过湿退档快一天。':'场景相邻田块失水变慢。');
   }
   else if(kind==='yard'||kind==='cellar'||kind==='pit'||kind==='shed'||kind==='retting'){
    p.improvement=kind;
-   detail+='；'+({yard:'正交相邻田正常收获期延长7天，仍会绝收。',cellar:'正交相邻田收获额外留种1份，异穗麦额外留1份异穗麦种。',pit:'投料3份秸秆，腐熟转化后得2份堆肥。',shed:'两格内的田播种、浇水、收获的基础时间减半。',retting:'开放沤麻工序：2份亚麻茎跨季沤为1份亚麻纤维。'} as const)[kind];
+   detail+='；'+({yard:'场景相邻田正常收获期延长7天，仍会绝收。',cellar:'场景相邻田收获额外留种1份，异穗麦额外留1份异穗麦种。',pit:'投料3份秸秆，腐熟转化后得2份堆肥。',shed:'场景相邻两步内的田播种、浇水、收获的基础时间减半。',retting:'开放沤麻工序：2份亚麻茎跨季沤为1份亚麻纤维。'} as const)[kind];
   }
   else if(kind==='paddy'){if(p.land){p.land.paddy=true;p.land.water=3;p.land.dryDays=0;p.land.wetDays=0;p.land.drainDays=0;}detail+='；田块改为水田，每日保持蓄水，可播种水稻等耐涝作物。';}
   else if(kind==='timber'){changeGoods(s,{wood:farm.rules.timberYield},1,events,'林地采木');p.kind='wild';delete p.project;detail+='；木材入库，留下可开垦荒地。';}
@@ -409,4 +423,14 @@ export function startFarmProject(s:GameState,id:string,kind:import('../model/eco
  if(kind==='yard'||kind==='cellar'||kind==='retting')changeGoods(s,{wood:farm.rules.projectWood},-1,events,'设施工程备料');
  if(kind==='shed')changeGoods(s,{wood:1},-1,events,'设施工程备料');
  p.project={kind,done:0,total};
+}
+
+/** Rule-derived explanations shared by HUD and map; unknown terrain is never exposed. */
+export function spatialView(s:GameState,p:FarmPlot){
+ if(p.kind==='unknown')return undefined;
+ const plots=s.economy!.farm!.plots,adj=farmNeighbors(p).map(n=>plots[n.id]).filter(Boolean);
+ const sources=[...(p.kind==='water'?[p.id]:[]),...adjacentSceneWater(p).filter(r=>p.land&&r.capabilities.waterLevel!>=p.land.elevation).map(r=>r.regionId),...adj.filter(q=>waterConnected(s,q)&&q.land&&p.land&&q.land.elevation>=p.land.elevation).map(q=>q.id)];
+ const coverage:{plotId:string;kind:string}[]=adj.filter(q=>['shelter','yard','cellar'].includes(q.improvement??'')).map(q=>({plotId:q.id,kind:q.improvement!}));
+ const range=new Set(sceneRange(p,2));for(const q of Object.values(plots)){if(q.improvement==='shed'&&range.has(q.id))coverage.push({plotId:q.id,kind:q.improvement});if(q.landscape?.kind==='garden'&&range.has(q.id))coverage.push({plotId:q.id,kind:'garden'});}
+ return {waterSources:sources,drainOutlet:p.improvement==='drain'?drainOutlet(s,p):false,coverage};
 }

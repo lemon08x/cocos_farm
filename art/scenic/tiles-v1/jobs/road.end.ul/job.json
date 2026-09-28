@@ -1,0 +1,44 @@
+{
+  "id": "road.end.ul",
+  "kind": "ground",
+  "entry": {
+    "id": "road.end.ul",
+    "family": "road",
+    "layer": "ground",
+    "sockets": {
+      "ul": "road",
+      "ur": "grass",
+      "lr": "grass",
+      "ll": "grass"
+    },
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "土路与两侧草地；仅指定的边开放路口"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "templateHashes": [
+    "81001307391104ed451fdb40c2c0c27a535dc51268579e6d2cfb08715165eb3c",
+    "61f8625de077efff60439c089fc40b0c23be95251ac273549a56ab93d16e1c42"
+  ]
+}

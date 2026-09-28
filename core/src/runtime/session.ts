@@ -1,3 +1,4 @@
+import {SCENE_ID,SCENE_VERSION,isValidPlotCell} from '../game/scene/world.js';
 import {validNarrative} from '../game/systems/narrative-adapter.js';
 import type {GameState} from '../game/model/state.js';
 import {cropBatches} from '../game/systems/farm-calendar.js';
@@ -73,11 +74,12 @@ export function parseSession(value: unknown): Session {
   if(!isRecord(economy)||!isRecord(economy.farm))farmInvalid();
   const farm=(economy as Record<string,any>).farm;
   const validField=(f:unknown)=>isRecord(f)&&[null,...Object.keys(CROPS)].includes(f.crop as null|string)&&[null,...Object.keys(CROPS)].includes(f.lastCrop as null|string)&&['planted','moisture','growth','stress','fertility','tended','bonus','duration'].every(k=>finite(f[k]))&&Number(f.fertility)<=3&&Number(f.duration)>=1&&typeof f.composted==='boolean'&&(f.variety===undefined||f.variety==='heritage'&&f.crop==='wheat');
+  if(!isRecord(farm.scene)||farm.scene.id!==SCENE_ID||farm.scene.version!==SCENE_VERSION)throw new Error('场景存档版本无法识别，原存档保留。');
   if(farm.calendarVersion!==1||farm.landVersion!==2||farm.explorationVersion!==3||!Number.isSafeInteger(farm.rareSeeds)||farm.rareSeeds<0)farmInvalid();
   if(!isRecord(farm.rules)||canonical(farm.rules)!==canonical(record.manifest.ruleset.farm)||!isRecord(farm.plots)||!Array.isArray(farm.discovered)||!farm.discovered.includes('wheat')||new Set(farm.discovered).size!==farm.discovered.length||farm.discovered.some((c:unknown)=>!Object.keys(CROPS).includes(String(c)))||!Number.isSafeInteger(farm.explored)||farm.explored<0)farmInvalid();
   if(!validField((economy as Record<string,any>).field)||farm.plots.p2q2?.kind!=='field')farmInvalid();
   for(const [id,raw] of Object.entries(farm.plots)){
-    if(!isRecord(raw)||raw.id!==id||!Number.isSafeInteger(raw.x)||!Number.isSafeInteger(raw.y)||id!==`p${raw.x}q${raw.y}`||!['unknown','wild','field','tree','rock','brush','story','water'].includes(String(raw.kind)))farmInvalid();
+    if(!isRecord(raw)||raw.id!==id||!Number.isSafeInteger(raw.x)||!Number.isSafeInteger(raw.y)||id!==`p${raw.x}q${raw.y}`||!isValidPlotCell(Number(raw.x),Number(raw.y))||!['unknown','wild','field','tree','rock','brush','story','water'].includes(String(raw.kind)))farmInvalid();
     const p=raw as Record<string,any>;
     if(p.kind==='field'?!['sowing','other'].includes(p.purpose):p.purpose!==undefined)farmInvalid();
     if(p.kind==='field'&&id!=='p2q2'?!validField(p.field):p.field!==undefined)farmInvalid();

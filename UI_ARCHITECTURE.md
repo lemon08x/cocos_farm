@@ -1,8 +1,8 @@
 # 当前 UI 架构
 
-当前默认主场景为 scenic revision-2「田园场景」。旧用户场景偏好一次性迁移到 scenic，后续主动选择仍保留；游戏存档不变。后续地图与逻辑以此主场景为基准，实施问题及处理顺序见 [主场景后续方案](docs/scenic-main-scene-followup.md)。
+当前默认主场景为 scenic revision-2「田园场景」。旧用户场景偏好一次性迁移到 scenic，后续主动选择仍保留；游戏使用新的 v2 存档，旧游戏进度按用户决定清除。地图与逻辑共用场景定义，见 [场景系统](docs/scenic-scene-system.md)。
 
-本 Demo 使用运行时生成的 Cocos UI。农业规则、行动成本与存档格式保持原有接口；展示层只读取公开观察并提交行动 ID。
+本 Demo 使用运行时生成的 Cocos UI。农业空间规则由核心场景模块提供，行动继续使用原有 ID，存档包含场景版本；展示层只读取公开观察并提交行动 ID。
 
 ## 页面与交互
 
@@ -29,16 +29,17 @@
 | art/ArtRenderer.ts / ArtPack.ts | 风格资源、图片和底板渲染、资源生命周期 |
 | FarmCore / core/bridge.ts | 沿用 submitCommand → transition → observeSession 的规则调用链 |
 
-## 田园场景（scenic，第二版）
+## 田园主场景（scenic）
 
-第二版地图表现经 WorldViewRegistry 注册为 `scenic`，由「更多 → 场景版本」切换；切换只重建视图层，规则、存档与页面栈不动。几何约定：逻辑坐标 → 世界像素 `wx=(x−y)·150`、`wy=(x+y−4)·90`（p2q2 在原点）；地面单元菱形 300×180，地块耕作四边形 228×142，两者之间为道路/田埂/河岸环境带；河流只经共享边中点衔接，不走角点。v1 的固定 2:1、260×130 菱形与角点连接约定已废弃。
+第二版地图表现经 WorldViewRegistry 注册为 `scenic`，默认进入，也可由「更多 → 下一页 → 设置 → 场景版本」切换；切换只重建视图层，规则、存档与页面栈不动。几何约定：逻辑坐标 → 世界像素 `wx=(x−y)·150`、`wy=(x+y−4)·90`（p2q2 在原点）；地面单元菱形 300×180，地块耕作四边形 228×142，两者之间为道路/田埂/河岸环境带；河流只经共享边中点衔接，不走角点。v1 的固定 2:1、260×130 菱形与角点连接约定已废弃。
 
 | 模块 | 职责 |
 | --- | --- |
-| view/world/scenic/ScenicProjection.ts | 投影、单元菱形/地块四边形、边中点端口、线段与多边形纯几何 |
-| view/world/scenic/ScenicLayout.ts | 地块排布、默认镜头、缩放/拖动约束与分区中心 |
-| view/world/scenic/ScenicRegionLayout.ts | 院落、河流链、环路、树冠等环境区域的单元占用模型 |
-| view/world/scenic/ScenicLayoutValidation.ts | 布局离线校验（房屋/河流/桥/道路/树冠），供回归测试使用 |
+| core/src/game/scene/ | 场景定义、区域生成、边界与探索/农业/水流关系；无 Cocos 依赖 |
+| view/world/scenic/ScenicProjection.ts | 核心几何导出的薄封装 |
+| view/world/scenic/ScenicLayout.ts | 核心布局导出的薄封装；镜头范围来自当前场景快照 |
+| view/world/scenic/ScenicRegionLayout.ts | 导出核心场景与有效地块区域，不再保留另一套区域计算 |
+| view/world/scenic/ScenicLayoutValidation.ts | 检查实际场景区域、地块对应关系和连接端点；无预留格豁免 |
 | view/world/scenic/ScenicHitTest.ts | 世界坐标 → 地块命中（四边形判定，环境带不命中） |
 | view/world/scenic/ScenicWorldView.ts | 分层渲染（地面/雾/河流/地块/道路/环境/叠加）、镜头、focusPlot 与选中脉冲 |
 | view/world/scenic/ScenicChunkStore.ts | 环境装饰按块确定性生成、可见性缓存与释放 |
@@ -49,6 +50,12 @@
 | presentation/FarmViewModel.ts | HUD 视图模型；新增 fieldShort 与 todoBadge 供田园 HUD 使用 |
 
 ## 布局与可读性
+
+### 完整四边形素材生产契约（待运行时接入）
+
+`core/src/game/scene/tile-art.ts` 定义 600×360 源图、300×180 显示尺寸、四边接口、占地和独立对象锚点。`tools/tile-art.mjs` 生成模板、登记 AI 原图、检查来源与透明区，再用公共 AI 接缝母版合成完整地面。生成包只写入 `build/tile-art/`，当前渲染器不读取它。完整目录及场景单元映射的剩余工作见 [图块规范](art/scenic/tiles-v1/SPEC.md)。
+
+图片契约不生成 FarmPlot、不判断探索与水流，也不允许根据图中道路颜色推导规则。后续需要让场景单元声明接口并选取素材，再统一驱动地图、小地图和命中；不能仅把新 PNG 替换进旧河流覆盖层。
 
 以 720 为设计宽度，启动时按竖屏视口比例扩展设计高度；桌面横向窗口保留竖屏画幅。HUD 按顶部/底部定位，读取 Cocos 安全区并保留基础边距。手机浏览器中的系统刘海行为仍需真机确认。
 

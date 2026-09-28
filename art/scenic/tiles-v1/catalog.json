@@ -1,0 +1,1931 @@
+{
+  "spec": {
+    "id": "scenic-tiles",
+    "version": 1,
+    "display": {
+      "width": 300,
+      "height": 180
+    },
+    "source": {
+      "width": 600,
+      "height": 360
+    },
+    "anchor": [
+      0.5,
+      0.5
+    ],
+    "anchorOrigin": "top-left",
+    "light": "upper-left",
+    "rotationAllowed": false,
+    "edgeStrip": {
+      "width": 352,
+      "height": 96,
+      "lockDepth": 16,
+      "blendDepth": 16
+    },
+    "corner": {
+      "size": 80,
+      "lockRadius": 16,
+      "blendRadius": 16
+    },
+    "sockets": {
+      "grass": {
+        "opening": 0
+      },
+      "road": {
+        "opening": 0.24
+      },
+      "river": {
+        "opening": 0.4
+      }
+    },
+    "objectTopMargin": 360
+  },
+  "edgeRules": {
+    "ul": {
+      "opposite": "lr",
+      "dx": -1,
+      "dy": 0,
+      "axis": "x",
+      "side": 1,
+      "start": [
+        300,
+        0
+      ],
+      "end": [
+        0,
+        180
+      ]
+    },
+    "ur": {
+      "opposite": "ll",
+      "dx": 0,
+      "dy": -1,
+      "axis": "y",
+      "side": 1,
+      "start": [
+        300,
+        0
+      ],
+      "end": [
+        600,
+        180
+      ]
+    },
+    "lr": {
+      "opposite": "ul",
+      "dx": 1,
+      "dy": 0,
+      "axis": "x",
+      "side": -1,
+      "start": [
+        600,
+        180
+      ],
+      "end": [
+        300,
+        360
+      ]
+    },
+    "ll": {
+      "opposite": "ur",
+      "dx": 0,
+      "dy": 1,
+      "axis": "y",
+      "side": -1,
+      "start": [
+        0,
+        180
+      ],
+      "end": [
+        300,
+        360
+      ]
+    }
+  },
+  "digest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "jobs": [
+    {
+      "id": "grass.0",
+      "kind": "ground",
+      "entry": {
+        "id": "grass.0",
+        "family": "grass",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "完整草地，中心细节可变化，边缘服从公共接口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "grass.1",
+      "kind": "ground",
+      "entry": {
+        "id": "grass.1",
+        "family": "grass",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 1,
+        "description": "完整草地，中心细节可变化，边缘服从公共接口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "grass.2",
+      "kind": "ground",
+      "entry": {
+        "id": "grass.2",
+        "family": "grass",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 2,
+        "description": "完整草地，中心细节可变化，边缘服从公共接口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "field.dry.0",
+      "kind": "ground",
+      "entry": {
+        "id": "field.dry.0",
+        "family": "field.dry",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "干燥耕地，土壤和田埂位于内部，完整草地外缘"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "field.wet.0",
+      "kind": "ground",
+      "entry": {
+        "id": "field.wet.0",
+        "family": "field.wet",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "湿润耕地，保持与干地相同的田埂及草地外缘"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "courtyard.0",
+      "kind": "ground",
+      "entry": {
+        "id": "courtyard.0",
+        "family": "courtyard",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "院落地面，石土细节在内部，草地外缘，不含房屋"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.end.ul",
+      "kind": "ground",
+      "entry": {
+        "id": "road.end.ul",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.end.ur",
+      "kind": "ground",
+      "entry": {
+        "id": "road.end.ur",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "road",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.turn.ul-ur",
+      "kind": "ground",
+      "entry": {
+        "id": "road.turn.ul-ur",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "road",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.end.lr",
+      "kind": "ground",
+      "entry": {
+        "id": "road.end.lr",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "road",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.straight.ul-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "road.straight.ul-lr",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "grass",
+          "lr": "road",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.turn.ur-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "road.turn.ur-lr",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "road",
+          "lr": "road",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.tee.ul-ur-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "road.tee.ul-ur-lr",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "road",
+          "lr": "road",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.end.ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.end.ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.turn.ul-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.turn.ul-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.straight.ur-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.straight.ur-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "road",
+          "lr": "grass",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.tee.ul-ur-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.tee.ul-ur-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "road",
+          "lr": "grass",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.turn.lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.turn.lr-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "road",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.tee.ul-lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.tee.ul-lr-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "grass",
+          "lr": "road",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.tee.ur-lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.tee.ur-lr-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "road",
+          "lr": "road",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "road.cross.ul-ur-lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "road.cross.ul-ur-lr-ll",
+        "family": "road",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "road",
+          "lr": "road",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "土路与两侧草地；仅指定的边开放路口"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.end.ul",
+      "kind": "ground",
+      "entry": {
+        "id": "river.end.ul",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.end.ur",
+      "kind": "ground",
+      "entry": {
+        "id": "river.end.ur",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "river",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.turn.ul-ur",
+      "kind": "ground",
+      "entry": {
+        "id": "river.turn.ul-ur",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "river",
+          "lr": "grass",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.end.lr",
+      "kind": "ground",
+      "entry": {
+        "id": "river.end.lr",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "river",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.straight.ul-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "river.straight.ul-lr",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "grass",
+          "lr": "river",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.turn.ur-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "river.turn.ur-lr",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "river",
+          "lr": "river",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.tee.ul-ur-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "river.tee.ul-ur-lr",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "river",
+          "lr": "river",
+          "ll": "grass"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.end.ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.end.ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.turn.ul-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.turn.ul-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "grass",
+          "lr": "grass",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.straight.ur-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.straight.ur-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "river",
+          "lr": "grass",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.tee.ul-ur-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.tee.ul-ur-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "river",
+          "lr": "grass",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.turn.lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.turn.lr-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "grass",
+          "lr": "river",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.tee.ul-lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.tee.ul-lr-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "grass",
+          "lr": "river",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "river.tee.ur-lr-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "river.tee.ur-lr-ll",
+        "family": "river",
+        "layer": "ground",
+        "sockets": {
+          "ul": "grass",
+          "ur": "river",
+          "lr": "river",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "bridge.ul-lr",
+      "kind": "ground",
+      "entry": {
+        "id": "bridge.ul-lr",
+        "family": "bridge",
+        "layer": "ground",
+        "sockets": {
+          "ul": "road",
+          "ur": "river",
+          "lr": "road",
+          "ll": "river"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "一格完整河流和跨河桥面；道路连接桥的两端，河水从另一对边穿过"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "bridge.ur-ll",
+      "kind": "ground",
+      "entry": {
+        "id": "bridge.ur-ll",
+        "family": "bridge",
+        "layer": "ground",
+        "sockets": {
+          "ul": "river",
+          "ur": "road",
+          "lr": "river",
+          "ll": "road"
+        },
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "一格完整河流和跨河桥面；道路连接桥的两端，河水从另一对边穿过"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "crop.wheat.growing",
+      "kind": "crop",
+      "entry": {
+        "id": "crop.wheat.growing",
+        "family": "crop",
+        "layer": "crop",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "小麦生长期；仅作物，背景及行间透明，无土壤底图"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "crop.wheat.mature",
+      "kind": "crop",
+      "entry": {
+        "id": "crop.wheat.mature",
+        "family": "crop",
+        "layer": "crop",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "小麦成熟期；仅作物，背景及行间透明，无土壤底图"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "crop.default.growing",
+      "kind": "crop",
+      "entry": {
+        "id": "crop.default.growing",
+        "family": "crop",
+        "layer": "crop",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "通用作物生长期；仅作物，背景及行间透明，无土壤底图"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "crop.default.mature",
+      "kind": "crop",
+      "entry": {
+        "id": "crop.default.mature",
+        "family": "crop",
+        "layer": "crop",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "通用作物成熟期；仅作物，背景及行间透明，无土壤底图"
+      },
+      "width": 600,
+      "height": 360,
+      "origin": {
+        "x": 300,
+        "y": 180
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "object.tree",
+      "kind": "object",
+      "entry": {
+        "id": "object.tree",
+        "family": "tree",
+        "layer": "object",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "variant": 0,
+        "description": "树干与树冠，地面外透明，树根对齐地面中心；不附带草地底板"
+      },
+      "width": 600,
+      "height": 720,
+      "origin": {
+        "x": 300,
+        "y": 540
+      },
+      "anchor": [
+        0.5,
+        0.75
+      ],
+      "centers": [
+        {
+          "x": 300,
+          "y": 540
+        }
+      ]
+    },
+    {
+      "id": "object.house",
+      "kind": "object",
+      "entry": {
+        "id": "object.house",
+        "family": "house",
+        "layer": "object",
+        "footprint": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 1,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 1
+          },
+          {
+            "x": 1,
+            "y": 1
+          }
+        ],
+        "variant": 0,
+        "description": "占地 2×2 单元的完整农舍建筑，屋顶可向上伸出；不生成四栋房屋，不附带院落地面"
+      },
+      "width": 1200,
+      "height": 1080,
+      "origin": {
+        "x": 600,
+        "y": 540
+      },
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "centers": [
+        {
+          "x": 600,
+          "y": 540
+        },
+        {
+          "x": 900,
+          "y": 720
+        },
+        {
+          "x": 300,
+          "y": 720
+        },
+        {
+          "x": 600,
+          "y": 900
+        }
+      ]
+    },
+    {
+      "id": "edge.grass.x",
+      "kind": "edge",
+      "socket": "grass",
+      "axis": "x",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "edge.grass.y",
+      "kind": "edge",
+      "socket": "grass",
+      "axis": "y",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "edge.road.x",
+      "kind": "edge",
+      "socket": "road",
+      "axis": "x",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "edge.road.y",
+      "kind": "edge",
+      "socket": "road",
+      "axis": "y",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "edge.river.x",
+      "kind": "edge",
+      "socket": "river",
+      "axis": "x",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "edge.river.y",
+      "kind": "edge",
+      "socket": "river",
+      "axis": "y",
+      "width": 352,
+      "height": 96
+    },
+    {
+      "id": "corner.grass",
+      "kind": "corner",
+      "width": 80,
+      "height": 80
+    }
+  ],
+  "technicalTemplatesOnly": true,
+  "templateHashes": [
+    "fa147c34c8925f0f05ce40a98c47399e4f3fe60cab2675214812a6e74e63501e",
+    "91f3e39d117d7fa4bc6d393af6111ea36d1a14eead1936bbb541952506c11fe1",
+    "fa147c34c8925f0f05ce40a98c47399e4f3fe60cab2675214812a6e74e63501e",
+    "91f3e39d117d7fa4bc6d393af6111ea36d1a14eead1936bbb541952506c11fe1",
+    "fa147c34c8925f0f05ce40a98c47399e4f3fe60cab2675214812a6e74e63501e",
+    "91f3e39d117d7fa4bc6d393af6111ea36d1a14eead1936bbb541952506c11fe1",
+    "9dfdfe637c10b12541c9c3817a834eef29e140001f91bac6363fdb2efd329e1d",
+    "137808b3f169b28585d6c90bff1ee032083742f53408aa6f26c4b6bb98813929",
+    "8b7f6aa638b8082c1352c095a6293fe13afa3821921002b509c02fa46a1f711f",
+    "d8ac006a71cda3032a1ae99e5006f592c899a3cc5e90509ca187efa677aadec4",
+    "848c709c6d6cbed358ccb705682b4821ed6d0dda5d9cca4d0c9f064da4a785c9",
+    "742af86a04c7dd0a39b284dcd6f925f33caee44d118eccd1f5f3b0c1099fa3fa",
+    "81001307391104ed451fdb40c2c0c27a535dc51268579e6d2cfb08715165eb3c",
+    "61f8625de077efff60439c089fc40b0c23be95251ac273549a56ab93d16e1c42",
+    "70c0c5df147dcb5b5adc46a3f5306e1837bbdcfa902a2b819996956cca5d0b15",
+    "268635e23ad6daff639f0730e95cd6b9b921aca25a067aeaba9b21adc1c6dc97",
+    "f765e2138bd2f3154db7fab7d5ed1df37ee9041971e52261e3dd0961b0c23d75",
+    "8645e9c2113204be3607b249f70ebcd59c81170ae0591c3156a9e902bac7dcbe",
+    "6d607a80feacb81d37c7b79f72cd1194f5f75bea87166a7a39f972e9c9807d4d",
+    "677b9f8c79ca0c67acb2b41a92040177ec7a44e2206db0d042c40b4937a2505e",
+    "5dbd4a67c7b27abf0080faf375b91b1c0d4cafeb8ffa89cde2da21b530c7e009",
+    "ef63b2b010d011a20062e12f08620dce968356d86c6c09c8b7a12b53b60b3183",
+    "930806473ea1b04c576bd4802d4520f69e839782246a3534aa6b32d9f9de5381",
+    "ee7eb8672df5723ead781f0c36406cb7f111de1b0b36c0a7292f895ef8fa3a12",
+    "781d74b386593db4acff0a23b9a261e4600027527e1f5b9500b04408dcce0a4e",
+    "d9ae9387cdce9a8d1c43e900cadb4f4450d9fbfea7659d18d9b82c769db5d919",
+    "3e7fde243b096ec837951cb97dbc87a71deef755278c23d2d1b7ab0c7ad4ffc1",
+    "91ad3dc10dbde16c19dc809da3d0bda8c58b6760dcf46e617fd22f0689bf6600",
+    "728cd81acd43f8d7024de268f1a6ba62b104eae5cd55b27d214eadaefc3d5044",
+    "44699069b1f6172c7e1ca7d061acb72638f201f4c06466865d50bdea8363e284",
+    "7cbca1c7212d01ab8bf99f813abfc1c36f9273fce3f661fce037019e263cc2d9",
+    "40fe6867bf4851beae3c8703a54d5cd3aac62f7cb3214517bc90bf89ff2346c8",
+    "68989f7a76df4185f3589594a6256cd31c40d5303b22bf8f09a81a6fbdae52f4",
+    "fa94578d4765369c41aa4cfe7fb995148c62bac47052ed5f541c49a5ee09fd36",
+    "b1fe414f6718182c62577e3de67dce1651b1f1d2eb4b2be7b5daa85b9b95c97a",
+    "45d24fe62f27d7f063917d2b82b84bbccc6ecbccb66b45e2ef8acc873ef2d385",
+    "02c199afad42ab817c6e35b0c988f05ddd193f2e54851a22f135832c31e4642c",
+    "99018e041219e782f941356ef6cc86a15ef58100202089b7727f7bb525e85f75",
+    "2177942453a4330f11963dbc88afa8bb93fc6329799d47e98e0e96a03a46ce1d",
+    "6c6a79a15cf115e239462a3549b87647ce76e59a2f97c3091e02505dae83cd09",
+    "d13c1ac504b08b1dc2df841e00d2c14b5bf86162c97bdead15a392ca890ac237",
+    "ee1442896ae6267e5192f0a54bbb121a0c1436d4cb3433cff3add2166f4e1a5f",
+    "087c6cfd52093129aa85d559d0e767e2f3addd8cc2d0b8babe837762f238c396",
+    "0cf73cc4e46b4bd2ba4c6eadcefb6780afaa3a815f7cd4dabb28ab8996d3c95c",
+    "babb6df6fddc786508f2be226c2fe07be14a7e97e5168f8912c23a274a240633",
+    "f7308420c2a56715c2630ada2cf4adf644b9cacac700e676ec86014ca4d6c35a",
+    "f5fe2e75dcb52c16167bdbb23ffc849da64b4e9a00bb6fad068de9d79d425301",
+    "7952f07b1d74b225b38b06291af8aa5c475c25fb55f7f1ed77b9205d66c66d9a",
+    "c9716e30a8de4a8365a2caecf548e682e7099e524e4a86dbac86f1dbc0cf5115",
+    "4a4f384295bab4917ad5fa7b6102fe472f71fe40c1d7b3827e20e5267603fe94",
+    "b2b30f0420bacbfd34e1a5bc2318c2ecc442dc6df1ccb6758fffbe5837a936c8",
+    "f27ec8772a46d0c872fe3c071d8b241e7b2cde3758a23d7173d6860c7738b486",
+    "eee2885020851e6c58c0d1b702c765a927f5cb1280d545c6f073cefabd6eb9a6",
+    "dbe9fade2579315fd8f1232418ef965f2fdc16e0eef498dbe22ad64705ea22d2",
+    "675017dcf648b1f1b8c0bdc996a2afe045dba7851d8794b6ea20bcb25a354b4e",
+    "62af58d710337c3114c278b9e2ce1b6855d4ccdd6afa9e0f13701efb1ab9f99d",
+    "75836408a90be9c1e4a04b679ce8e51276c87a3861d5236ca1452d38c7859aa1",
+    "34e687e8128f5c13f87dc014fca2c4776442e696ed7742ba32e05b9dbab99edd",
+    "739964986bd86db1c9640e6e572115a5b450f9c9389f0099303cb32bc077ab37",
+    "5ab83d6e6d5c5f3729ebc4716a3de11192abfd33b05cd4baab30ff68560524eb",
+    "653d4ea2090ebb6024852e44948467291d27d566d2b159e8008530aa358868d6",
+    "1befa4adba1cae19da300262c23ae505a2a58bc03f03aa37cf8a2b2945c0ee11",
+    "263b6d8543d8ec206bf029442e9ed9b7ba18c9ccfb0ad31af32a3d31ab170b6e",
+    "465a49212e47f2ca5efe493ebdc897fa97a82cd9275c3713274db5daab128763",
+    "ce53ef7d2767edeeedd34b621d7a78f5629a28fca15b04b639c63cee0dd9ff95",
+    "c40659eb7d9a78ed3211a0ddc551c98459d081e276660734f593842c12479ff2",
+    "465a088b9fc3166a0997aa3f4df57908cb360b55d15a53b084c320881b390db8",
+    "e7ba0b980af0ae9386d044815b36b01421f35d05bd910c6d452aca8d4f479b24",
+    "5640f1be0e31280a39038b30d56ed8bcdeac50cc69b3bd9dd52c1dda2c6e452b",
+    "55f8941795e0f0d5c29472237534ce82ddce8524108b126d35b3ed6fa25a7876",
+    "0cfb4203459d9bb5c09878195c107b2215f32444970259fe69d3a2af8eba00ea",
+    "99e34c53dec95439cdef48e119b8f6c394c7b89d7347b70f81344ab50a8d2294",
+    "51c680c7092958f629dbf3acdc7c84d81a7f694615ce9683687ef6b38ab8ed78",
+    "a79430c9e6be18cbcbc310fb512f1856acf15acfaa1f2f3efdb1259378ae1e01",
+    "bbc3a0ca2c8f5e510ede2ab8833eca647f2f62058081eae4c2118fa5db5bb15a",
+    "6b26227e5628046c5aad9bfde261951e10a4f6f77d2cebdfd5aa5f44bb09c33d",
+    "bbc3a0ca2c8f5e510ede2ab8833eca647f2f62058081eae4c2118fa5db5bb15a",
+    "6b26227e5628046c5aad9bfde261951e10a4f6f77d2cebdfd5aa5f44bb09c33d",
+    "bbc3a0ca2c8f5e510ede2ab8833eca647f2f62058081eae4c2118fa5db5bb15a",
+    "6b26227e5628046c5aad9bfde261951e10a4f6f77d2cebdfd5aa5f44bb09c33d",
+    "bbc3a0ca2c8f5e510ede2ab8833eca647f2f62058081eae4c2118fa5db5bb15a",
+    "6b26227e5628046c5aad9bfde261951e10a4f6f77d2cebdfd5aa5f44bb09c33d",
+    "129701e7e11d40c244087e2aff48adc7d3efd90b88ac0852f2d881be76ee358c",
+    "04c167846b4729000f412f444b79cf17ae58717e9247e9793d1e8944031c9558",
+    "6b7563ac573a55554d2ab059fd85b9a50f2cb3c40946f8be6f1797d911a825e2",
+    "26aa988fa0ee5fad96f1c4b6c163c0a70e203464f0da22f30f2e30e30d6082f0",
+    "3e64718dfdc9ddecd04088c27d6dc79c6ca19dee7da503694af5fbf7c71eaf56",
+    "c52968b1c2c3e63c2a92db2e570130844d9bf19108083901074a5327eb9bd097",
+    "3e64718dfdc9ddecd04088c27d6dc79c6ca19dee7da503694af5fbf7c71eaf56",
+    "c52968b1c2c3e63c2a92db2e570130844d9bf19108083901074a5327eb9bd097",
+    "03024527d72dc0a80e57dafaa7e902a9d4afb1f2a130116dd09e6ca96195310f",
+    "182546dca10a74298ef728f629c262df7358547215c4c38b4f9a37b422b66720",
+    "03024527d72dc0a80e57dafaa7e902a9d4afb1f2a130116dd09e6ca96195310f",
+    "182546dca10a74298ef728f629c262df7358547215c4c38b4f9a37b422b66720",
+    "8439fa8354f7cfafdd1b77b659e1c3e877677de9eb7325d8e9ccb3ad56709b1d",
+    "fa33f62df75fc5fccbc3583facb9736e3ad666bcedb0117a149da72567cdefa0",
+    "8439fa8354f7cfafdd1b77b659e1c3e877677de9eb7325d8e9ccb3ad56709b1d",
+    "fa33f62df75fc5fccbc3583facb9736e3ad666bcedb0117a149da72567cdefa0",
+    "c42c5feb04667ddef77ff941a590e909ded06f9359a6e80de19740bba3c83e6e",
+    "f9364fe04ed0fda316b7b25e9375d70492da5d6d6f545ae3a69d121303fd78c7"
+  ]
+}

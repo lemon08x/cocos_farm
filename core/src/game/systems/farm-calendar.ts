@@ -1,3 +1,4 @@
+import {agriculturalNeighbors} from '../scene/world.js';
 import {landscapeCost} from './landscapes.js';
 import {type GameState} from '../model/state.js';
 import {dietView} from './social-food.js';
@@ -28,7 +29,7 @@ export function sowBatch(s:GameState,crop:Crop,day=s.life!.calendar!.absoluteDay
 export function harvestDates(s:GameState,p:FarmPlot|undefined,f:Field){
  const r=s.economy!.farm!.rules,now=s.life!.calendar!.absoluteDay;
  const mature=f.batch?.matureDay??now+f.duration-f.growth;
- const yard=p&&Object.values(s.economy!.farm!.plots).some(q=>q.improvement==='yard'&&Math.abs(q.x-p.x)+Math.abs(q.y-p.y)===1);
+ const yard=p&&Object.values(s.economy!.farm!.plots).some(q=>q.improvement==='yard'&&agriculturalNeighbors(p).some(n=>n.id===q.id));
  const bestEnd=mature+r.harvestBestDays+(equipped(s,'U04')?r.harvestToolDays:0)+(yard?r.yardGraceDays:0);
  return {mature,bestEnd,deadline:bestEnd+r.harvestLateDays};
 }

@@ -1,0 +1,62 @@
+{
+  "id": "object.house",
+  "kind": "object",
+  "entry": {
+    "id": "object.house",
+    "family": "house",
+    "layer": "object",
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 1
+      },
+      {
+        "x": 1,
+        "y": 1
+      }
+    ],
+    "variant": 0,
+    "description": "占地 2×2 单元的完整农舍建筑，屋顶可向上伸出；不生成四栋房屋，不附带院落地面"
+  },
+  "width": 1200,
+  "height": 1080,
+  "origin": {
+    "x": 600,
+    "y": 540
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 600,
+      "y": 540
+    },
+    {
+      "x": 900,
+      "y": 720
+    },
+    {
+      "x": 300,
+      "y": 720
+    },
+    {
+      "x": 600,
+      "y": 900
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "templateHashes": [
+    "6b7563ac573a55554d2ab059fd85b9a50f2cb3c40946f8be6f1797d911a825e2",
+    "26aa988fa0ee5fad96f1c4b6c163c0a70e203464f0da22f30f2e30e30d6082f0"
+  ]
+}

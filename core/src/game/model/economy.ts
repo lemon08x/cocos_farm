@@ -31,7 +31,7 @@ export type LandscapeKind='landmark'|'tea'|'reading'|'garden'|'memorial';
 export interface LandscapeState {kind:LandscapeKind;level:1|2|3;builtBy:string;uses:number;}
 export interface FarmPlot {landscape?:LandscapeState;purpose?:'sowing'|'other';plans?:FarmPlan[];wild?:WildResource;land?:PlotLand;project?:{kind:FarmProjectKind;done:number;total:number};improvement?:'canal'|'shelter'|'drain'|'yard'|'cellar'|'pit'|'shed'|'retting';pit?:{readyDay:number};id:string;x:number;y:number;kind:'unknown'|'wild'|'field'|'tree'|'rock'|'brush'|'story'|'water';field?:Field;discovery?:{id:FarmDiscovery;resolved:boolean;outcome:string};fertility?:number;}
 
-export interface FarmState {calendarVersion:1;explorationVersion:3;landVersion:2;rareSeeds:number;rules:FarmRules;plots:Record<string,FarmPlot>;discovered:Crop[];explored:number;neighbor:{personId:string;goods:Record<string,number>;field:Field;talked:number;traded:number;helped:number;busy:boolean};}
+export interface FarmState {scene:{id:string;version:number};calendarVersion:1;explorationVersion:3;landVersion:2;rareSeeds:number;rules:FarmRules;plots:Record<string,FarmPlot>;discovered:Crop[];explored:number;neighbor:{personId:string;goods:Record<string,number>;field:Field;talked:number;traded:number;helped:number;busy:boolean};}
 export interface OngoingWork {farm:Crop|null;}
 export interface EconomyState {
   farm?:FarmState;

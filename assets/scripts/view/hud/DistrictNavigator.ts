@@ -1,7 +1,7 @@
 import { EventTouch, Graphics, Label, Node } from 'cc';
 import { ArtRenderer, tint, visualNode } from '../../art/ArtRenderer';
 import { UiKit } from '../UiKit';
-import type { DistrictId, PlotRenderModel, WorldCamera } from '../world/FarmWorldViewContract';
+import type { DistrictId, PlotRenderModel, SceneSnapshot, WorldCamera } from '../world/FarmWorldViewContract';
 import { buildMinimapModel, minimapSignature } from '../world/scenic/ScenicMinimap';
 import { worldToLogical } from '../world/scenic/ScenicProjection';
 import { CAMERA_LIFT } from '../world/scenic/ScenicLayout';
@@ -16,11 +16,11 @@ import { districtOf } from '../FarmDistrict';
  * screens so it never eats the main plot tap area; while expanded it intercepts map
  * gestures so drags starting on the panel no longer pan the map. */
 const TONES: Record<string, string> = {
-  mist: '#b9bfae', field: '#9a7648', water: '#5b8fa8', green: '#5f8a4e', home: '#d9a441'
+  mist: '#b9bfae', field: '#9a7648', water: '#5b8fa8', green: '#5f8a4e', home: '#d9a441',facility:'#8a6a44',path:'#c2a26e',bridge:'#80633e'
 };
 const MINIMAP_SIZE = 168;
 const DISTRICTS: [string, DistrictId][] = [['院前', { x: 0, y: 0 }], ['东侧', { x: 1, y: 0 }], ['南侧', { x: 0, y: 1 }]];
-type MinimapPlots = Pick<PlotRenderModel, 'id' | 'x' | 'y' | 'kind' | 'discovery' | 'reachable'>[];
+type MinimapPlots = PlotRenderModel[];
 
 export class DistrictNavigator {
   private minimap: Node;
@@ -33,6 +33,7 @@ export class DistrictNavigator {
   private lastCamera: WorldCamera | undefined;
   private lastHeight = 1280;
   private selected = '';
+  private scene:SceneSnapshot|undefined;
   constructor(parent: Node, private art: ArtRenderer, ui: UiKit, height: number, top: number, onNavigate: (district: DistrictId) => void) {
     const C = art.palette;
     const swallow = (n: Node) => {
@@ -87,8 +88,8 @@ export class DistrictNavigator {
     }
   }
   /** Redraw when observation data, the camera or the selection changed. */
-  update(plots: MinimapPlots, camera: WorldCamera | undefined, viewportHeight: number, selected = '') {
-    this.lastPlots = plots; this.lastCamera = camera; this.lastHeight = viewportHeight; this.selected = selected;
+  update(plots: MinimapPlots, camera: WorldCamera | undefined, viewportHeight: number, selected = '',scene?:SceneSnapshot) {
+    this.scene=scene;this.lastPlots = plots; this.lastCamera = camera; this.lastHeight = viewportHeight; this.selected = selected;
     if (!camera) return;
     const at = worldToLogical({ x: camera.x, y: camera.y + CAMERA_LIFT });
     const district = districtOf(at.x, at.y), key = district.x + ',' + district.y;
@@ -98,7 +99,7 @@ export class DistrictNavigator {
   private redraw() {
     const plots = this.lastPlots, camera = this.lastCamera;
     if (!plots || !camera || !this.expandedPanel.active) return;
-    const sig = minimapSignature(plots, camera) + '|' + this.selected;
+    const sig = minimapSignature(plots, camera) + '|' + this.selected+'|'+this.lastHeight+'|'+JSON.stringify(this.scene?.bounds);
     if (sig === this.lastSignature) return;
     this.lastSignature = sig;
     const C = this.art.palette;
@@ -106,13 +107,15 @@ export class DistrictNavigator {
     const frame = visualNode('Minimap frame', this.minimap, 0, 0, 0, 0), fg = frame.addComponent(Graphics);
     const half = MINIMAP_SIZE / 2, inner = half - 4;
     fg.fillColor = tint(C.cream); fg.roundRect(-half, -half, MINIMAP_SIZE, MINIMAP_SIZE, 10); fg.fill();
-    const model = buildMinimapModel(plots, camera, { width: 720, height: this.lastHeight }, MINIMAP_SIZE - 12);
-    const known = plots.filter(p => p.kind !== 'unknown' || p.reachable);
+    const model = buildMinimapModel(plots, camera, { width: 720, height: this.lastHeight }, MINIMAP_SIZE - 12,this.scene);
+    for(const region of model.environment){
+      fg.fillColor=tint(TONES[region.tone]);region.boundary.forEach((p,i)=>i?fg.lineTo(p.x,-p.y):fg.moveTo(p.x,-p.y));fg.close();fg.fill();
+    }
     model.cells.forEach((cell, i) => {
-      const marked = known[i]?.id === this.selected;
+      const marked = cell.id === this.selected;
       const size = cell.tone === 'home' || marked ? 7 : 5;
       fg.fillColor = tint(TONES[cell.tone] ?? TONES.mist);
-      fg.moveTo(cell.x, -cell.y - size); fg.lineTo(cell.x + size, -cell.y); fg.lineTo(cell.x, -cell.y + size); fg.lineTo(cell.x - size, -cell.y);
+      cell.boundary.forEach((p,i)=>i?fg.lineTo(p.x,-p.y):fg.moveTo(p.x,-p.y));
       fg.close(); fg.fill();
       if (marked) {
         fg.strokeColor = tint(C.ink); fg.lineWidth = 2.5;

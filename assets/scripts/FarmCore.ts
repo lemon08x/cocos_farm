@@ -3,17 +3,1216 @@
 const _excluded = ["farm", "ongoing"];
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var n = 0, F = function () {}; return { s: F, n: function () { return n >= r.length ? { done: !0 } : { done: !1, value: r[n++] }; }, e: function (r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function () { t = t.call(r); }, n: function () { var r = t.next(); return a = r.done, r; }, e: function (r) { u = !0, o = r; }, f: function () { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var n = 0, F = function () {}; return { s: F, n: function () { return n >= r.length ? { done: !0 } : { done: !1, value: r[n++] }; }, e: function (r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function () { t = t.call(r); }, n: function () { var r = t.next(); return a = r.done, r; }, e: function (r) { u = !0, o = r; }, f: function () { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+// core/src/game/scene/geometry.ts
+var SCENIC_STEP_X = 150;
+var SCENIC_STEP_Y = 90;
+var SCENIC_ORIGIN_SUM = 4;
+var CELL_HALF_WIDTH = 150;
+var CELL_HALF_HEIGHT = 90;
+var QUAD_HALF_WIDTH = 114;
+var QUAD_HALF_HEIGHT = 71;
+function logicalToWorld(p) {
+  return {
+    x: (p.x - p.y) * SCENIC_STEP_X,
+    y: (p.x + p.y - SCENIC_ORIGIN_SUM) * SCENIC_STEP_Y
+  };
+}
+function worldToLogical(p) {
+  const u = p.x / SCENIC_STEP_X,
+    v = p.y / SCENIC_STEP_Y + SCENIC_ORIGIN_SUM;
+  return {
+    x: (u + v) / 2,
+    y: (v - u) / 2
+  };
+}
+function plotQuad(center) {
+  return [{
+    x: center.x,
+    y: center.y - QUAD_HALF_HEIGHT
+  }, {
+    x: center.x + QUAD_HALF_WIDTH,
+    y: center.y
+  }, {
+    x: center.x,
+    y: center.y + QUAD_HALF_HEIGHT
+  }, {
+    x: center.x - QUAD_HALF_WIDTH,
+    y: center.y
+  }];
+}
+function pointInQuad(p, center) {
+  return Math.abs(p.x - center.x) / QUAD_HALF_WIDTH + Math.abs(p.y - center.y) / QUAD_HALF_HEIGHT <= 1;
+}
+function cellDiamond(center) {
+  return [{
+    x: center.x,
+    y: center.y - CELL_HALF_HEIGHT
+  }, {
+    x: center.x + CELL_HALF_WIDTH,
+    y: center.y
+  }, {
+    x: center.x,
+    y: center.y + CELL_HALF_HEIGHT
+  }, {
+    x: center.x - CELL_HALF_WIDTH,
+    y: center.y
+  }];
+}
+function pointInCellDiamond(p, center) {
+  return Math.abs(p.x - center.x) / CELL_HALF_WIDTH + Math.abs(p.y - center.y) / CELL_HALF_HEIGHT <= 1;
+}
+var CELL_EDGE_NEIGHBOR = {
+  ul: {
+    x: -1,
+    y: 0
+  },
+  lr: {
+    x: 1,
+    y: 0
+  },
+  ur: {
+    x: 0,
+    y: -1
+  },
+  ll: {
+    x: 0,
+    y: 1
+  }
+};
+function cellEdgeMidpoint(cell, edge) {
+  const c = logicalToWorld(cell);
+  switch (edge) {
+    case "ul":
+      return {
+        x: c.x - CELL_HALF_WIDTH / 2,
+        y: c.y - CELL_HALF_HEIGHT / 2
+      };
+    case "ur":
+      return {
+        x: c.x + CELL_HALF_WIDTH / 2,
+        y: c.y - CELL_HALF_HEIGHT / 2
+      };
+    case "ll":
+      return {
+        x: c.x - CELL_HALF_WIDTH / 2,
+        y: c.y + CELL_HALF_HEIGHT / 2
+      };
+    case "lr":
+      return {
+        x: c.x + CELL_HALF_WIDTH / 2,
+        y: c.y + CELL_HALF_HEIGHT / 2
+      };
+  }
+}
+function worldToScreen(p, camera) {
+  return {
+    x: (p.x - camera.x) * camera.zoom,
+    y: (p.y - camera.y) * camera.zoom
+  };
+}
+function screenToWorld(p, camera) {
+  return {
+    x: p.x / camera.zoom + camera.x,
+    y: p.y / camera.zoom + camera.y
+  };
+}
+function segmentsCross(a, b, c, d) {
+  const o = (p, q, r) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  return o(a, b, c) * o(a, b, d) < 0 && o(c, d, a) * o(c, d, b) < 0;
+}
+function pointInPolygon(p, poly) {
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i],
+      b = poly[(i + 1) % poly.length];
+    const cross = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    if (Math.abs(cross) < 1e-9 && Math.min(a.x, b.x) - 1e-9 <= p.x && p.x <= Math.max(a.x, b.x) + 1e-9 && Math.min(a.y, b.y) - 1e-9 <= p.y && p.y <= Math.max(a.y, b.y) + 1e-9) return true;
+  }
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i],
+      b = poly[j];
+    if (a.y > p.y !== b.y > p.y && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
+// core/src/game/scene/layout.ts
+var CAMERA_LIFT = 40;
+var DEFAULT_CAMERA = {
+  x: -280,
+  y: 30,
+  zoom: 0.85
+};
+var CAMERA_LIMITS = {
+  minX: -1250,
+  maxX: 1250,
+  minY: -850,
+  maxY: 1250,
+  minZoom: 0.8,
+  maxZoom: 2.4
+};
+var clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+function clampScenicCamera(camera, bounds) {
+  const limits = bounds ?? CAMERA_LIMITS;
+  return {
+    x: clamp(camera.x, limits.minX, limits.maxX),
+    y: clamp(camera.y, limits.minY, limits.maxY),
+    zoom: clamp(camera.zoom, CAMERA_LIMITS.minZoom, CAMERA_LIMITS.maxZoom)
+  };
+}
+var HOMESTEAD = {
+  world: {
+    x: -300,
+    y: -440
+  },
+  width: 460,
+  height: 380,
+  anchor: [0.5, 0.8]
+};
+function homesteadFootprint() {
+  const h = HOMESTEAD;
+  return {
+    left: h.world.x - h.width / 2,
+    right: h.world.x + h.width / 2,
+    top: h.world.y - h.anchor[1] * h.height,
+    bottom: h.world.y + (1 - h.anchor[1]) * h.height
+  };
+}
+function footprintPolygon() {
+  const f = homesteadFootprint();
+  return [{
+    x: f.left,
+    y: f.top
+  }, {
+    x: f.right,
+    y: f.top
+  }, {
+    x: f.right,
+    y: f.bottom
+  }, {
+    x: f.left,
+    y: f.bottom
+  }];
+}
+function quadIntersectsFootprint(center) {
+  const quad = plotQuad(center),
+    rect = footprintPolygon(),
+    f = homesteadFootprint();
+  if (quad.some(p => pointInPolygon(p, rect))) return true;
+  if (rect.some(p => pointInQuad(p, center))) return true;
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if (segmentsCross(quad[i], quad[(i + 1) % 4], rect[j], rect[(j + 1) % 4])) return true;
+  return f.left <= center.x && center.x <= f.right && f.top <= center.y && center.y <= f.bottom;
+}
+var homesteadReserved = /* @__PURE__ */new Set();
+for (let x = -12; x <= 12; x++) for (let y = -12; y <= 12; y++) if (quadIntersectsFootprint(logicalToWorld({
+  x,
+  y
+}))) homesteadReserved.add(x + "," + y);
+var HOMESTEAD_RESERVED = homesteadReserved;
+function isHomesteadReservedCell(x, y) {
+  return homesteadReserved.has(x + "," + y);
+}
+var RIVER_KIND_PORTS = {
+  "straight-x": ["ul", "lr"],
+  "straight-y": ["ur", "ll"],
+  "corner": ["ul", "ll"]
+};
+var CORNER_ROTATED_PORTS = ["ur", "lr"];
+function riverPorts(seg) {
+  const _ref = seg.kind === "corner" && seg.rotation === 180 ? CORNER_ROTATED_PORTS : RIVER_KIND_PORTS[seg.kind],
+    _ref2 = _slicedToArray(_ref, 2),
+    a = _ref2[0],
+    b = _ref2[1];
+  return [cellEdgeMidpoint(seg.cell, a), cellEdgeMidpoint(seg.cell, b)];
+}
+var RIVER_SEGMENTS = [{
+  cell: {
+    x: -3,
+    y: 2
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: -3,
+    y: 3
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: -3,
+    y: 4
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: -3,
+    y: 5
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: -3,
+    y: 6
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: -3,
+    y: 7
+  },
+  kind: "corner",
+  rotation: 180
+}, {
+  cell: {
+    x: -2,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: -1,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 0,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 1,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 2,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 3,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 4,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 5,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 6,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 7,
+    y: 7
+  },
+  kind: "straight-x"
+}, {
+  cell: {
+    x: 8,
+    y: 7
+  },
+  kind: "corner"
+}, {
+  cell: {
+    x: 8,
+    y: 8
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 9
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 10
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 11
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 12
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 13
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 14
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 15
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 16
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 17
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 18
+  },
+  kind: "straight-y"
+}, {
+  cell: {
+    x: 8,
+    y: 19
+  },
+  kind: "straight-y"
+}];
+var riverCells = new Set(RIVER_SEGMENTS.map(s => s.cell.x + "," + s.cell.y));
+var RIVER_CELLS = riverCells;
+function isRiverCell(x, y) {
+  return riverCells.has(x + "," + y);
+}
+var RIVER_SPRING = cellEdgeMidpoint({
+  x: -3,
+  y: 2
+}, "ur");
+var BRIDGES = [{
+  world: logicalToWorld({
+    x: 4,
+    y: 7
+  }),
+  width: 260,
+  height: 200,
+  anchor: [0.5, 0.75],
+  cell: {
+    x: 4,
+    y: 7
+  }
+}, {
+  world: logicalToWorld({
+    x: 7,
+    y: 7
+  }),
+  width: 260,
+  height: 200,
+  anchor: [0.5, 0.75],
+  cell: {
+    x: 7,
+    y: 7
+  }
+}];
+var PATHS = [
+// Main north street: courtyard gate → east pan edge (logical y = 0.5 belt).
+{
+  width: 26,
+  points: [{
+    x: -450,
+    y: -540
+  }, {
+    x: 0,
+    y: -270
+  }, {
+    x: 450,
+    y: 0
+  }, {
+    x: 900,
+    y: 270
+  }, {
+    x: 1200,
+    y: 450
+  }]
+},
+// Homestead connector into the courtyard (reserved cells, no quads there).
+{
+  width: 20,
+  points: [{
+    x: -300,
+    y: -450
+  }, {
+    x: -360,
+    y: -420
+  }]
+},
+// West street (logical x = 0.5 belt) down to the towpath.
+{
+  width: 24,
+  points: [{
+    x: 0,
+    y: -270
+  }, {
+    x: -300,
+    y: -90
+  }, {
+    x: -600,
+    y: 90
+  }, {
+    x: -900,
+    y: 270
+  }]
+},
+// East street (logical x = 3.5 belt) to the south bridge, then the south bank.
+{
+  width: 24,
+  points: [{
+    x: 450,
+    y: 0
+  }, {
+    x: 150,
+    y: 180
+  }, {
+    x: -150,
+    y: 360
+  }, {
+    x: -450,
+    y: 540
+  }, {
+    x: -450,
+    y: 720
+  }, {
+    x: -600,
+    y: 810
+  }, {
+    x: -750,
+    y: 900
+  }]
+},
+// River towpath along the north bank (logical y = 6.5 belt, shared bank edge).
+{
+  width: 22,
+  points: [{
+    x: -1200,
+    y: 90
+  }, {
+    x: -900,
+    y: 270
+  }, {
+    x: -450,
+    y: 540
+  }, {
+    x: 0,
+    y: 810
+  }, {
+    x: 300,
+    y: 990
+  }]
+},
+// East connector street to the second bridge and the south bank.
+{
+  width: 24,
+  points: [{
+    x: 900,
+    y: 270
+  }, {
+    x: 0,
+    y: 810
+  }, {
+    x: 0,
+    y: 990
+  }, {
+    x: -150,
+    y: 1080
+  }, {
+    x: -300,
+    y: 1170
+  }]
+},
+// Mid belts between the home plot rows.
+{
+  width: 22,
+  points: [{
+    x: -300,
+    y: -90
+  }, {
+    x: 150,
+    y: 180
+  }]
+}, {
+  width: 22,
+  points: [{
+    x: -600,
+    y: 90
+  }, {
+    x: -150,
+    y: 360
+  }]
+}];
+var SIGNPOSTS = [{
+  name: "\u4E1C\u4FA7\u7530\u533A",
+  world: {
+    x: 1050,
+    y: 420
+  }
+}, {
+  name: "\u5357\u4FA7\u7530\u533A",
+  world: {
+    x: -560,
+    y: 745
+  }
+}, {
+  name: "\u6CB3\u7554",
+  world: {
+    x: -1100,
+    y: 80
+  }
+}];
+var FENCES = [{
+  x: -420,
+  y: -560
+}, {
+  x: -240,
+  y: -380
+}, {
+  x: -620,
+  y: 400
+}, {
+  x: -380,
+  y: 790
+}];
+var TREES = [{
+  x: -700,
+  y: -620
+}, {
+  x: -100,
+  y: -600
+}, {
+  x: 1020,
+  y: -420
+}, {
+  x: -1050,
+  y: 580
+}, {
+  x: 390,
+  y: 720
+}];
+var FLOWER_CELLS = [{
+  x: -4,
+  y: 3
+}, {
+  x: -4,
+  y: 4
+}, {
+  x: -1,
+  y: 8
+}, {
+  x: 1,
+  y: 8
+}, {
+  x: 8,
+  y: 3
+}, {
+  x: 5,
+  y: -3
+}];
+var SCENIC_DISTRICTS = [{
+  id: "qian",
+  name: "\u9662\u524D",
+  district: {
+    x: 0,
+    y: 0
+  }
+}, {
+  id: "dong",
+  name: "\u4E1C\u4FA7",
+  district: {
+    x: 1,
+    y: 0
+  }
+}, {
+  id: "nan",
+  name: "\u5357\u4FA7",
+  district: {
+    x: 0,
+    y: 1
+  }
+}];
+function districtCenter(d) {
+  return logicalToWorld({
+    x: d.x * 3 + 2,
+    y: d.y * 3 + 2
+  });
+}
+function zoomCameraAboutPoint(camera, mapPoint, viewportPoint, zoom) {
+  return {
+    x: mapPoint.x - viewportPoint.x / zoom,
+    y: viewportPoint.y / zoom - mapPoint.y,
+    zoom
+  };
+}
+
+// core/src/game/scene/regions.ts
+function strokeBoundary(points, width) {
+  const half = width / 2,
+    n = points.length;
+  const dir = i => {
+    const a = points[i],
+      b = points[i + 1],
+      len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    return {
+      x: (b.x - a.x) / len,
+      y: (b.y - a.y) / len
+    };
+  };
+  const normalOf = d => ({
+    x: d.y,
+    y: -d.x
+  });
+  const left = [],
+    right = [];
+  for (let i = 0; i < n; i++) {
+    let normal,
+      scale = 1;
+    if (i === 0) normal = normalOf(dir(0));else if (i === n - 1) normal = normalOf(dir(n - 2));else {
+      const n1 = normalOf(dir(i - 1)),
+        n2 = normalOf(dir(i));
+      const len = Math.hypot(n1.x + n2.x, n1.y + n2.y);
+      if (len < 1e-6) {
+        normal = n1;
+        scale = 2;
+      } else {
+        normal = {
+          x: (n1.x + n2.x) / len,
+          y: (n1.y + n2.y) / len
+        };
+        scale = Math.min(2, Math.SQRT2 / Math.max(0.5, Math.sqrt(1 + (dir(i - 1).x * dir(i).x + dir(i - 1).y * dir(i).y))));
+      }
+    }
+    left.push({
+      x: points[i].x + normal.x * half * scale,
+      y: points[i].y + normal.y * half * scale
+    });
+    right.push({
+      x: points[i].x - normal.x * half * scale,
+      y: points[i].y - normal.y * half * scale
+    });
+  }
+  const d0 = dir(0),
+    dn = dir(n - 2);
+  left[0] = {
+    x: left[0].x - d0.x * half,
+    y: left[0].y - d0.y * half
+  };
+  right[0] = {
+    x: right[0].x - d0.x * half,
+    y: right[0].y - d0.y * half
+  };
+  left[n - 1] = {
+    x: left[n - 1].x + dn.x * half,
+    y: left[n - 1].y + dn.y * half
+  };
+  right[n - 1] = {
+    x: right[n - 1].x + dn.x * half,
+    y: right[n - 1].y + dn.y * half
+  };
+  return [].concat(left, _toConsumableArray(right.reverse()));
+}
+function riverRegionId(cell) {
+  return `river.${cell.x}.${cell.y}`;
+}
+function riverRegions() {
+  return RIVER_SEGMENTS.map((seg, i) => {
+    const center = logicalToWorld(seg.cell);
+    const connections = [];
+    const ports = riverPorts(seg);
+    if (i > 0) connections.push({
+      to: riverRegionId(RIVER_SEGMENTS[i - 1].cell),
+      port: ports[0]
+    });
+    if (i + 1 < RIVER_SEGMENTS.length) connections.push({
+      to: riverRegionId(RIVER_SEGMENTS[i + 1].cell),
+      port: ports[1]
+    });
+    return {
+      regionId: riverRegionId(seg.cell),
+      type: "river",
+      boundary: cellDiamond(center),
+      ground: "water",
+      connections,
+      layer: "river"
+    };
+  });
+}
+function pathRegions() {
+  return PATHS.map((path, i) => ({
+    regionId: `path.${i}`,
+    type: "path",
+    boundary: strokeBoundary(path.points, path.width + 6),
+    ground: "earth",
+    connections: [],
+    layer: "path"
+  }));
+}
+function bridgeRegions() {
+  return BRIDGES.map((b, i) => {
+    const w = b.width / 2,
+      t = b.world.y - b.anchor[1] * b.height,
+      bottom = b.world.y + (1 - b.anchor[1]) * b.height;
+    return {
+      regionId: `bridge.${i}`,
+      type: "bridge",
+      boundary: [{
+        x: b.world.x - w,
+        y: t
+      }, {
+        x: b.world.x + w,
+        y: t
+      }, {
+        x: b.world.x + w,
+        y: bottom
+      }, {
+        x: b.world.x - w,
+        y: bottom
+      }],
+      ground: "wood",
+      connections: [{
+        to: riverRegionId(b.cell)
+      }],
+      layer: "env"
+    };
+  });
+}
+function environmentRegions() {
+  const h = HOMESTEAD,
+    f = homesteadFootprint();
+  const s = RIVER_SPRING;
+  const spring = [];
+  for (let k = 0; k < 8; k++) {
+    const a = Math.PI * 2 * k / 8;
+    spring.push({
+      x: s.x + Math.cos(a) * 110,
+      y: s.y + Math.sin(a) * 65
+    });
+  }
+  return [{
+    regionId: "env.homestead",
+    type: "environment",
+    boundary: [{
+      x: f.left,
+      y: f.top
+    }, {
+      x: f.right,
+      y: f.top
+    }, {
+      x: f.right,
+      y: f.bottom
+    }, {
+      x: f.left,
+      y: f.bottom
+    }],
+    ground: "homestead",
+    connections: [],
+    layer: "env"
+  }, {
+    regionId: "env.spring",
+    type: "environment",
+    boundary: spring,
+    ground: "water",
+    connections: [{
+      to: riverRegionId({
+        x: -3,
+        y: 2
+      }),
+      port: s
+    }],
+    layer: "env"
+  }];
+}
+function courtyardRegions() {
+  return [].concat(_toConsumableArray(riverRegions()), _toConsumableArray(pathRegions()), _toConsumableArray(bridgeRegions()), _toConsumableArray(environmentRegions()));
+}
+
+// core/src/game/scene/world.ts
+var SCENE_ID = "scenic-farm";
+var SCENE_VERSION = 1;
+var idAt = (x, y) => `p${x}q${y}`;
+var district = p => ({
+  x: Math.floor((p.x - 1) / 3),
+  y: Math.floor((p.y - 1) / 3)
+});
+var steps = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+var neighbors = p => steps.map(([dx, dy]) => ({
+  id: idAt(p.x + dx, p.y + dy),
+  x: p.x + dx,
+  y: p.y + dy
+}));
+var centerOf = poly => ({
+  x: poly.reduce((s, p) => s + p.x, 0) / poly.length,
+  y: poly.reduce((s, p) => s + p.y, 0) / poly.length
+});
+function scenePolygonsIntersect(a, b) {
+  return a.some(p => pointInPolygon(p, b)) || b.some(p => pointInPolygon(p, a)) || a.some((p, i) => b.some((q, j) => segmentsCross(p, a[(i + 1) % a.length], q, b[(j + 1) % b.length])));
+}
+var environment = courtyardRegions().map(r => {
+  let boundary = r.boundary;
+  if (r.regionId === "env.homestead") boundary = [{
+    x: -530,
+    y: -610
+  }, {
+    x: -70,
+    y: -610
+  }, {
+    x: -70,
+    y: -364
+  }, {
+    x: -530,
+    y: -364
+  }];
+  if (r.type === "bridge") {
+    const bridge = BRIDGES[Number(r.regionId.split(".")[1])];
+    boundary = strokeBoundary([cellEdgeMidpoint(bridge.cell, "ur"), cellEdgeMidpoint(bridge.cell, "ll")], 24);
+  }
+  const water = r.type === "river" || r.regionId === "env.spring";
+  const region = {
+    regionId: r.regionId,
+    type: r.type,
+    boundary,
+    center: centerOf(boundary),
+    district: {
+      x: 0,
+      y: 0
+    },
+    ground: r.ground,
+    capabilities: {
+      selectable: false,
+      walkable: r.type === "path" || r.type === "bridge",
+      waterSource: water,
+      ...(water ? {
+        waterLevel: 1
+      } : {})
+    }
+  };
+  if (r.type === "path") {
+    const path = PATHS[Number(r.regionId.split(".")[1])];
+    region.innerBoundary = strokeBoundary(path.points, path.width);
+  }
+  if (r.regionId === "env.homestead") region.artBounds = {
+    minX: HOMESTEAD.world.x - HOMESTEAD.width / 2,
+    maxX: HOMESTEAD.world.x + HOMESTEAD.width / 2,
+    minY: HOMESTEAD.world.y - HOMESTEAD.height * HOMESTEAD.anchor[1],
+    maxY: HOMESTEAD.world.y + HOMESTEAD.height * (1 - HOMESTEAD.anchor[1])
+  };
+  return region;
+});
+var riverByCell = new Map(RIVER_SEGMENTS.map((s, i) => [`${s.cell.x},${s.cell.y}`, environment.find(r => r.regionId === `river.${s.cell.x}.${s.cell.y}`)]));
+var blockers = environment;
+var validCache = /* @__PURE__ */new Map();
+function isValidPlotCell(x, y) {
+  const key = `${x},${y}`,
+    cached = validCache.get(key);
+  if (cached !== void 0) return cached;
+  const quad = plotQuad(logicalToWorld({
+    x,
+    y
+  }));
+  const valid = Number.isSafeInteger(x) && Number.isSafeInteger(y) && !blockers.some(r => scenePolygonsIntersect(quad, r.boundary));
+  if (validCache.size > 2e4) validCache.clear();
+  validCache.set(key, valid);
+  return valid;
+}
+function scenePlotRegion(x, y) {
+  if (!isValidPlotCell(x, y)) return null;
+  const center = logicalToWorld({
+    x,
+    y
+  });
+  return {
+    regionId: `plot.${x}.${y}`,
+    plotId: idAt(x, y),
+    type: "plot",
+    cell: {
+      x,
+      y
+    },
+    center,
+    boundary: plotQuad(center),
+    district: district({
+      x,
+      y
+    }),
+    ground: "soil",
+    capabilities: {
+      selectable: true,
+      walkable: true,
+      waterSource: false
+    }
+  };
+}
+function agriculturalNeighbors(p) {
+  return neighbors(p).filter(n => isValidPlotCell(n.x, n.y));
+}
+var bridgeLinks = BRIDGES.map((b, i) => ({
+  bridge: `bridge.${i}`,
+  river: `river.${b.cell.x}.${b.cell.y}`,
+  a: {
+    x: b.cell.x,
+    y: b.cell.y - 1
+  },
+  b: {
+    x: b.cell.x,
+    y: b.cell.y + 1
+  }
+}));
+var fixedConnections = bridgeLinks.flatMap(b => [{
+  from: `plot.${b.a.x}.${b.a.y}`,
+  to: b.bridge,
+  purpose: "exploration"
+}, {
+  from: b.bridge,
+  to: `plot.${b.b.x}.${b.b.y}`,
+  purpose: "exploration"
+}]);
+for (let i = 1; i < RIVER_SEGMENTS.length; i++) {
+  const a = RIVER_SEGMENTS[i - 1].cell,
+    b = RIVER_SEGMENTS[i].cell;
+  fixedConnections.push({
+    from: `river.${a.x}.${a.y}`,
+    to: `river.${b.x}.${b.y}`,
+    purpose: "water"
+  });
+}
+fixedConnections.push({
+  from: "env.spring",
+  to: "river.-3.2",
+  purpose: "water"
+});
+var FARM_SCENE = {
+  id: SCENE_ID,
+  version: SCENE_VERSION,
+  regions: environment,
+  connections: fixedConnections,
+  districts: SCENIC_DISTRICTS,
+  plotAt: scenePlotRegion,
+  neighbors: explorationNeighbors
+};
+function explorationNeighbors(p) {
+  const out = agriculturalNeighbors(p);
+  var _iterator = _createForOfIteratorHelper(bridgeLinks),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      const link = _step.value;
+      const target = p.x === link.a.x && p.y === link.a.y ? link.b : p.x === link.b.x && p.y === link.b.y ? link.a : null;
+      if (target && isValidPlotCell(target.x, target.y)) out.push({
+        id: idAt(target.x, target.y),
+        ...target
+      });
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return out;
+}
+function explorationStatus(plots, p) {
+  const reachable = explorationNeighbors(p).some(n => plots[n.id] && plots[n.id].kind !== "unknown");
+  return {
+    reachable,
+    reason: reachable ? "\u4E0E\u5DF2\u63A2\u7D22\u533A\u57DF\u76F8\u901A" : neighbors(p).some(n => riverByCell.has(`${n.x},${n.y}`)) ? "\u6CB3\u6D41\u963B\u9694\uFF0C\u8BF7\u4ECE\u6865\u5934\u9010\u6B65\u63A2\u7D22" : "\u5148\u63A2\u7D22\u76F8\u90BB\u533A\u57DF"
+  };
+}
+function adjacentSceneWater(p) {
+  const sources = neighbors(p).map(n => riverByCell.get(`${n.x},${n.y}`)).filter(r => !!r);
+  const spring = environment.find(r => r.regionId === "env.spring");
+  if (scenePolygonsIntersect(cellDiamond(logicalToWorld(p)), spring.boundary)) sources.push(spring);
+  return sources;
+}
+function sceneRange(p, stepsCount) {
+  const seen = /* @__PURE__ */new Set([idAt(p.x, p.y)]);
+  let queue = [p];
+  for (let i = 0; i < stepsCount; i++) {
+    const next = [];
+    var _iterator2 = _createForOfIteratorHelper(queue),
+      _step2;
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        const at = _step2.value;
+        var _iterator3 = _createForOfIteratorHelper(agriculturalNeighbors(at)),
+          _step3;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            const n = _step3.value;
+            if (!seen.has(n.id)) {
+              seen.add(n.id);
+              next.push(n);
+            }
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+    queue = next;
+  }
+  return _toConsumableArray(seen);
+}
+function buildSceneSnapshot(plots) {
+  const regions = _toConsumableArray(environment),
+    connections = _toConsumableArray(fixedConnections),
+    known = new Set(plots.map(p => p.id));
+  var _iterator4 = _createForOfIteratorHelper(plots),
+    _step4;
+  try {
+    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+      const p = _step4.value;
+      const r = scenePlotRegion(p.x, p.y);
+      if (!r) throw new Error(`\u5730\u5757 ${p.id} \u4E0D\u5C5E\u4E8E\u6709\u6548\u573A\u666F\u533A\u57DF`);
+      regions.push(r);
+      var _iterator6 = _createForOfIteratorHelper(agriculturalNeighbors(p)),
+        _step6;
+      try {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          const n = _step6.value;
+          if (known.has(n.id) && p.id < n.id) {
+            const to = `plot.${n.x}.${n.y}`;
+            const mid = {
+              x: (p.x + n.x) / 2,
+              y: (p.y + n.y) / 2
+            };
+            const road = environment.find(e => e.type === "path" && pointInPolygon(logicalToWorld(mid), e.boundary));
+            connections.push({
+              from: r.regionId,
+              to,
+              purpose: "agriculture"
+            }, {
+              from: r.regionId,
+              to,
+              purpose: "water"
+            }, {
+              from: r.regionId,
+              to,
+              purpose: "exploration",
+              ...(road ? {
+                via: road.regionId
+              } : {})
+            });
+          }
+        }
+      } catch (err) {
+        _iterator6.e(err);
+      } finally {
+        _iterator6.f();
+      }
+      var _iterator7 = _createForOfIteratorHelper(adjacentSceneWater(p)),
+        _step7;
+      try {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          const water = _step7.value;
+          connections.push({
+            from: water.regionId,
+            to: r.regionId,
+            purpose: "water"
+          });
+        }
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
+    }
+  } catch (err) {
+    _iterator4.e(err);
+  } finally {
+    _iterator4.f();
+  }
+  const regionIds = new Set(regions.map(r => r.regionId));
+  const liveConnections = connections.filter(c => regionIds.has(c.from) && regionIds.has(c.to));
+  const bounds = {
+    minX: Infinity,
+    maxX: -Infinity,
+    minY: Infinity,
+    maxY: -Infinity
+  };
+  var _iterator5 = _createForOfIteratorHelper(regions),
+    _step5;
+  try {
+    for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+      const r = _step5.value;
+      var _iterator8 = _createForOfIteratorHelper(r.boundary),
+        _step8;
+      try {
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          const p = _step8.value;
+          bounds.minX = Math.min(bounds.minX, p.x - 180);
+          bounds.maxX = Math.max(bounds.maxX, p.x + 180);
+          bounds.minY = Math.min(bounds.minY, p.y - 180);
+          bounds.maxY = Math.max(bounds.maxY, p.y + 180);
+        }
+      } catch (err) {
+        _iterator8.e(err);
+      } finally {
+        _iterator8.f();
+      }
+    }
+  } catch (err) {
+    _iterator5.e(err);
+  } finally {
+    _iterator5.f();
+  }
+  return {
+    id: SCENE_ID,
+    version: SCENE_VERSION,
+    regions,
+    connections: liveConnections,
+    bounds
+  };
+}
+function sceneHitTest(point, scene, selectable) {
+  const hits = scene.regions.filter(r => r.plotId && selectable.has(r.plotId) && pointInPolygon(point, r.boundary));
+  hits.sort((a, b) => b.center.y - a.center.y || a.regionId.localeCompare(b.regionId));
+  return hits[0]?.plotId ?? null;
+}
+
 // core/src/game/narrative/conditions.ts
 function matches(conditions = [], event2, fact) {
   return conditions.every(c => {
@@ -35,24 +1234,24 @@ function advanceStory(input) {
   };
   if (input.sequence !== state.sequence + 1) throw new Error("\u5267\u60C5\u884C\u52A8\u5E8F\u53F7\u4E0D\u8FDE\u7EED");
   const facts2 = new Map(input.facts.map(f => [f.id, f]));
-  var _iterator = _createForOfIteratorHelper(input.events.entries()),
-    _step;
+  var _iterator9 = _createForOfIteratorHelper(input.events.entries()),
+    _step9;
   try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      const _step$value = _slicedToArray(_step.value, 2),
-        eventIndex = _step$value[0],
-        event2 = _step$value[1];
-      var _iterator2 = _createForOfIteratorHelper(input.catalog),
-        _step2;
+    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+      const _step9$value = _slicedToArray(_step9.value, 2),
+        eventIndex = _step9$value[0],
+        event2 = _step9$value[1];
+      var _iterator0 = _createForOfIteratorHelper(input.catalog),
+        _step0;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          const definition = _step2.value;
+        for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
+          const definition = _step0.value;
           const instanceId = definition.id + "@" + event2.subjectId;
-          var _iterator3 = _createForOfIteratorHelper(definition.nodes),
-            _step3;
+          var _iterator1 = _createForOfIteratorHelper(definition.nodes),
+            _step1;
           try {
-            for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-              const node = _step3.value;
+            for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
+              const node = _step1.value;
               if (node.topic !== event2.topic || !matches(node.conditions, event2, facts2.get(event2.subjectId))) continue;
               let instance = state.instances[instanceId];
               if (node.after?.some(id => !instance?.completed.includes(id))) continue;
@@ -91,21 +1290,21 @@ function advanceStory(input) {
               notices.push(record);
             }
           } catch (err) {
-            _iterator3.e(err);
+            _iterator1.e(err);
           } finally {
-            _iterator3.f();
+            _iterator1.f();
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator0.e(err);
       } finally {
-        _iterator2.f();
+        _iterator0.f();
       }
     }
   } catch (err) {
-    _iterator.e(err);
+    _iterator9.e(err);
   } finally {
-    _iterator.f();
+    _iterator9.f();
   }
   state.sequence = input.sequence;
   return {
@@ -117,20 +1316,20 @@ function advanceStory(input) {
 // core/src/game/narrative/validation.ts
 function validateCatalog(catalog, capabilities, topics2) {
   const definitions = /* @__PURE__ */new Set();
-  var _iterator4 = _createForOfIteratorHelper(catalog),
-    _step4;
+  var _iterator10 = _createForOfIteratorHelper(catalog),
+    _step10;
   try {
-    for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-      const d = _step4.value;
+    for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+      const d = _step10.value;
       if (definitions.has(d.id) || !d.id || !Number.isInteger(d.revision) || d.revision < 1) throw new Error("\u5267\u60C5\u76EE\u5F55\u6807\u8BC6\u65E0\u6548\uFF1A" + d.id);
       definitions.add(d.id);
       const ids = new Set(d.nodes.map(n => n.id));
       if (ids.size !== d.nodes.length) throw new Error("\u91CD\u590D\u5267\u60C5\u8282\u70B9\uFF1A" + d.id);
-      var _iterator5 = _createForOfIteratorHelper(d.nodes),
-        _step5;
+      var _iterator11 = _createForOfIteratorHelper(d.nodes),
+        _step11;
       try {
-        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-          const n = _step5.value;
+        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+          const n = _step11.value;
           if (topics2 && !topics2.includes(n.topic)) throw new Error("\u672A\u63A5\u5165\u5267\u60C5\u4E8B\u4EF6\uFF1A" + n.topic);
           if (!n.topic || !n.title || !n.text || n.after?.some(id => !ids.has(id))) throw new Error("\u5267\u60C5\u8282\u70B9\u7F3A\u5C11\u5185\u5BB9\u6216\u524D\u7F6E\uFF1A" + d.id + "/" + n.id);
           if (n.choices?.some(c => !capabilities.includes(c.capability))) throw new Error("\u672A\u7ED1\u5B9A\u5267\u60C5\u80FD\u529B\uFF1A" + d.id + "/" + n.id);
@@ -138,43 +1337,43 @@ function validateCatalog(catalog, capabilities, topics2) {
           if (n.conditions?.some(c => !["event", "fact"].includes(c.source) || !["eq", "gte"].includes(c.op) || c.op === "gte" && typeof c.value !== "number")) throw new Error("\u65E0\u6548\u5267\u60C5\u6761\u4EF6\uFF1A" + n.id);
         }
       } catch (err) {
-        _iterator5.e(err);
+        _iterator11.e(err);
       } finally {
-        _iterator5.f();
+        _iterator11.f();
       }
       const visit = (id, path) => {
         if (path.has(id)) throw new Error("\u5267\u60C5\u524D\u7F6E\u5FAA\u73AF\uFF1A" + d.id + "/" + id);
         const next = new Set(path).add(id);
-        var _iterator6 = _createForOfIteratorHelper(d.nodes.find(n => n.id === id).after ?? []),
-          _step6;
+        var _iterator12 = _createForOfIteratorHelper(d.nodes.find(n => n.id === id).after ?? []),
+          _step12;
         try {
-          for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-            const parent = _step6.value;
+          for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+            const parent = _step12.value;
             visit(parent, next);
           }
         } catch (err) {
-          _iterator6.e(err);
+          _iterator12.e(err);
         } finally {
-          _iterator6.f();
+          _iterator12.f();
         }
       };
-      var _iterator7 = _createForOfIteratorHelper(d.nodes),
-        _step7;
+      var _iterator13 = _createForOfIteratorHelper(d.nodes),
+        _step13;
       try {
-        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-          const n = _step7.value;
+        for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+          const n = _step13.value;
           visit(n.id, /* @__PURE__ */new Set());
         }
       } catch (err) {
-        _iterator7.e(err);
+        _iterator13.e(err);
       } finally {
-        _iterator7.f();
+        _iterator13.f();
       }
     }
   } catch (err) {
-    _iterator4.e(err);
+    _iterator10.e(err);
   } finally {
-    _iterator4.f();
+    _iterator10.f();
   }
 }
 function validateStoryState(value, catalog, version) {
@@ -192,20 +1391,20 @@ function validateStoryState(value, catalog, version) {
       if (Object.entries(i.participants).some(([node, actor]) => !d.nodes.some(n => n.id === node) || typeof actor !== "string")) return false;
     }
     const ids = /* @__PURE__ */new Set();
-    var _iterator8 = _createForOfIteratorHelper(s.records),
-      _step8;
+    var _iterator14 = _createForOfIteratorHelper(s.records),
+      _step14;
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        const r = _step8.value;
+      for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+        const r = _step14.value;
         const i = s.instances[r?.instanceId],
           d = catalog.find(d2 => d2.id === i?.definitionId);
         if (!i || !d?.nodes.some(n => n.id === r.nodeId) || r.subjectId !== i.subjectId || !["id", "actorId", "title", "text"].every(k => typeof r[k] === "string") || !Number.isFinite(r.day) || r.day < 0 || !Number.isInteger(r.era) || r.era < 0 || !["place", "relaxation", "learning", "farming", "inheritance"].includes(r.surface) || ids.has(r.id)) return false;
         ids.add(r.id);
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator14.e(err);
     } finally {
-      _iterator8.f();
+      _iterator14.f();
     }
     return true;
   } catch {
@@ -2780,11 +3979,11 @@ function applyCatalogOverlay(overlay) {
     if (n.legume !== void 0) crop.legume = n.legume;else delete crop.legume;
   }
   if (Object.keys(overlay.products).length !== ALL_PRODUCTS.length) throw new Error("\u4EA7\u54C1\u76EE\u5F55\u6761\u76EE\u4E0D\u5339\u914D");
-  var _iterator9 = _createForOfIteratorHelper(ALL_PRODUCTS),
-    _step9;
+  var _iterator15 = _createForOfIteratorHelper(ALL_PRODUCTS),
+    _step15;
   try {
-    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-      const product = _step9.value;
+    for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+      const product = _step15.value;
       const n = overlay.products[product.id];
       if (!n || !n.inputs) throw new Error("\u7F3A\u5C11\u4EA7\u54C1\u6295\u5165\uFF1A" + product.id);
       integerMap(n.inputs);
@@ -2793,16 +3992,16 @@ function applyCatalogOverlay(overlay) {
       };
     }
   } catch (err) {
-    _iterator9.e(err);
+    _iterator15.e(err);
   } finally {
-    _iterator9.f();
+    _iterator15.f();
   }
   if (Object.keys(overlay.processes).length !== ALL_PROCESSES.length) throw new Error("\u5DE5\u5E8F\u76EE\u5F55\u6761\u76EE\u4E0D\u5339\u914D");
-  var _iterator0 = _createForOfIteratorHelper(ALL_PROCESSES),
-    _step0;
+  var _iterator16 = _createForOfIteratorHelper(ALL_PROCESSES),
+    _step16;
   try {
-    for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
-      const process = _step0.value;
+    for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+      const process = _step16.value;
       const n = overlay.processes[process.id];
       if (!n || !n.inputs || !n.outputs || !Number.isInteger(n.wait) || n.wait < 0 || n.wait > 8) throw new Error("\u5DE5\u5E8F\u6570\u503C\u65E0\u6548\uFF1A" + process.id);
       integerMap(n.inputs);
@@ -2820,9 +4019,9 @@ function applyCatalogOverlay(overlay) {
       } else delete process.power;
     }
   } catch (err) {
-    _iterator0.e(err);
+    _iterator16.e(err);
   } finally {
-    _iterator0.f();
+    _iterator16.f();
   }
 }
 var COOKING = [{
@@ -2915,7 +4114,7 @@ var LANDSCAPE_NAMES = {
 function landscapeSource(s, kind, plotId2) {
   const plots = Object.values(s.economy?.farm?.plots ?? {}),
     target = plotId2 ? s.economy?.farm?.plots[plotId2] : void 0;
-  return plots.filter(p => p.landscape && (kind === "landmark" || p.landscape.kind === kind) && (!plotId2 || target && Math.max(Math.abs(p.x - target.x), Math.abs(p.y - target.y)) <= 2)).sort((a, b) => b.landscape.level - a.landscape.level || a.id.localeCompare(b.id))[0];
+  return plots.filter(p => p.landscape && (kind === "landmark" || p.landscape.kind === kind) && (!plotId2 || target && sceneRange(target, 2).includes(p.id))).sort((a, b) => b.landscape.level - a.landscape.level || a.id.localeCompare(b.id))[0];
 }
 function landscapeEffect(s, id) {
   const _id$split = id.split(":"),
@@ -2960,7 +4159,7 @@ function landscapeDescription(s, p) {
     r = s.economy.farm.rules;
   if (!l) return "";
   const up = l.level === 3;
-  return l.kind === "landmark" ? "\u5DF2\u5728\u653E\u677E\u4E0E\u8C03\u517B\u89E3\u9501\u51ED\u680F\u6563\u5FC3\uFF0C\u53EF\u9009\u5EFA\u56DB\u79CD\u666F\u89C2\u3002" : l.kind === "tea" ? `\u5728\u653E\u677E\u4E0E\u8C03\u517B\u4E2D\u54C1\u8336\u534A\u65E5\uFF0C\u57FA\u7840\u51CF\u538B${up ? r.landscapeTeaReliefUpgraded : r.landscapeTeaRelief}\uFF0C\u6D88\u8017${LANDSCAPE_INPUTS.tea.food}\u6279\u5E72\u7CAE\uFF1B\u4E0D\u9700\u56DE\u5230\u5730\u5757\u64CD\u4F5C\u3002` : l.kind === "reading" ? `\u7406\u8BBA\u5B66\u4E60\u589E\u538B\u51CF\u5C11${up ? r.landscapePressurePercentUpgraded : r.landscapePressurePercent}%\uFF0C\u5B66\u4E60\u9875\u62A5\u4EF7\u81EA\u52A8\u751F\u6548\u3002` : l.kind === "garden" ? `\u4E24\u683C\u5185\u64AD\u79CD\u3001\u704C\u6E89\u3001\u65BD\u80A5\u548C\u6536\u83B7\u589E\u538B\u51CF\u5C11${up ? r.landscapePressurePercentUpgraded : r.landscapePressurePercent}%\uFF0C\u519C\u65F6\u62A5\u4EF7\u81EA\u52A8\u751F\u6548\u3002` : `\u6559\u5BFC\u4E0E\u8BF7\u6559\u8017\u65F6\u51CF\u5C11${up ? r.landscapeTeachingPercentUpgraded : r.landscapeTeachingPercent}%\uFF0C\u6309\u534A\u5929\u5411\u4E0A\u53D6\u6574\uFF1B\u6559\u5B66\u4E0E\u4F20\u627F\u5165\u53E3\u751F\u6548\u3002`;
+  return l.kind === "landmark" ? "\u5DF2\u5728\u653E\u677E\u4E0E\u8C03\u517B\u89E3\u9501\u51ED\u680F\u6563\u5FC3\uFF0C\u53EF\u9009\u5EFA\u56DB\u79CD\u666F\u89C2\u3002" : l.kind === "tea" ? `\u5728\u653E\u677E\u4E0E\u8C03\u517B\u4E2D\u54C1\u8336\u534A\u65E5\uFF0C\u57FA\u7840\u51CF\u538B${up ? r.landscapeTeaReliefUpgraded : r.landscapeTeaRelief}\uFF0C\u6D88\u8017${LANDSCAPE_INPUTS.tea.food}\u6279\u5E72\u7CAE\uFF1B\u4E0D\u9700\u56DE\u5230\u5730\u5757\u64CD\u4F5C\u3002` : l.kind === "reading" ? `\u7406\u8BBA\u5B66\u4E60\u589E\u538B\u51CF\u5C11${up ? r.landscapePressurePercentUpgraded : r.landscapePressurePercent}%\uFF0C\u5B66\u4E60\u9875\u62A5\u4EF7\u81EA\u52A8\u751F\u6548\u3002` : l.kind === "garden" ? `\u573A\u666F\u76F8\u90BB\u4E24\u6B65\u5185\u64AD\u79CD\u3001\u704C\u6E89\u3001\u65BD\u80A5\u548C\u6536\u83B7\u589E\u538B\u51CF\u5C11${up ? r.landscapePressurePercentUpgraded : r.landscapePressurePercent}%\uFF0C\u519C\u65F6\u62A5\u4EF7\u81EA\u52A8\u751F\u6548\u3002` : `\u6559\u5BFC\u4E0E\u8BF7\u6559\u8017\u65F6\u51CF\u5C11${up ? r.landscapeTeachingPercentUpgraded : r.landscapeTeachingPercent}%\uFF0C\u6309\u534A\u5929\u5411\u4E0A\u53D6\u6574\uFF1B\u6559\u5B66\u4E0E\u4F20\u627F\u5165\u53E3\u751F\u6548\u3002`;
 }
 function landscapeView(s) {
   return Object.values(s.economy?.farm?.plots ?? {}).filter(p => p.landscape).map(p => ({
@@ -4133,30 +5332,30 @@ function renewShop(s, r, events) {
   if (!sh) return;
   const ready = sh.orders.filter(o => o.due <= s.clock.absoluteTurn);
   sh.orders = sh.orders.filter(o => o.due > s.clock.absoluteTurn);
-  var _iterator1 = _createForOfIteratorHelper(ready),
-    _step1;
+  var _iterator17 = _createForOfIteratorHelper(ready),
+    _step17;
   try {
-    for (_iterator1.s(); !(_step1 = _iterator1.n()).done;) {
-      const o = _step1.value;
+    for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+      const o = _step17.value;
       deliverShop(s, r, o, events);
     }
   } catch (err) {
-    _iterator1.e(err);
+    _iterator17.e(err);
   } finally {
-    _iterator1.f();
+    _iterator17.f();
   }
   sh.transport = r.shop.transport;
-  var _iterator10 = _createForOfIteratorHelper(shopCatalog(s, r)),
-    _step10;
+  var _iterator18 = _createForOfIteratorHelper(shopCatalog(s, r)),
+    _step18;
   try {
-    for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-      const x = _step10.value;
+    for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+      const x = _step18.value;
       sh.stock[x.id] = s.economy?.branches && x.target === "iron" ? Math.max(1, (s.economy.branches.channels.includes("metal") || (s.era?.index ?? 0) >= 2 ? r.branches.metalStock : r.branches.basicIronStock) + (eraCard(s)?.metal ?? 0)) : x.kind === "goods" ? r.shop.stock : 1;
     }
   } catch (err) {
-    _iterator10.e(err);
+    _iterator18.e(err);
   } finally {
-    _iterator10.f();
+    _iterator18.f();
   }
 }
 function cartQuote(s, r, cart = s.economy.shop.cart) {
@@ -4170,31 +5369,31 @@ function cartQuote(s, r, cart = s.economy.shop.cart) {
   const final = !r.civilization && s.clock.generation >= r.parameters.generations && s.clock.turn >= r.parameters.turnsPerGeneration;
   const total2 = lines.reduce((n, l) => n + l.item.price * l.quantity, 0),
     weight = lines.reduce((n, l) => n + l.item.weight * l.quantity, 0);
-  const blockers = unavailable.map(id => "\u6E05\u5355\u5546\u54C1\u5DF2\u4E0D\u53EF\u91C7\u8D2D\uFF0C\u8BF7\u6E05\u7A7A\u6E05\u5355\uFF1A" + id);
-  if (!lines.length) blockers.push("\u91C7\u8D2D\u6E05\u5355\u4E3A\u7A7A");
-  if (final && lines.some(l => !l.item.local)) blockers.push("\u6700\u540E\u4E00\u5B63\u65E0\u6CD5\u4EA4\u4ED8\u8BA2\u8D27\uFF0C\u8BF7\u79FB\u9664\u8BA2\u8D27\u5546\u54C1");
-  if (weight > sh.transport) blockers.push("\u672C\u5B63\u8FD0\u8F93\u5BB9\u91CF\u4E0D\u8DB3");
-  var _iterator11 = _createForOfIteratorHelper(lines),
-    _step11;
+  const blockers2 = unavailable.map(id => "\u6E05\u5355\u5546\u54C1\u5DF2\u4E0D\u53EF\u91C7\u8D2D\uFF0C\u8BF7\u6E05\u7A7A\u6E05\u5355\uFF1A" + id);
+  if (!lines.length) blockers2.push("\u91C7\u8D2D\u6E05\u5355\u4E3A\u7A7A");
+  if (final && lines.some(l => !l.item.local)) blockers2.push("\u6700\u540E\u4E00\u5B63\u65E0\u6CD5\u4EA4\u4ED8\u8BA2\u8D27\uFF0C\u8BF7\u79FB\u9664\u8BA2\u8D27\u5546\u54C1");
+  if (weight > sh.transport) blockers2.push("\u672C\u5B63\u8FD0\u8F93\u5BB9\u91CF\u4E0D\u8DB3");
+  var _iterator19 = _createForOfIteratorHelper(lines),
+    _step19;
   try {
-    for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-      const _step11$value = _step11.value,
-        item = _step11$value.item,
-        quantity = _step11$value.quantity;
-      if (item.owned) blockers.push(item.name + "\u5DF2\u62E5\u6709\u3001\u5728\u5236\u6216\u5F85\u4EA4\u4ED8");
-      if (quantity > item.stock) blockers.push(item.name + "\u5E93\u5B58\u4E0D\u8DB3");
+    for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
+      const _step19$value = _step19.value,
+        item = _step19$value.item,
+        quantity = _step19$value.quantity;
+      if (item.owned) blockers2.push(item.name + "\u5DF2\u62E5\u6709\u3001\u5728\u5236\u6216\u5F85\u4EA4\u4ED8");
+      if (quantity > item.stock) blockers2.push(item.name + "\u5E93\u5B58\u4E0D\u8DB3");
     }
   } catch (err) {
-    _iterator11.e(err);
+    _iterator19.e(err);
   } finally {
-    _iterator11.f();
+    _iterator19.f();
   }
   return {
     lines,
     total: total2,
     weight,
     remainingMoney: s.household.money - total2,
-    blockers
+    blockers: blockers2
   };
 }
 function shopView(s, r) {
@@ -4236,18 +5435,15 @@ function revealLand(s, p) {
   };
 }
 function farmCoverage(p, range = 4) {
-  const radius = range >= 12 ? 2 : 1,
-    out = [];
-  for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius; dx <= radius; dx++) {
-    if (!dx && !dy) continue;
-    if (range === 4 && Math.abs(dx) + Math.abs(dy) !== 1 || range === 12 && Math.abs(dx) + Math.abs(dy) > 2) continue;
-    out.push({
-      id: plotId(p.x + dx, p.y + dy),
-      x: p.x + dx,
-      y: p.y + dy
-    });
-  }
-  return out;
+  const radius = range >= 12 ? 2 : 1;
+  return sceneRange(p, radius).filter(id => id !== p.id).map(id => {
+    const match = /^p(-?\d+)q(-?\d+)$/.exec(id);
+    return {
+      id,
+      x: Number(match[1]),
+      y: Number(match[2])
+    };
+  });
 }
 function fieldPlot(s, f) {
   return Object.values(s.economy?.farm?.plots ?? {}).find(p => plotField(s, p.id) === f);
@@ -4275,21 +5471,21 @@ function drainOutlet(s, p) {
     const at = queue.shift();
     if (seen.has(at.id)) continue;
     seen.add(at.id);
-    if (at.x === 0 || at.y === 0) return true;
-    var _iterator12 = _createForOfIteratorHelper(farmNeighbors(at)),
-      _step12;
+    if (adjacentSceneWater(at).some(r => r.capabilities.waterLevel < at.land.elevation)) return true;
+    var _iterator20 = _createForOfIteratorHelper(farmNeighbors(at)),
+      _step20;
     try {
-      for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-        const n = _step12.value;
+      for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+        const n = _step20.value;
         const next = plots[n.id];
         if (!next?.land || next.kind === "unknown") continue;
         if (next.land.elevation < at.land.elevation) return true;
         if (next.improvement === "drain" && next.land.elevation === at.land.elevation) queue.push(next);
       }
     } catch (err) {
-      _iterator12.e(err);
+      _iterator20.e(err);
     } finally {
-      _iterator12.f();
+      _iterator20.f();
     }
   }
   return false;
@@ -4300,18 +5496,18 @@ function connectedCanalIds(s) {
     queue = [];
   for (var _i10 = 0, _Object$values3 = Object.values(plots); _i10 < _Object$values3.length; _i10++) {
     const p = _Object$values3[_i10];
-    if (p.kind === "water") {
+    if (p.kind === "water" || p.improvement === "canal" && p.land && adjacentSceneWater(p).some(r => r.capabilities.waterLevel >= p.land.elevation)) {
       connected.add(p.id);
       queue.push(p);
     }
   }
   while (queue.length) {
     const at = queue.shift();
-    var _iterator13 = _createForOfIteratorHelper(farmNeighbors(at)),
-      _step13;
+    var _iterator21 = _createForOfIteratorHelper(farmNeighbors(at)),
+      _step21;
     try {
-      for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-        const n = _step13.value;
+      for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
+        const n = _step21.value;
         const next = plots[n.id];
         if (!next || connected.has(next.id) || next.improvement !== "canal" || !next.land || !at.land) continue;
         if (next.land.elevation <= at.land.elevation) {
@@ -4320,9 +5516,9 @@ function connectedCanalIds(s) {
         }
       }
     } catch (err) {
-      _iterator13.e(err);
+      _iterator21.e(err);
     } finally {
-      _iterator13.f();
+      _iterator21.f();
     }
   }
   return connected;
@@ -4332,8 +5528,40 @@ function waterConnected(s, p) {
   if (p.improvement !== "canal") return false;
   return connectedCanalIds(s).has(p.id);
 }
+function irrigationTargets(s, start) {
+  const plots = s.economy.farm.plots,
+    connected = connectedCanalIds(s),
+    targets = /* @__PURE__ */new Set();
+  if (start.improvement !== "canal" || !connected.has(start.id)) return targets;
+  const seen = /* @__PURE__ */new Set([start.id]),
+    queue = [start];
+  while (queue.length) {
+    const at = queue.shift();
+    var _iterator22 = _createForOfIteratorHelper(farmNeighbors(at)),
+      _step22;
+    try {
+      for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+        const n = _step22.value;
+        const next = plots[n.id];
+        if (!next?.land || !at.land || next.land.elevation > at.land.elevation) continue;
+        if (next.improvement === "canal" && connected.has(next.id)) {
+          if (!seen.has(next.id)) {
+            seen.add(next.id);
+            queue.push(next);
+          }
+        } else if (next.kind === "field" && next.purpose === "sowing") targets.add(next.id);
+      }
+    } catch (err) {
+      _iterator22.e(err);
+    } finally {
+      _iterator22.f();
+    }
+  }
+  return targets;
+}
 function waterAccess(s, p) {
   if (p.kind === "water") return true;
+  if (p.land && adjacentSceneWater(p).some(r => r.capabilities.waterLevel >= p.land.elevation)) return true;
   const plots = s.economy?.farm?.plots ?? {};
   return farmNeighbors(p).some(n => {
     const q = plots[n.id];
@@ -4378,11 +5606,11 @@ function advanceLandDay(s) {
   if (!farm) return;
   const r = farm.rules,
     plots = Object.values(farm.plots).sort((a, b) => a.id.localeCompare(b.id));
-  var _iterator14 = _createForOfIteratorHelper(plots),
-    _step14;
+  var _iterator23 = _createForOfIteratorHelper(plots),
+    _step23;
   try {
-    for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-      const p = _step14.value;
+    for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
+      const p = _step23.value;
       const l = p.land;
       if (!l) continue;
       if (l.paddy) {
@@ -4432,9 +5660,9 @@ function advanceLandDay(s) {
       }
     }
   } catch (err) {
-    _iterator14.e(err);
+    _iterator23.e(err);
   } finally {
-    _iterator14.f();
+    _iterator23.f();
   }
 }
 function neighborImprovement(s, p, kind) {
@@ -4442,7 +5670,8 @@ function neighborImprovement(s, p, kind) {
   return farmNeighbors(p).some(n => plots[n.id]?.improvement === kind);
 }
 function shedCovers(s, plot) {
-  return Object.values(s.economy?.farm?.plots ?? {}).some(q => q.improvement === "shed" && Math.max(Math.abs(q.x - plot.x), Math.abs(q.y - plot.y)) <= 2);
+  const covered = new Set(sceneRange(plot, 2));
+  return Object.values(s.economy?.farm?.plots ?? {}).some(q => q.improvement === "shed" && covered.has(q.id));
 }
 function pitReadyCheck(s, events, day) {
   const farm = s.economy?.farm;
@@ -4506,7 +5735,8 @@ function farmBlocker(s, crop, worker, f = s.economy.field, heritage = false) {
   if (f.growth >= f.duration) return [];
   if (!s.life?.calendar && f.tended === s.clock.absoluteTurn) return ["\u672C\u5B63\u5DF2\u7BA1\u7406\u7530\u95F4"];
   if (!fieldNeedsWater(s, f)) return ["\u5F53\u524D\u6C34\u5206\u5145\u8DB3\uFF0C\u7B49\u5F85\u4F5C\u7269\u751F\u957F"];
-  if (s.location.water < 1) return ["\u516C\u5171\u6C34\u4E0D\u8DB3"];
+  const at = fieldPlot(s, f);
+  if (!(at && waterAccess(s, at)) && s.location.water < 1) return ["\u672A\u63A5\u901A\u6C34\u6E90\u4E14\u516C\u5171\u6C34\u4E0D\u8DB3"];
   return [];
 }
 function farmWork(s, crop, events, worker, f = s.economy.field, heritage = false) {
@@ -4615,7 +5845,8 @@ function farmWork(s, crop, events, worker, f = s.economy.field, heritage = false
     delete f.variety;
     delete f.batch;
   } else {
-    s.location.water--;
+    const at = fieldPlot(s, f);
+    if (!(at && waterAccess(s, at))) s.location.water--;
     irrigateField(s, f);
     if (equipped(s, "W01")) consumeEquipment(s, "W01", events);
     f.tended = s.clock.absoluteTurn;
@@ -4670,26 +5901,22 @@ function plotField(s, id) {
   return id === HOME_PLOT ? s.economy.field : s.economy?.farm?.plots[id]?.field;
 }
 function farmNeighbors(p) {
-  return [[p.x - 1, p.y], [p.x + 1, p.y], [p.x, p.y - 1], [p.x, p.y + 1]].map(([x, y]) => ({
-    id: plotId(x, y),
-    x,
-    y
-  }));
+  return agriculturalNeighbors(p);
 }
 function extendFarm(s, p) {
   const plots = s.economy.farm.plots;
-  var _iterator15 = _createForOfIteratorHelper(farmNeighbors(p)),
-    _step15;
+  var _iterator24 = _createForOfIteratorHelper(explorationNeighbors(p)),
+    _step24;
   try {
-    for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-      const n = _step15.value;
+    for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
+      const n = _step24.value;
       const startX = farmUnitStart(n.x),
         startY = farmUnitStart(n.y);
       for (let dy = 0; dy < FARM_UNIT_SIZE; dy++) for (let dx = 0; dx < FARM_UNIT_SIZE; dx++) {
         const x = startX + dx,
           y = startY + dy,
           id = plotId(x, y);
-        plots[id] ?? (plots[id] = {
+        if (isValidPlotCell(x, y)) plots[id] ?? (plots[id] = {
           id,
           x,
           y,
@@ -4698,16 +5925,16 @@ function extendFarm(s, p) {
       }
     }
   } catch (err) {
-    _iterator15.e(err);
+    _iterator24.e(err);
   } finally {
-    _iterator15.f();
+    _iterator24.f();
   }
 }
 function initializeFarm(s, rules2) {
   const plots = {};
   for (let y = 1; y <= 4; y++) for (let x = 1; x <= 5; x++) {
     const id2 = plotId(x, y);
-    plots[id2] = {
+    if (isValidPlotCell(x, y)) plots[id2] = {
       id: id2,
       x,
       y,
@@ -4735,6 +5962,10 @@ function initializeFarm(s, rules2) {
     };
   }
   s.economy.farm = {
+    scene: {
+      id: SCENE_ID,
+      version: SCENE_VERSION
+    },
     calendarVersion: 1,
     explorationVersion: 3,
     landVersion: 2,
@@ -4780,6 +6011,7 @@ function farmView(s) {
     v = s.persons[id].vitality,
     trust = activePerson(s).vitality?.experiences?.relationships[id] ?? 0;
   return {
+    scene: buildSceneSnapshot(Object.values(f.plots)),
     otherUseUnlocked: otherFarmUseUnlocked(s),
     construction: Object.entries(FARM_PROJECT_TECH).map(([kind, technology]) => ({
       kind,
@@ -4843,7 +6075,8 @@ function farmView(s) {
           maturity: field.crop ? maturityView(s, field) : null
         } : {}),
         ...(p.kind === "unknown" ? {
-          reachable: farmNeighbors(p).some(n => f.plots[n.id] && f.plots[n.id].kind !== "unknown")
+          reachable: explorationStatus(f.plots, p).reachable,
+          explorationReason: explorationStatus(f.plots, p).reason
         } : {}),
         ...(p.project ? {
           project: {
@@ -4866,6 +6099,7 @@ function farmView(s) {
           waterConnected: waterConnected(s, p)
         } : {}),
         waterAccess: waterAccess(s, p),
+        spatial: spatialView(s, p),
         ...(p.discovery ? {
           discovery: {
             ...p.discovery,
@@ -4950,6 +6184,7 @@ function settleNeighbor(s) {
 function exploreFarm(s, id, events) {
   const farm = s.economy.farm,
     p = farm.plots[id];
+  if (!p || p.kind !== "unknown" || !explorationStatus(farm.plots, p).reachable) throw new Error("\u6B64\u533A\u57DF\u5C1A\u4E0D\u53EF\u63A2\u7D22");
   revealLand(s, p);
   const key = id === "p4q1" ? "mushroom" : id === "p4q2" ? "yam" : FARM_DISCOVERIES[Math.min(FARM_DISCOVERIES.length - 1, Math.floor(draw(s) * FARM_DISCOVERIES.length))];
   p.kind = key === "oldtree" ? "tree" : key === "boulder" ? "rock" : key === "brambles" ? "brush" : ["meadow", "mushroom", "yam"].includes(key) ? "wild" : "story";
@@ -5099,11 +6334,11 @@ function advanceFields(s, days, events) {
     start = s.life.calendar.absoluteDay;
   for (var _i16 = 0, _Object$values7 = Object.values(s.economy?.farm?.plots ?? {}); _i16 < _Object$values7.length; _i16++) {
     const p = _Object$values7[_i16];
-    var _iterator16 = _createForOfIteratorHelper(p.plans ?? []),
-      _step16;
+    var _iterator25 = _createForOfIteratorHelper(p.plans ?? []),
+      _step25;
     try {
-      for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-        const plan = _step16.value;
+      for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
+        const plan = _step25.value;
         if (!plan.sown && !plan.failed && start + days >= cropBatches(s, plan.year).find(b => b.id === plan.batchId).end) {
           plan.failed = true;
           plan.failureReason = "\u9519\u8FC7\u64AD\u79CD\u7A97\u53E3";
@@ -5116,9 +6351,9 @@ function advanceFields(s, days, events) {
         }
       }
     } catch (err) {
-      _iterator16.e(err);
+      _iterator25.e(err);
     } finally {
-      _iterator16.f();
+      _iterator25.f();
     }
     const f = plotField(s, p.id);
     if (!f) continue;
@@ -5195,14 +6430,14 @@ function workFarmProject(s, id, kind, days, total2, events) {
     if (kind === "canal" || kind === "shelter" || kind === "drain") {
       if (kind === "shelter") p.kind = "rock";
       p.improvement = kind;
-      detail += "\uFF1B" + (kind === "canal" ? "\u6CBF\u9AD8\u7A0B\u4E0D\u5347\u7684\u6E20\u94FE\u901A\u6C34\uFF0C\u76F8\u90BB\u7530\u53EF\u5F00\u95F8\u704C\u6E89\u3002" : kind === "drain" ? "\u6709\u4F4E\u4F4D\u51FA\u53E3\u65F6\uFF0C\u76F8\u90BB\u7530\u8FC7\u6E7F\u9000\u6863\u5FEB\u4E00\u5929\u3002" : "\u6B63\u4EA4\u56DB\u683C\u5931\u6C34\u53D8\u6162\u3002");
+      detail += "\uFF1B" + (kind === "canal" ? "\u6CBF\u9AD8\u7A0B\u4E0D\u5347\u7684\u6E20\u94FE\u901A\u6C34\uFF0C\u76F8\u90BB\u7530\u53EF\u5F00\u95F8\u704C\u6E89\u3002" : kind === "drain" ? "\u6709\u4F4E\u4F4D\u51FA\u53E3\u65F6\uFF0C\u76F8\u90BB\u7530\u8FC7\u6E7F\u9000\u6863\u5FEB\u4E00\u5929\u3002" : "\u573A\u666F\u76F8\u90BB\u7530\u5757\u5931\u6C34\u53D8\u6162\u3002");
     } else if (kind === "yard" || kind === "cellar" || kind === "pit" || kind === "shed" || kind === "retting") {
       p.improvement = kind;
       detail += "\uFF1B" + {
-        yard: "\u6B63\u4EA4\u76F8\u90BB\u7530\u6B63\u5E38\u6536\u83B7\u671F\u5EF6\u957F7\u5929\uFF0C\u4ECD\u4F1A\u7EDD\u6536\u3002",
-        cellar: "\u6B63\u4EA4\u76F8\u90BB\u7530\u6536\u83B7\u989D\u5916\u7559\u79CD1\u4EFD\uFF0C\u5F02\u7A57\u9EA6\u989D\u5916\u75591\u4EFD\u5F02\u7A57\u9EA6\u79CD\u3002",
+        yard: "\u573A\u666F\u76F8\u90BB\u7530\u6B63\u5E38\u6536\u83B7\u671F\u5EF6\u957F7\u5929\uFF0C\u4ECD\u4F1A\u7EDD\u6536\u3002",
+        cellar: "\u573A\u666F\u76F8\u90BB\u7530\u6536\u83B7\u989D\u5916\u7559\u79CD1\u4EFD\uFF0C\u5F02\u7A57\u9EA6\u989D\u5916\u75591\u4EFD\u5F02\u7A57\u9EA6\u79CD\u3002",
         pit: "\u6295\u65993\u4EFD\u79F8\u79C6\uFF0C\u8150\u719F\u8F6C\u5316\u540E\u5F972\u4EFD\u5806\u80A5\u3002",
-        shed: "\u4E24\u683C\u5185\u7684\u7530\u64AD\u79CD\u3001\u6D47\u6C34\u3001\u6536\u83B7\u7684\u57FA\u7840\u65F6\u95F4\u51CF\u534A\u3002",
+        shed: "\u573A\u666F\u76F8\u90BB\u4E24\u6B65\u5185\u7684\u7530\u64AD\u79CD\u3001\u6D47\u6C34\u3001\u6536\u83B7\u7684\u57FA\u7840\u65F6\u95F4\u51CF\u534A\u3002",
         retting: "\u5F00\u653E\u6CA4\u9EBB\u5DE5\u5E8F\uFF1A2\u4EFD\u4E9A\u9EBB\u830E\u8DE8\u5B63\u6CA4\u4E3A1\u4EFD\u4E9A\u9EBB\u7EA4\u7EF4\u3002"
       }[kind];
     } else if (kind === "paddy") {
@@ -5267,6 +6502,33 @@ function startFarmProject(s, id, kind, total2, events) {
     kind,
     done: 0,
     total: total2
+  };
+}
+function spatialView(s, p) {
+  if (p.kind === "unknown") return void 0;
+  const plots = s.economy.farm.plots,
+    adj = farmNeighbors(p).map(n => plots[n.id]).filter(Boolean);
+  const sources = [].concat(_toConsumableArray(p.kind === "water" ? [p.id] : []), _toConsumableArray(adjacentSceneWater(p).filter(r => p.land && r.capabilities.waterLevel >= p.land.elevation).map(r => r.regionId)), _toConsumableArray(adj.filter(q => waterConnected(s, q) && q.land && p.land && q.land.elevation >= p.land.elevation).map(q => q.id)));
+  const coverage = adj.filter(q => ["shelter", "yard", "cellar"].includes(q.improvement ?? "")).map(q => ({
+    plotId: q.id,
+    kind: q.improvement
+  }));
+  const range = new Set(sceneRange(p, 2));
+  for (var _i17 = 0, _Object$values8 = Object.values(plots); _i17 < _Object$values8.length; _i17++) {
+    const q = _Object$values8[_i17];
+    if (q.improvement === "shed" && range.has(q.id)) coverage.push({
+      plotId: q.id,
+      kind: q.improvement
+    });
+    if (q.landscape?.kind === "garden" && range.has(q.id)) coverage.push({
+      plotId: q.id,
+      kind: "garden"
+    });
+  }
+  return {
+    waterSources: sources,
+    drainOutlet: p.improvement === "drain" ? drainOutlet(s, p) : false,
+    coverage
   };
 }
 
@@ -5645,8 +6907,8 @@ function characterMemory(s, id, key, text, mood, events) {
 }
 function recordCharacterGrowth(s, events) {
   if (!s.sect) return;
-  for (var _i17 = 0, _Object$entries5 = Object.entries(s.sect.members); _i17 < _Object$entries5.length; _i17++) {
-    const _Object$entries5$_i = _slicedToArray(_Object$entries5[_i17], 2),
+  for (var _i18 = 0, _Object$entries5 = Object.entries(s.sect.members); _i18 < _Object$entries5.length; _i18++) {
+    const _Object$entries5$_i = _slicedToArray(_Object$entries5[_i18], 2),
       id = _Object$entries5$_i[0],
       m = _Object$entries5$_i[1];
     if (!m.admitted) continue;
@@ -5719,8 +6981,8 @@ function beginEraLife(s, events) {
   s.clock.turn = 0;
   s.status = "active";
   if (s.economy?.industry) {
-    for (var _i18 = 0, _Object$values8 = Object.values(s.economy.industry.instances); _i18 < _Object$values8.length; _i18++) {
-      const machine = _Object$values8[_i18];
+    for (var _i19 = 0, _Object$values9 = Object.values(s.economy.industry.instances); _i19 < _Object$values9.length; _i19++) {
+      const machine = _Object$values9[_i19];
       if (machine?.operator === "self") machine.enabled = false;
     }
   }
@@ -5892,11 +7154,11 @@ function settleLife(s, missing, events, foodRequired = 2, days) {
   const r = s.life.rules;
   const delta = days === void 0 ? 1 : days * 4 / calendarYearDays(s.life.calendar.rules.referenceYear, s.life.calendar.absoluteDay);
   const previousAge = new Map(s.household.memberIds.map(id => [id, s.persons[id].vitality?.ageSeasons ?? 0]));
-  var _iterator17 = _createForOfIteratorHelper(s.household.memberIds.map(id => s.persons[id])),
-    _step17;
+  var _iterator26 = _createForOfIteratorHelper(s.household.memberIds.map(id => s.persons[id])),
+    _step26;
   try {
-    for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-      const person = _step17.value;
+    for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
+      const person = _step26.value;
       const v = person.vitality;
       if (!v?.alive) continue;
       v.ageSeasons += delta;
@@ -5913,15 +7175,15 @@ function settleLife(s, missing, events, foodRequired = 2, days) {
       } else if (days === void 0 || Math.floor(previousAge.get(person.id) / 4) !== Math.floor(v.ageSeasons / 4)) lifeEvent(events, person.id, "season", `${person.name}\uFF1A${Math.floor(v.ageSeasons / 4)}\u5C81\uFF0C\u5065\u5EB7${v.health}\uFF0C\u538B\u529B${v.pressure}`);
     }
   } catch (err) {
-    _iterator17.e(err);
+    _iterator26.e(err);
   } finally {
-    _iterator17.f();
+    _iterator26.f();
   }
-  var _iterator18 = _createForOfIteratorHelper(s.household.memberIds.map(id => s.persons[id])),
-    _step18;
+  var _iterator27 = _createForOfIteratorHelper(s.household.memberIds.map(id => s.persons[id])),
+    _step27;
   try {
-    for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-      const person = _step18.value;
+    for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
+      const person = _step27.value;
       const v = person.vitality;
       if (!v?.alive || !v.upbringing) continue;
       if (v.ageSeasons < r.adultYears * 4) {
@@ -5939,19 +7201,19 @@ function settleLife(s, missing, events, foodRequired = 2, days) {
       }
     }
   } catch (err) {
-    _iterator18.e(err);
+    _iterator27.e(err);
   } finally {
-    _iterator18.f();
+    _iterator27.f();
   }
   if (days === void 0) {
     delete s.life.seasonCompany;
     delete s.life.seasonTaught;
   }
-  var _iterator19 = _createForOfIteratorHelper(s.sect ? [] : /* @__PURE__ */new Set([activePerson(s), heir(s)])),
-    _step19;
+  var _iterator28 = _createForOfIteratorHelper(s.sect ? [] : /* @__PURE__ */new Set([activePerson(s), heir(s)])),
+    _step28;
   try {
-    for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
-      const person = _step19.value;
+    for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
+      const person = _step28.value;
       const v = person.vitality;
       if (!v.alive || v.childId || v.ageSeasons < r.birthYears * 4) continue;
       const id = `person:${Object.keys(s.persons).length + 1}`,
@@ -5970,9 +7232,9 @@ function settleLife(s, missing, events, foodRequired = 2, days) {
       lifeEvent(events, id, "birth", `\u5BB6\u65CF\u8FCE\u6765${child.vitality.sex === "male" ? "\u7537\u5B69" : "\u5973\u5B69"}${child.name}\uFF0C\u51FA\u751F\u5929\u8D4B\u300C${TALENTS[child.vitality.talent].name}\u300D\uFF0C\u4ECE\u96F6\u5C81\u6210\u957F\uFF0C\u4E0D\u81EA\u52A8\u83B7\u5F97\u77E5\u8BC6`);
     }
   } catch (err) {
-    _iterator19.e(err);
+    _iterator28.e(err);
   } finally {
-    _iterator19.f();
+    _iterator28.f();
   }
   if (s.sect) {
     if (!activePerson(s).vitality.alive) {
@@ -6015,8 +7277,8 @@ function initializeSect(s, r) {
     nextBonus: null,
     lastEvent: "\u4ECE\u4FEE\u8EAB\u5165\u95E8\uFF0C\u9010\u8BFE\u4FEE\u4E60\u3002"
   };
-  for (var _i19 = 0, _ids = ids; _i19 < _ids.length; _i19++) {
-    const id = _ids[_i19];
+  for (var _i20 = 0, _ids = ids; _i20 < _ids.length; _i20++) {
+    const id = _ids[_i20];
     const p = s.persons[id];
     p.vitality = makeVitality(s, s.life.rules, s.life.rules.adultYears + 2);
     namePerson(s, p);
@@ -6082,8 +7344,8 @@ function maintainCultivation(s, personId, events) {
 }
 function advanceCultivation(s, days) {
   if (!s.sect) return;
-  for (var _i20 = 0, _Object$entries6 = Object.entries(s.sect.members); _i20 < _Object$entries6.length; _i20++) {
-    const _Object$entries6$_i = _slicedToArray(_Object$entries6[_i20], 2),
+  for (var _i21 = 0, _Object$entries6 = Object.entries(s.sect.members); _i21 < _Object$entries6.length; _i21++) {
+    const _Object$entries6$_i = _slicedToArray(_Object$entries6[_i21], 2),
       id = _Object$entries6$_i[0],
       m = _Object$entries6$_i[1];
     if (m.admitted && s.persons[id]?.vitality?.alive) m.cultivation.upkeep = Math.max(0, Math.round((m.cultivation.upkeep - days) * 1e6) / 1e6);
@@ -6113,8 +7375,8 @@ function selectSectPerson(s, id) {
 function renewSect(s) {
   const x = s.sect;
   if (!x) return;
-  for (var _i21 = 0, _Object$entries7 = Object.entries(x.members); _i21 < _Object$entries7.length; _i21++) {
-    const _Object$entries7$_i = _slicedToArray(_Object$entries7[_i21], 2),
+  for (var _i22 = 0, _Object$entries7 = Object.entries(x.members); _i22 < _Object$entries7.length; _i22++) {
+    const _Object$entries7$_i = _slicedToArray(_Object$entries7[_i22], 2),
       id = _Object$entries7$_i[0],
       m = _Object$entries7$_i[1];
     if (m.admitted) {
@@ -6385,10 +7647,10 @@ function settleSeasonEncounter(s, missing, events) {
     large = draw(s) < 0.15,
     factor = large ? 2 : 1;
   const reasons = [relevant ? "\u672C\u5B63\u76F8\u5173\u6295\u5165\u63D0\u9AD8\u4E86\u987A\u5229\u7684\u673A\u4F1A" : "\u672C\u5B63\u7F3A\u5C11\u76F8\u5173\u6295\u5165", strained ? "\u7F3A\u7CAE\u3001\u75B2\u60EB\u6216\u5065\u5EB7\u4E0D\u4F73\u589E\u52A0\u4E86\u6CE2\u6298" : "\u8EAB\u4F53\u4E0E\u751F\u6D3B\u5C1A\u80FD\u652F\u6491"].concat(_toConsumableArray(kind === "bond" ? [`\u4E0E${other.name}\u7684\u539F\u6709\u5173\u7CFB${trust}`] : []), _toConsumableArray(optimistic ? ["\u5F00\u6717\u6216\u6E29\u539A\u7684\u6027\u683C\u5E2E\u52A9\u5E94\u5BF9\u53D8\u6545"] : []));
-  const _ref = good ? scene.positive : scene.negative,
-    _ref2 = _slicedToArray(_ref, 2),
-    title = _ref2[0],
-    narrative = _ref2[1];
+  const _ref3 = good ? scene.positive : scene.negative,
+    _ref4 = _slicedToArray(_ref3, 2),
+    title = _ref4[0],
+    narrative = _ref4[1];
   const story = narrative.replaceAll("{\u5BF9\u65B9}", other?.name ?? "\u540C\u884C\u8005");
   let effect = "",
     talent = "resilient";
@@ -6433,8 +7695,8 @@ function settleSeasonEncounter(s, missing, events) {
   e.lastEvent = `\u7B2C${s.clock.absoluteTurn}\u5B63 \xB7 ${title}${large ? "\uFF08\u91CD\u5927\uFF09" : ""}\uFF1A${story} ${reasons.join("\uFF1B")}\u3002\u7ED3\u679C\uFF1A${effect}\u3002`;
   lifeEvent(events, p.id, "season-encounter", `${p.name}\uFF1A${e.lastEvent}`);
   characterMemory(s, p.id, `encounter:${s.clock.absoluteTurn}`, `${title}\uFF1A${story} ${effect}\u3002`, good ? "\u8FD9\u4EFD\u7ECF\u5386\u8BA9\u4EBA\u6B23\u6170\u3002" : "\u5FC3\u4E2D\u4ECD\u6709\u5931\u843D\uFF0C\u60F3\u91CD\u65B0\u6574\u7406\u751F\u6D3B\u3002", events);
-  for (var _i22 = 0, _Object$values9 = Object.values(s.persons); _i22 < _Object$values9.length; _i22++) {
-    const person = _Object$values9[_i22];
+  for (var _i23 = 0, _Object$values0 = Object.values(s.persons); _i23 < _Object$values0.length; _i23++) {
+    const person = _Object$values0[_i23];
     const x = person.vitality?.experiences;
     if (x) {
       x.actions = [];
@@ -14022,10 +15284,10 @@ function availableDays(s) {
 function terms(year) {
   if (!termCache.has(year)) {
     const entries = /* @__PURE__ */new Map();
-    for (var _i23 = 0, _arr7 = [year - 1, year, year + 1]; _i23 < _arr7.length; _i23++) {
-      const y = _arr7[_i23];
-      for (var _i24 = 0, _Object$entries8 = Object.entries(Lunar.fromYmd(y, 1, 1).getJieQiTable()); _i24 < _Object$entries8.length; _i24++) {
-        const _Object$entries8$_i = _slicedToArray(_Object$entries8[_i24], 2),
+    for (var _i24 = 0, _arr7 = [year - 1, year, year + 1]; _i24 < _arr7.length; _i24++) {
+      const y = _arr7[_i24];
+      for (var _i25 = 0, _Object$entries8 = Object.entries(Lunar.fromYmd(y, 1, 1).getJieQiTable()); _i25 < _Object$entries8.length; _i25++) {
+        const _Object$entries8$_i = _slicedToArray(_Object$entries8[_i25], 2),
           name = _Object$entries8$_i[0],
           solar = _Object$entries8$_i[1];
         if (/^[\u4e00-\u9fff]+$/.test(name)) entries.set(serial(solar), name);
@@ -14457,8 +15719,8 @@ function settleSocialFood(s, events) {
   }
   if (s.life?.calendar) return;
   let need = Math.max(0, f.foodPerSeason - s.household.food);
-  for (var _i25 = 0, _EDIBLE = EDIBLE; _i25 < _EDIBLE.length; _i25++) {
-    const id = _EDIBLE[_i25];
+  for (var _i26 = 0, _EDIBLE = EDIBLE; _i26 < _EDIBLE.length; _i26++) {
+    const id = _EDIBLE[_i26];
     const n = Math.min(need, amount(s, id));
     if (n) {
       changeGoods(s, {
@@ -14505,8 +15767,8 @@ function feedCalendar(s, days, events) {
   let cooked = 0;
   const fuelDays = amount(s, "wood") / r.woodPerDay;
   const grainLimit = Math.min(need, fuelDays * dailyFoodNeed(s));
-  for (var _i26 = 0, _EDIBLE2 = EDIBLE; _i26 < _EDIBLE2.length; _i26++) {
-    const id = _EDIBLE2[_i26];
+  for (var _i27 = 0, _EDIBLE2 = EDIBLE; _i27 < _EDIBLE2.length; _i27++) {
+    const id = _EDIBLE2[_i27];
     const n = Math.min(remaining, Math.max(0, grainLimit - cooked), amount(s, id));
     if (n > 0) {
       s.economy.goods[id] = round(amount(s, id) - n);
@@ -14571,7 +15833,7 @@ function harvestDates(s, p, f) {
   const r = s.economy.farm.rules,
     now = s.life.calendar.absoluteDay;
   const mature = f.batch?.matureDay ?? now + f.duration - f.growth;
-  const yard = p && Object.values(s.economy.farm.plots).some(q => q.improvement === "yard" && Math.abs(q.x - p.x) + Math.abs(q.y - p.y) === 1);
+  const yard = p && Object.values(s.economy.farm.plots).some(q => q.improvement === "yard" && agriculturalNeighbors(p).some(n => n.id === q.id));
   const bestEnd = mature + r.harvestBestDays + (equipped(s, "U04") ? r.harvestToolDays : 0) + (yard ? r.yardGraceDays : 0);
   return {
     mature,
@@ -14626,15 +15888,15 @@ function farmLabor(s, p, op, crop, kind = "water") {
 function farmTasks(s) {
   const tasks = [],
     now = s.life.calendar.absoluteDay;
-  for (var _i27 = 0, _Object$values0 = Object.values(s.economy.farm.plots); _i27 < _Object$values0.length; _i27++) {
-    const p = _Object$values0[_i27];
+  for (var _i28 = 0, _Object$values1 = Object.values(s.economy.farm.plots); _i28 < _Object$values1.length; _i28++) {
+    const p = _Object$values1[_i28];
     const f = plotField(s, p.id);
     if (p.kind !== "field" || p.purpose !== "sowing" || !f) continue;
-    var _iterator20 = _createForOfIteratorHelper(p.plans ?? []),
-      _step20;
+    var _iterator29 = _createForOfIteratorHelper(p.plans ?? []),
+      _step29;
     try {
-      for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
-        const plan = _step20.value;
+      for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
+        const plan = _step29.value;
         if (plan.harvested || plan.failed) continue;
         const b = cropBatches(s, plan.year).find(b2 => b2.id === plan.batchId);
         if (!b) continue;
@@ -14681,9 +15943,9 @@ function farmTasks(s) {
         add("harvest", plan.harvestDay, dates.mature, dates.deadline, "farmplot");
       }
     } catch (err) {
-      _iterator20.e(err);
+      _iterator29.e(err);
     } finally {
-      _iterator20.f();
+      _iterator29.f();
     }
     if (f.crop) {
       const dates = harvestDates(s, p, f);
@@ -14713,8 +15975,8 @@ function farmTasks(s) {
       });
     }
   }
-  for (var _i28 = 0, _tasks = tasks; _i28 < _tasks.length; _i28++) {
-    const t = _tasks[_i28];
+  for (var _i29 = 0, _tasks = tasks; _i29 < _tasks.length; _i29++) {
+    const t = _tasks[_i29];
     if ((dietView(s)?.days ?? 0) < t.time) t.gaps.push("\u5F53\u524D\u53E3\u7CAE\u4E0D\u8DB3\u4EE5\u652F\u6301\u52B3\u52A8");
   }
   return tasks.sort((a, b) => a.day - b.day || a.id.localeCompare(b.id));
@@ -14794,8 +16056,8 @@ function advanceWildDay(s, day, events) {
   const spring = solarTermDay(c.rules.referenceYear, year, "\u7ACB\u6625"),
     winter = solarTermDay(c.rules.referenceYear, year, "\u7ACB\u51AC"),
     frost = solarTermDay(c.rules.referenceYear, year, "\u971C\u964D");
-  for (var _i29 = 0, _Object$values1 = Object.values(s.economy.farm.plots); _i29 < _Object$values1.length; _i29++) {
-    const p = _Object$values1[_i29];
+  for (var _i30 = 0, _Object$values10 = Object.values(s.economy.farm.plots); _i30 < _Object$values10.length; _i30++) {
+    const p = _Object$values10[_i30];
     const w = p.wild;
     if (!w) continue;
     if (day >= w.expires) w.stock = 0;
@@ -14919,8 +16181,8 @@ function generateModern(s, events) {
   const m = s.economy?.modern;
   if (!m || s.economy.operations?.paused) return;
   if (s.economy?.branches && !branchHas(s, s.electric ? "L7" : "L6")) return;
-  for (var _i30 = 0, _GENERATORS = GENERATORS; _i30 < _GENERATORS.length; _i30++) {
-    const id = _GENERATORS[_i30];
+  for (var _i31 = 0, _GENERATORS = GENERATORS; _i31 < _GENERATORS.length; _i31++) {
+    const id = _GENERATORS[_i31];
     if (!m.enabled.includes(id) || m.operated[id] === s.clock.absoluteTurn || !equipped(s, id)) continue;
     if (id === "E01" && s.location.water < 1 || id === "E02" && amount(s, "fuel") < 1) {
       modernEvent(events, id, "\u53D1\u7535\u5F85\u547D\uFF1A\u7F3A\u6C34\u6216\u7CBE\u70BC\u71C3\u6599");
@@ -14957,8 +16219,8 @@ function serveModern(s, events) {
   if (s.economy?.branches && !branchHas(s, s.electric ? "L7" : "L6")) return;
   if (s.electric) {
     if (!branchHas(s, "L7")) return;
-    for (var _i31 = 0, _arr8 = ["LAMP", "TELEGRAPH"]; _i31 < _arr8.length; _i31++) {
-      const id = _arr8[_i31];
+    for (var _i32 = 0, _arr8 = ["LAMP", "TELEGRAPH"]; _i32 < _arr8.length; _i32++) {
+      const id = _arr8[_i32];
       if (!m.enabled.includes(id) || electricOnline(s, id) || !equipped(s, id)) continue;
       const cost = s.electric.rules.servicePower;
       if (m.power < cost) {
@@ -14972,17 +16234,17 @@ function serveModern(s, events) {
       if (id === "LAMP" && !s.life?.calendar) {
         s.life.timeRemaining += s.electric.rules.lampTime;
         if (s.sect) {
-          var _iterator21 = _createForOfIteratorHelper(s.sect.current),
-            _step21;
+          var _iterator30 = _createForOfIteratorHelper(s.sect.current),
+            _step30;
           try {
-            for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-              const peer = _step21.value;
+            for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
+              const peer = _step30.value;
               if (peer !== s.household.activePersonId) s.sect.members[peer].time += s.electric.rules.lampTime;
             }
           } catch (err) {
-            _iterator21.e(err);
+            _iterator30.e(err);
           } finally {
-            _iterator21.f();
+            _iterator30.f();
           }
         }
       }
@@ -14990,8 +16252,8 @@ function serveModern(s, events) {
     }
     return;
   }
-  for (var _i32 = 0, _SERVICES = SERVICES; _i32 < _SERVICES.length; _i32++) {
-    const id = _SERVICES[_i32];
+  for (var _i33 = 0, _SERVICES = SERVICES; _i33 < _SERVICES.length; _i33++) {
+    const id = _SERVICES[_i33];
     if (!m.enabled.includes(id) || modernOnline(s, id) || !equipped(s, id)) continue;
     if (id === "N10" && (!modernOnline(s, "N08") || organizationLevel(s) < 10 || level(s, "mechanics") < 10)) continue;
     if (id === "U09M" && level(s, "agronomy") < 9) continue;
@@ -15290,19 +16552,19 @@ function expeditionBlockers(s, f) {
   return [].concat(_toConsumableArray(requirements(s, f.requires)), _toConsumableArray(!a?.active ? ["\u5C1A\u672A\u5F00\u59CB\u6216\u5DF2\u6682\u505C"] : []), _toConsumableArray(Object.entries(f.kit).filter(([id, n]) => (a?.stock[id] ?? 0) < n).map(([id, n]) => `\u73B0\u573A\u7F3A${n - (a?.stock[id] ?? 0)}\u4EFD${ALL_GOODS[id].name}`)), _toConsumableArray(!(f.eachSeason ? a?.evidenceTurn === s.clock.absoluteTurn && a.seasonEvidence.includes(f.proof) : a?.evidence.includes(f.proof)) ? [EXPEDITION_PROOFS[f.proof]] : []), _toConsumableArray((s.economy.modern?.power ?? 0) < f.power ? [`\u526F\u672C\u9700\u8981${f.power}\u7535\uFF0C\u5C1A\u672A\u5305\u542B\u5DE5\u5382\u4E0E\u670D\u52A1\u7528\u7535`] : []), _toConsumableArray(f.services.filter(id => !modernOnline(s, id)).map(id => id === "N08" ? "\u65E0\u7EBF\u8C03\u5EA6\u672C\u5B63\u672A\u5728\u7EBF" : "\u6570\u5B57\u63A7\u5236\u672C\u5B63\u672A\u5728\u7EBF")), _toConsumableArray(f.clean && !["E01", "E03"].some(id => s.economy.modern.operated[id] === s.clock.absoluteTurn) ? ["\u9700\u8981\u672C\u5B63\u6C34\u7535\u6216\u5149\u4F0F\u5B9E\u9645\u53D1\u7535"] : []));
 }
 function arriveExpeditions(s, events) {
-  for (var _i33 = 0, _Object$entries9 = Object.entries(s.economy?.expeditions?.attempts ?? {}); _i33 < _Object$entries9.length; _i33++) {
-    const _Object$entries9$_i = _slicedToArray(_Object$entries9[_i33], 2),
+  for (var _i34 = 0, _Object$entries9 = Object.entries(s.economy?.expeditions?.attempts ?? {}); _i34 < _Object$entries9.length; _i34++) {
+    const _Object$entries9$_i = _slicedToArray(_Object$entries9[_i34], 2),
       id = _Object$entries9$_i[0],
       a = _Object$entries9$_i[1];
     const due = a.shipments.filter(x => x.due <= s.clock.absoluteTurn);
     a.shipments = a.shipments.filter(x => x.due > s.clock.absoluteTurn);
-    var _iterator22 = _createForOfIteratorHelper(due),
-      _step22;
+    var _iterator31 = _createForOfIteratorHelper(due),
+      _step31;
     try {
-      for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
-        const shipment = _step22.value;
-        for (var _i34 = 0, _Object$entries0 = Object.entries(shipment.goods); _i34 < _Object$entries0.length; _i34++) {
-          const _Object$entries0$_i = _slicedToArray(_Object$entries0[_i34], 2),
+      for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
+        const shipment = _step31.value;
+        for (var _i35 = 0, _Object$entries0 = Object.entries(shipment.goods); _i35 < _Object$entries0.length; _i35++) {
+          const _Object$entries0$_i = _slicedToArray(_Object$entries0[_i35], 2),
             g = _Object$entries0$_i[0],
             n = _Object$entries0$_i[1];
           a.stock[g] = (a.stock[g] ?? 0) + n;
@@ -15310,9 +16572,9 @@ function arriveExpeditions(s, events) {
         expeditionEvent(events, id, "arrived", "\u526F\u672C\u7269\u8D44\u5230\u573A", shipment.goods);
       }
     } catch (err) {
-      _iterator22.e(err);
+      _iterator31.e(err);
     } finally {
-      _iterator22.f();
+      _iterator31.f();
     }
     a.evidenceTurn = s.clock.absoluteTurn;
     a.seasonEvidence = [];
@@ -15335,11 +16597,11 @@ function recordExpeditionEvidence(s, events) {
     if (!a.evidence.includes(id)) a.evidence.push(id);
     if (!a.seasonEvidence.includes(id)) a.seasonEvidence.push(id);
   };
-  var _iterator23 = _createForOfIteratorHelper(events),
-    _step23;
+  var _iterator32 = _createForOfIteratorHelper(events),
+    _step32;
   try {
-    for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-      const e = _step23.value;
+    for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
+      const e = _step32.value;
       if (e.type === "economy-farm" && e.operation === "harvest" && ["wheat", "soy"].includes(e.crop) && e.amount > 0) add("harvest");
       if (e.type === "economy-process" && e.stage === "complete") {
         if (["ceramics", "brick"].includes(e.recipe)) add("kiln");
@@ -15351,9 +16613,9 @@ function recordExpeditionEvidence(s, events) {
       }
     }
   } catch (err) {
-    _iterator23.e(err);
+    _iterator32.e(err);
   } finally {
-    _iterator23.f();
+    _iterator32.f();
   }
 }
 function applyGenerationProof(s, f) {
@@ -15370,18 +16632,18 @@ function settleExpeditions(s, _r, events) {
     a = x.attempts[f.id];
   if (a.completed) return;
   const season = events.find(e => e.type === "season-settled"),
-    blockers = expeditionBlockers(s, f);
-  if (season?.type !== "season-settled" || season.missing) blockers.unshift("\u5BB6\u5EAD\u672C\u5B63\u7F3A\u7CAE\uFF0C\u526F\u672C\u8BA9\u4F4D\u4E8E\u751F\u6D3B");
-  if (blockers.length) {
+    blockers2 = expeditionBlockers(s, f);
+  if (season?.type !== "season-settled" || season.missing) blockers2.unshift("\u5BB6\u5EAD\u672C\u5B63\u7F3A\u7CAE\uFF0C\u526F\u672C\u8BA9\u4F4D\u4E8E\u751F\u6D3B");
+  if (blockers2.length) {
     if (f.clean && a.progress) {
       a.progress = 0;
       expeditionEvent(events, f.id, "interrupted", "\u8FDE\u7EED\u9A8C\u8BC1\u4E2D\u65AD\uFF0C\u5DF2\u8017\u7269\u8D44\u4E0D\u8FD4\u8FD8");
     }
-    if (a.active) expeditionEvent(events, f.id, "waiting", blockers.join("\uFF1B"));
+    if (a.active) expeditionEvent(events, f.id, "waiting", blockers2.join("\uFF1B"));
     return;
   }
-  for (var _i35 = 0, _Object$entries1 = Object.entries(f.kit); _i35 < _Object$entries1.length; _i35++) {
-    const _Object$entries1$_i = _slicedToArray(_Object$entries1[_i35], 2),
+  for (var _i36 = 0, _Object$entries1 = Object.entries(f.kit); _i36 < _Object$entries1.length; _i36++) {
+    const _Object$entries1$_i = _slicedToArray(_Object$entries1[_i36], 2),
       id = _Object$entries1$_i[0],
       n = _Object$entries1$_i[1];
     a.stock[id] -= n;
@@ -15395,17 +16657,17 @@ function settleExpeditions(s, _r, events) {
   const reward = f.reward;
   changeGoods(s, reward.goods, 1, events, f.name + "\u9996\u6B21\u5B8C\u6210\u5956\u52B1");
   s.household.money += reward.money;
-  var _iterator24 = _createForOfIteratorHelper(reward.books),
-    _step24;
+  var _iterator33 = _createForOfIteratorHelper(reward.books),
+    _step33;
   try {
-    for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
-      const book = _step24.value;
+    for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
+      const book = _step33.value;
       if (!s.economy.shop.books.includes(book)) s.economy.shop.books.push(book);
     }
   } catch (err) {
-    _iterator24.e(err);
+    _iterator33.e(err);
   } finally {
-    _iterator24.f();
+    _iterator33.f();
   }
   x.supplyLevel = Math.max(x.supplyLevel, reward.supplyLevel);
   expeditionEvent(events, f.id, "reward", `${f.name}\u9996\u6B21\u5B8C\u6210\uFF1A\u83B7\u5F97\u7269\u8D44\u3001${reward.money}\u94B1\u3001\u6559\u6750\u53CA\u6700\u9AD8${x.supplyLevel}\u9636\u4F9B\u5E94\u3002\u6559\u6750\u4ECD\u9700\u9010\u9636\u5B66\u4E60\u3002`, reward.goods, reward.money, reward.books);
@@ -15613,20 +16875,20 @@ function arriveTower(s, r, events) {
   if (!t) return;
   const due = t.shipments.filter(x => x.due <= s.clock.absoluteTurn);
   t.shipments = t.shipments.filter(x => x.due > s.clock.absoluteTurn);
-  var _iterator25 = _createForOfIteratorHelper(due),
-    _step25;
+  var _iterator34 = _createForOfIteratorHelper(due),
+    _step34;
   try {
-    for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-      const x = _step25.value;
+    for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
+      const x = _step34.value;
       t.stock[x.good] = (t.stock[x.good] ?? 0) + x.amount;
       log(events, "arrived", t.floor, `${x.amount}\u4EFD${towerGoodName(x.good)}\u5230\u8FBE\u5DE5\u5730`, {
         [x.good]: x.amount
       });
     }
   } catch (err) {
-    _iterator25.e(err);
+    _iterator34.e(err);
   } finally {
-    _iterator25.f();
+    _iterator34.f();
   }
   if (total(t.stock) > r.tower.capacity) throw new Error("\u5DE5\u5730\u5E93\u5B58\u8D85\u8FC7\u5BB9\u91CF");
   t.evidenceTurn = s.clock.absoluteTurn;
@@ -15676,11 +16938,11 @@ function recordTowerEvidence(s, events) {
   const add = id => {
     if (!t.evidence.includes(id)) t.evidence.push(id);
   };
-  var _iterator26 = _createForOfIteratorHelper(events),
-    _step26;
+  var _iterator35 = _createForOfIteratorHelper(events),
+    _step35;
   try {
-    for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
-      const e = _step26.value;
+    for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
+      const e = _step35.value;
       if (e.type === "operations" && e.operation === "workshop-worked" && e.target === "rope" && e.amount > 0) add("workshop-rope");
       if (e.type === "economy-process" && e.stage === "complete") {
         if (["wire", "coil"].includes(e.recipe)) add("electrical");
@@ -15691,9 +16953,9 @@ function recordTowerEvidence(s, events) {
       }
     }
   } catch (err) {
-    _iterator26.e(err);
+    _iterator35.e(err);
   } finally {
-    _iterator26.f();
+    _iterator35.f();
   }
 }
 function towerBlockers(s, _r) {
@@ -15718,19 +16980,19 @@ function settleTower(s, r, events) {
   if (!t || t.floor >= floorsFor(s).length) return;
   const f = floorsFor(s)[t.floor],
     season = events.find(e => e.type === "season-settled");
-  const blockers = towerBlockers(s, r);
-  if (season?.type !== "season-settled" || season.missing > 0) blockers.unshift("\u5BB6\u5EAD\u672C\u5B63\u7F3A\u7CAE\uFF0C\u65BD\u5DE5\u8BA9\u4F4D\u4E8E\u751F\u5B58");
-  if (blockers.length) {
+  const blockers2 = towerBlockers(s, r);
+  if (season?.type !== "season-settled" || season.missing > 0) blockers2.unshift("\u5BB6\u5EAD\u672C\u5B63\u7F3A\u7CAE\uFF0C\u65BD\u5DE5\u8BA9\u4F4D\u4E8E\u751F\u5B58");
+  if (blockers2.length) {
     if (f.continuous && t.progress) {
       t.progress = 0;
       log(events, "interrupted", t.floor, "\u8FDE\u7EED\u5408\u9F99\u8BD5\u9A8C\u4E2D\u65AD\uFF0C\u8FDE\u7EED\u5B63\u6570\u5F52\u96F6\uFF1B\u5DF2\u6295\u5165\u7684\u65BD\u5DE5\u7269\u6599\u4E0D\u8FD4\u8FD8");
     }
-    if (t.active) log(events, "waiting", t.floor, blockers.join("\uFF1B"));
+    if (t.active) log(events, "waiting", t.floor, blockers2.join("\uFF1B"));
     return;
   }
   const consumed = {};
-  for (var _i36 = 0, _Object$entries10 = Object.entries(f.kit); _i36 < _Object$entries10.length; _i36++) {
-    const _Object$entries10$_i = _slicedToArray(_Object$entries10[_i36], 2),
+  for (var _i37 = 0, _Object$entries10 = Object.entries(f.kit); _i37 < _Object$entries10.length; _i37++) {
+    const _Object$entries10$_i = _slicedToArray(_Object$entries10[_i37], 2),
       id = _Object$entries10$_i[0],
       n = _Object$entries10$_i[1];
     t.stock[id] -= n;
@@ -15815,8 +17077,8 @@ function workshopNeeds(s, r) {
   const net = s.economy?.workshops;
   if (!net) return {};
   const needs = {};
-  for (var _i37 = 0, _WORKSHOPS = WORKSHOPS; _i37 < _WORKSHOPS.length; _i37++) {
-    const spec = _WORKSHOPS[_i37];
+  for (var _i38 = 0, _WORKSHOPS = WORKSHOPS; _i38 < _WORKSHOPS.length; _i38++) {
+    const spec = _WORKSHOPS[_i38];
     const w = net.nodes[spec.id];
     if (!w?.active || w.source !== "household") continue;
     const arriving = net.shipments.filter(x => x.target === spec.id).reduce((n, x) => n + x.amount, 0);
@@ -15829,20 +17091,20 @@ function arriveWorkshops(s, _r, events) {
   if (!net) return;
   const due = net.shipments.filter(x => x.due <= s.clock.absoluteTurn);
   net.shipments = net.shipments.filter(x => x.due > s.clock.absoluteTurn);
-  var _iterator27 = _createForOfIteratorHelper(due),
-    _step27;
+  var _iterator36 = _createForOfIteratorHelper(due),
+    _step36;
   try {
-    for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
-      const x = _step27.value;
+    for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
+      const x = _step36.value;
       if (x.target === "household") changeGoods(s, {
         [x.good]: x.amount
       }, 1, events, "\u4F5C\u574A\u4EA4\u8D27\u5230\u5BB6");else net.nodes[x.target].input += x.amount;
       event(events, "arrived", x.target, `${GOODS[x.good].name}${x.amount}\u4EFD\u5DF2\u5230\u8FBE${x.target === "household" ? "\u5BB6\u5EAD\u5E93\u5B58" : WORKSHOPS.find(w => w.id === x.target).name}`, x.amount);
     }
   } catch (err) {
-    _iterator27.e(err);
+    _iterator36.e(err);
   } finally {
-    _iterator27.f();
+    _iterator36.f();
   }
 }
 function workshopBlockers(s, r, id) {
@@ -15855,8 +17117,8 @@ function workshopBlockers(s, r, id) {
 function settleWorkshops(s, r, events) {
   const net = s.economy?.workshops;
   if (!net || s.economy.operations.paused) return;
-  for (var _i38 = 0, _WORKSHOPS2 = WORKSHOPS; _i38 < _WORKSHOPS2.length; _i38++) {
-    const spec = _WORKSHOPS2[_i38];
+  for (var _i39 = 0, _WORKSHOPS2 = WORKSHOPS; _i39 < _WORKSHOPS2.length; _i39++) {
+    const spec = _WORKSHOPS2[_i39];
     const w = net.nodes[spec.id];
     if (!w?.active) continue;
     const pending = net.shipments.filter(x => x.target === spec.id).reduce((n2, x) => n2 + x.amount, 0);
@@ -15876,8 +17138,8 @@ function settleWorkshops(s, r, events) {
       event(events, "sent", spec.id, `${spec.name}\u539F\u6599\u53D1\u8FD0${n}\u4EFD\uFF0C\u4E0B\u5B63\u5230\u8FBE`, n);
     }
   }
-  for (var _i39 = 0, _WORKSHOPS3 = WORKSHOPS; _i39 < _WORKSHOPS3.length; _i39++) {
-    const spec = _WORKSHOPS3[_i39];
+  for (var _i40 = 0, _WORKSHOPS3 = WORKSHOPS; _i40 < _WORKSHOPS3.length; _i40++) {
+    const spec = _WORKSHOPS3[_i40];
     const w = net.nodes[spec.id];
     if (!w) continue;
     if (spec.id === "fiber" && net.nodes.rope?.source === "upstream") continue;
@@ -15893,13 +17155,13 @@ function settleWorkshops(s, r, events) {
       event(events, "sent", spec.id, `${spec.name}\u4EA4\u8D27${n}\u4EFD\uFF0C\u4E0B\u5B63\u5230\u5BB6`, n);
     }
   }
-  for (var _i40 = 0, _WORKSHOPS4 = WORKSHOPS; _i40 < _WORKSHOPS4.length; _i40++) {
-    const spec = _WORKSHOPS4[_i40];
+  for (var _i41 = 0, _WORKSHOPS4 = WORKSHOPS; _i41 < _WORKSHOPS4.length; _i41++) {
+    const spec = _WORKSHOPS4[_i41];
     const w = net.nodes[spec.id];
     if (!w) continue;
-    const blockers = workshopBlockers(s, r, spec.id);
-    if (blockers.length) {
-      event(events, "waiting", spec.id, spec.name + "\uFF1A" + blockers.join("\uFF1B"));
+    const blockers2 = workshopBlockers(s, r, spec.id);
+    if (blockers2.length) {
+      event(events, "waiting", spec.id, spec.name + "\uFF1A" + blockers2.join("\uFF1B"));
       continue;
     }
     const p = PROCESSES.find(x => x.id === spec.id),
@@ -16093,11 +17355,11 @@ function autoSell(s, r, events) {
   if (!o.sales) return;
   const recipe = o.production ? ALL_PROCESSES.find(p => p.id === o.production.recipe) : void 0;
   const ids = _toConsumableArray(/* @__PURE__ */new Set([].concat(_toConsumableArray(e.workshops?.nodes.rope ? ["rope"] : []), _toConsumableArray(recipe && o.production.mode === "sell" ? Object.keys(recipe.outputs) : []), ["ceramics", "iron", "fiber", "shaft", "valve", "spring", "solution", "ore", "flax", "oil", "wheat", "soy", "flour"])));
-  var _iterator28 = _createForOfIteratorHelper(ids),
-    _step28;
+  var _iterator37 = _createForOfIteratorHelper(ids),
+    _step37;
   try {
-    for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
-      const id = _step28.value;
+    for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
+      const id = _step37.value;
       const keep = Math.max(e.modern?.enabled.includes("E02") && id === "fuel" ? 2 : 0, (workshopNeeds(s, r)[id] ?? 0) + (towerNeeds(s, r)[id] ?? 0), ["wheat", "soy", "flour"].includes(id) ? Math.max(r.operations.foodTarget, r.operations.outputReserve) : r.operations.outputReserve);
       const n = Math.min(Math.max(0, amount(s, id) - keep), e.market);
       if (!n) continue;
@@ -16118,9 +17380,9 @@ function autoSell(s, r, events) {
       opEvent(events, "sold", id, "\u81EA\u52A8\u4EA4\u4ED8" + n + "\u4EF6\uFF0C\u6536\u5165" + money + "\u94B1", n, money);
     }
   } catch (err) {
-    _iterator28.e(err);
+    _iterator37.e(err);
   } finally {
-    _iterator28.f();
+    _iterator37.f();
   }
 }
 function purchaseInputs(s, r, events) {
@@ -16139,29 +17401,29 @@ function purchaseInputs(s, r, events) {
   }
   if (o.production && e.workers.artisan?.active) {
     const p = ALL_PROCESSES.find(p2 => p2.id === o.production.recipe);
-    for (var _i41 = 0, _Object$entries11 = Object.entries(p.inputs); _i41 < _Object$entries11.length; _i41++) {
-      const _Object$entries11$_i = _slicedToArray(_Object$entries11[_i41], 2),
+    for (var _i42 = 0, _Object$entries11 = Object.entries(p.inputs); _i42 < _Object$entries11.length; _i42++) {
+      const _Object$entries11$_i = _slicedToArray(_Object$entries11[_i42], 2),
         id = _Object$entries11$_i[0],
         n = _Object$entries11$_i[1];
       add(id, n * r.operations.inputBatches * processMultiplier(s, p, e.workers.artisan));
     }
   }
   if (equipped(s, "W03") || o.mine || o.steam) add("wood", Math.max(2, r.operations.steamFuel));
-  for (var _i42 = 0, _Object$entries12 = Object.entries(workshopNeeds(s, r)); _i42 < _Object$entries12.length; _i42++) {
-    const _Object$entries12$_i = _slicedToArray(_Object$entries12[_i42], 2),
+  for (var _i43 = 0, _Object$entries12 = Object.entries(workshopNeeds(s, r)); _i43 < _Object$entries12.length; _i43++) {
+    const _Object$entries12$_i = _slicedToArray(_Object$entries12[_i43], 2),
       id = _Object$entries12$_i[0],
       n = _Object$entries12$_i[1];
     add(id, n);
   }
-  for (var _i43 = 0, _Object$entries13 = Object.entries(towerNeeds(s, r)); _i43 < _Object$entries13.length; _i43++) {
-    const _Object$entries13$_i = _slicedToArray(_Object$entries13[_i43], 2),
+  for (var _i44 = 0, _Object$entries13 = Object.entries(towerNeeds(s, r)); _i44 < _Object$entries13.length; _i44++) {
+    const _Object$entries13$_i = _slicedToArray(_Object$entries13[_i44], 2),
       id = _Object$entries13$_i[0],
       n = _Object$entries13$_i[1];
     if (id !== "food") needs[id] = (needs[id] ?? 0) + n;
   }
   const catalog = shopCatalog(s, r);
-  for (var _i44 = 0, _Object$entries14 = Object.entries(needs); _i44 < _Object$entries14.length; _i44++) {
-    const _Object$entries14$_i = _slicedToArray(_Object$entries14[_i44], 2),
+  for (var _i45 = 0, _Object$entries14 = Object.entries(needs); _i45 < _Object$entries14.length; _i45++) {
+    const _Object$entries14$_i = _slicedToArray(_Object$entries14[_i45], 2),
       id = _Object$entries14$_i[0],
       target = _Object$entries14$_i[1];
     const pending = sh.orders.filter(x => x.kind === "goods" && x.target === id).reduce((n2, x) => n2 + x.amount, 0);
@@ -16194,8 +17456,8 @@ function autoCare(s, r, events) {
   const e = s.economy,
     o = e.operations;
   if (!o.maintenance || !r.civilization && s.clock.generation === r.parameters.generations && s.clock.turn === r.parameters.turnsPerGeneration) return;
-  for (var _i45 = 0, _Object$entries15 = Object.entries(e.equipment); _i45 < _Object$entries15.length; _i45++) {
-    const _Object$entries15$_i = _slicedToArray(_Object$entries15[_i45], 2),
+  for (var _i46 = 0, _Object$entries15 = Object.entries(e.equipment); _i46 < _Object$entries15.length; _i46++) {
+    const _Object$entries15$_i = _slicedToArray(_Object$entries15[_i46], 2),
       id = _Object$entries15$_i[0],
       n = _Object$entries15$_i[1];
     if (n > r.operations.repairThreshold || deviceReserved(s, id) || e.equipmentUsed[id] === s.clock.absoluteTurn) continue;
@@ -16267,8 +17529,8 @@ function afterOperations(s, r, events) {
     });
     opEvent(events, "commission", "steam", "\u538B\u529B\u4E0E\u70ED\u5904\u7406\u914D\u5957\u8BD5\u9A8C\u5B8C\u6210", 1);
   } else if (o.activeProject === "steam") alert(s, events, "steam", `\u84B8\u6C7D\u8BD5\u9A8C\u7B49\u5F85\uFF1A\u9700\u7A7A\u95F2\u70ED\u5904\u7406\u7089\u3001${r.operations.steamFuel}\u6728\u6750\u30011\u5F39\u7C27\u30011\u9600\u95E8`);
-  for (var _i46 = 0, _arr9 = _toConsumableArray(events); _i46 < _arr9.length; _i46++) {
-    const event2 = _arr9[_i46];
+  for (var _i47 = 0, _arr9 = _toConsumableArray(events); _i47 < _arr9.length; _i47++) {
+    const event2 = _arr9[_i47];
     if (event2.type === "economy-worker" && event2.operation === "waiting" && (event2.detail.includes("\u5DE5\u8D44\u4E0D\u8DB3") || event2.detail.startsWith("\u9700") || event2.detail.includes("\u516C\u5171\u6C34\u4E0D\u8DB3"))) alert(s, events, event2.worker, "\u96C7\u5458\u5F85\u547D\uFF1A" + event2.detail);
   }
   autoSell(s, r, events);
@@ -16333,8 +17595,8 @@ function useSteam(s, r, events) {
 function handoverOperations(s, events) {
   const o = s.economy?.operations;
   if (!o || o.charter) return;
-  for (var _i47 = 0, _Object$values10 = Object.values(s.economy.workers); _i47 < _Object$values10.length; _i47++) {
-    const w = _Object$values10[_i47];
+  for (var _i48 = 0, _Object$values11 = Object.values(s.economy.workers); _i48 < _Object$values11.length; _i48++) {
+    const w = _Object$values11[_i48];
     if (w) w.active = false;
   }
   o.paused = true;
@@ -16452,11 +17714,11 @@ function systemLabor(s, operator = "self", exclude) {
   s = structuredClone(s);
   let time = 0,
     energy = 0;
-  var _iterator29 = _createForOfIteratorHelper(systemDefinitions(s)),
-    _step29;
+  var _iterator38 = _createForOfIteratorHelper(systemDefinitions(s)),
+    _step38;
   try {
-    for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
-      const def = _step29.value;
+    for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
+      const def = _step38.value;
       const i = s.economy?.industry?.instances[def.id];
       if (i?.enabled && i.commissioned && i.operator === operator && def.id !== exclude && systemDemand(s, def)) {
         const cost = operatorCost(s, def, operator);
@@ -16466,9 +17728,9 @@ function systemLabor(s, operator = "self", exclude) {
       }
     }
   } catch (err) {
-    _iterator29.e(err);
+    _iterator38.e(err);
   } finally {
-    _iterator29.f();
+    _iterator38.f();
   }
   return {
     time,
@@ -16528,16 +17790,16 @@ function settleIndustry(s, events) {
   const eventStart = events.length;
   const x = s.economy?.industry;
   if (!x) return;
-  var _iterator30 = _createForOfIteratorHelper(systemDefinitions(s)),
-    _step30;
+  var _iterator39 = _createForOfIteratorHelper(systemDefinitions(s)),
+    _step39;
   try {
-    for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
-      const def = _step30.value;
+    for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
+      const def = _step39.value;
       const i = x.instances[def.id];
       if (!i) continue;
-      const blockers = systemBlockers(s, def, i);
-      if (blockers.length) {
-        industryEvent(events, "waiting", def.id, i.operator ?? "none", def.name + "\uFF1A" + blockers.join("\uFF1B"));
+      const blockers2 = systemBlockers(s, def, i);
+      if (blockers2.length) {
+        industryEvent(events, "waiting", def.id, i.operator ?? "none", def.name + "\uFF1A" + blockers2.join("\uFF1B"));
         continue;
       }
       const operator = i.operator,
@@ -16583,17 +17845,17 @@ function settleIndustry(s, events) {
       industryEvent(events, "worked", def.id, operator, def.name + "\u5B8C\u6210\uFF1B\u5B9E\u9645\u6263\u8D39", cost.time, cost.energy, pay);
     }
   } catch (err) {
-    _iterator30.e(err);
+    _iterator39.e(err);
   } finally {
-    _iterator30.f();
+    _iterator39.f();
   }
   if (s.life?.calendar && events.slice(eventStart).some(e => e.type === "industry" && e.operation === "worked")) s.life.calendar.systemsSettled = true;
 }
 function renewIndustry(s) {
   const x = s.economy?.industry;
   if (!x) return;
-  for (var _i48 = 0, _Object$keys = Object.keys(s.economy.workers); _i48 < _Object$keys.length; _i48++) {
-    const id = _Object$keys[_i48];
+  for (var _i49 = 0, _Object$keys = Object.keys(s.economy.workers); _i49 < _Object$keys.length; _i49++) {
+    const id = _Object$keys[_i49];
     const b = x.workers[id];
     x.workers[id] = {
       timeRemaining: x.rules.workerTime,
@@ -16672,13 +17934,13 @@ function completeProcess(s, p, factor, events, actor) {
     factor
   });
   if (actor === "\u672C\u4EBA") {
-    for (var _i49 = 0, _Object$keys2 = Object.keys(p.requires); _i49 < _Object$keys2.length; _i49++) {
-      const d = _Object$keys2[_i49];
+    for (var _i50 = 0, _Object$keys2 = Object.keys(p.requires); _i50 < _Object$keys2.length; _i50++) {
+      const d = _Object$keys2[_i50];
       recordEvidence(s, d, events, p.name);
     }
   }
-  for (var _i50 = 0, _Object$keys3 = Object.keys(p.outputs); _i50 < _Object$keys3.length; _i50++) {
-    const id = _Object$keys3[_i50];
+  for (var _i51 = 0, _Object$keys3 = Object.keys(p.outputs); _i51 < _Object$keys3.length; _i51++) {
+    const id = _Object$keys3[_i51];
     made(s, id);
   }
   if (p.id === "iron") s.economy.ironBatches++;
@@ -16800,19 +18062,19 @@ function settleEconomy(s, rules2, events) {
       amount: 1
     });
   }
-  for (var _i51 = 0, _arr0 = e.industry ? [] : ["laborer", "farmer", "artisan", "manager"]; _i51 < _arr0.length; _i51++) {
-    const kind = _arr0[_i51];
+  for (var _i52 = 0, _arr0 = e.industry ? [] : ["laborer", "farmer", "artisan", "manager"]; _i52 < _arr0.length; _i52++) {
+    const kind = _arr0[_i52];
     const w = e.workers[kind];
     if (!w?.active) continue;
     const cost = wage(s, rules2, w),
-      blockers = [].concat(_toConsumableArray(workerBlocker(s, w)), _toConsumableArray(planBlocker(s, w, rules2)));
-    if (s.household.money < cost || blockers.length) {
+      blockers2 = [].concat(_toConsumableArray(workerBlocker(s, w)), _toConsumableArray(planBlocker(s, w, rules2)));
+    if (s.household.money < cost || blockers2.length) {
       events.push({
         type: "economy-worker",
         worker: kind,
         operation: "waiting",
         money: 0,
-        detail: s.household.money < cost ? "\u5DE5\u8D44\u4E0D\u8DB3" : blockers.join("\uFF1B")
+        detail: s.household.money < cost ? "\u5DE5\u8D44\u4E0D\u8DB3" : blockers2.join("\uFF1B")
       });
       continue;
     }
@@ -16869,14 +18131,14 @@ function settleEconomy(s, rules2, events) {
         stress: f.stress
       });
     } else if (f.crop) f.growth++;
-    for (var _i52 = 0, _Object$values11 = Object.values(e.farm?.plots ?? {}); _i52 < _Object$values11.length; _i52++) {
-      const p = _Object$values11[_i52];
+    for (var _i53 = 0, _Object$values12 = Object.values(e.farm?.plots ?? {}); _i53 < _Object$values12.length; _i53++) {
+      const p = _Object$values12[_i53];
       if (p.field) growField(s, p.field, events, p.id);
     }
   }
   settleNeighbor(s);
-  for (var _i53 = 0, _arr1 = [["iron", e.ironBatches, "iron"], ["fiber", e.fiberBatches, "fiber"]]; _i53 < _arr1.length; _i53++) {
-    const _arr1$_i = _slicedToArray(_arr1[_i53], 3),
+  for (var _i54 = 0, _arr1 = [["iron", e.ironBatches, "iron"], ["fiber", e.fiberBatches, "fiber"]]; _i54 < _arr1.length; _i54++) {
+    const _arr1$_i = _slicedToArray(_arr1[_i54], 3),
       id = _arr1$_i[0],
       batches = _arr1$_i[1],
       key = _arr1$_i[2];
@@ -16891,8 +18153,8 @@ function settleEconomy(s, rules2, events) {
   }
   if (s.socialFood) return;
   let need = Math.max(0, rules2.parameters.foodPerTurn - s.household.food);
-  for (var _i54 = 0, _EDIBLE3 = EDIBLE; _i54 < _EDIBLE3.length; _i54++) {
-    const id = _EDIBLE3[_i54];
+  for (var _i55 = 0, _EDIBLE3 = EDIBLE; _i55 < _EDIBLE3.length; _i55++) {
+    const id = _EDIBLE3[_i55];
     const n = Math.min(need, amount(s, id));
     if (n) {
       changeGoods(s, {
@@ -16912,8 +18174,8 @@ function spoilEconomy(s, events, days) {
   s.household.food = Math.round((s.household.food - loose) * 1e6) / 1e6;
   loss -= loose;
   const changes = {};
-  for (var _i55 = 0, _EDIBLE4 = EDIBLE; _i55 < _EDIBLE4.length; _i55++) {
-    const id = _EDIBLE4[_i55];
+  for (var _i56 = 0, _EDIBLE4 = EDIBLE; _i56 < _EDIBLE4.length; _i56++) {
+    const id = _EDIBLE4[_i56];
     const n = Math.min(loss, amount(s, id));
     if (n) {
       changes[id] = n;
@@ -17020,8 +18282,8 @@ function operatePassive(s, rules2, events, only) {
   const n = s.productNetwork,
     d = s.development,
     inventory = s.production.inventory;
-  for (var _i56 = 0, _arr10 = only ? [only] : DEVICES; _i56 < _arr10.length; _i56++) {
-    const device = _arr10[_i56];
+  for (var _i57 = 0, _arr10 = only ? [only] : DEVICES; _i57 < _arr10.length; _i57++) {
+    const device = _arr10[_i57];
     if (n.installed[device] < 1 || n.lastPassiveTurn?.[device] === s.clock.absoluteTurn) continue;
     if (device === "calibrator") {
       if (d.goods.findings < 1 || d.goods.supplies < 1) continue;
@@ -17202,8 +18464,8 @@ function gainExperience(state, domain, amount2, events, personId = state.househo
 }
 function developFromEvents(state, events, rules2) {
   if (!state.development) return;
-  for (var _i57 = 0, _arr11 = _toConsumableArray(events); _i57 < _arr11.length; _i57++) {
-    const e = _arr11[_i57];
+  for (var _i58 = 0, _arr11 = _toConsumableArray(events); _i58 < _arr11.length; _i58++) {
+    const e = _arr11[_i58];
     if (e.type === "craft-completed") gainExperience(state, e.recipe === "pottery" ? "pottery" : "woodwork", rules2.householdProgress ? 2 : 1, events);
     if (e.type === "harvest" && e.food > 0) gainExperience(state, "agriculture", 1, events);
   }
@@ -17395,10 +18657,10 @@ function changeProduct(s, id, amount2) {
 }
 function productNetworkView(s, rules2) {
   const edges = [];
-  for (var _i58 = 0, _DEVELOPMENT_RECIPES = DEVELOPMENT_RECIPES; _i58 < _DEVELOPMENT_RECIPES.length; _i58++) {
-    const r = _DEVELOPMENT_RECIPES[_i58];
-    for (var _i59 = 0, _Object$entries16 = Object.entries(r.inputs); _i59 < _Object$entries16.length; _i59++) {
-      const _Object$entries16$_i = _slicedToArray(_Object$entries16[_i59], 2),
+  for (var _i59 = 0, _DEVELOPMENT_RECIPES = DEVELOPMENT_RECIPES; _i59 < _DEVELOPMENT_RECIPES.length; _i59++) {
+    const r = _DEVELOPMENT_RECIPES[_i59];
+    for (var _i60 = 0, _Object$entries16 = Object.entries(r.inputs); _i60 < _Object$entries16.length; _i60++) {
+      const _Object$entries16$_i = _slicedToArray(_Object$entries16[_i60], 2),
         id = _Object$entries16$_i[0],
         n = _Object$entries16$_i[1];
       edges.push({
@@ -17409,10 +18671,10 @@ function productNetworkView(s, rules2) {
       });
     }
   }
-  for (var _i60 = 0, _DEVICE_RECIPES = DEVICE_RECIPES; _i60 < _DEVICE_RECIPES.length; _i60++) {
-    const r = _DEVICE_RECIPES[_i60];
-    for (var _i61 = 0, _Object$entries17 = Object.entries(r.inputs); _i61 < _Object$entries17.length; _i61++) {
-      const _Object$entries17$_i = _slicedToArray(_Object$entries17[_i61], 2),
+  for (var _i61 = 0, _DEVICE_RECIPES = DEVICE_RECIPES; _i61 < _DEVICE_RECIPES.length; _i61++) {
+    const r = _DEVICE_RECIPES[_i61];
+    for (var _i62 = 0, _Object$entries17 = Object.entries(r.inputs); _i62 < _Object$entries17.length; _i62++) {
+      const _Object$entries17$_i = _slicedToArray(_Object$entries17[_i62], 2),
         id = _Object$entries17$_i[0],
         n = _Object$entries17$_i[1];
       edges.push({
@@ -17684,8 +18946,8 @@ function validateRuleset(value) {
   if (value.socialInheritance !== void 0 && (!isRecord(value.socialInheritance) || !integerFields(value.socialInheritance, ["wage", "goodsCapacity", "archiveDiscount"]) || Object.values(value.socialInheritance).some(n => n < 1))) throw new Error("\u793E\u4F1A\u4F20\u627F\u914D\u7F6E\u65E0\u6548");
   if (value.technologyFeedback !== void 0 && (!isRecord(value.technologyFeedback) || !integerFields(value.technologyFeedback, ["buildActions", "workbenchWood", "kilnWood", "kilnClay"]) || Object.values(value.technologyFeedback).some(n => n < 1) || value.technologyFeedback.buildActions > value.parameters.actionsPerTurn)) throw new Error("\u79D1\u6280\u53CD\u9988\u8BBE\u65BD\u914D\u7F6E\u65E0\u6548");
   if (Object.keys(value.parameters).length !== parameterKeys.length || Object.keys(value.parameterBounds).length !== parameterKeys.length) throw new Error("\u89C4\u5219\u53C2\u6570\u96C6\u5408\u4E0D\u5339\u914D");
-  for (var _i62 = 0, _parameterKeys = parameterKeys; _i62 < _parameterKeys.length; _i62++) {
-    const key = _parameterKeys[_i62];
+  for (var _i63 = 0, _parameterKeys = parameterKeys; _i63 < _parameterKeys.length; _i63++) {
+    const key = _parameterKeys[_i63];
     const bound = value.parameterBounds[key],
       number = value.parameters[key];
     if (!Array.isArray(bound) || bound.length !== 2 || !bound.every(Number.isInteger) || bound[0] > bound[1] || !Number.isInteger(number) || number < bound[0] || number > bound[1]) throw new Error(`\u53C2\u6570\u65E0\u6548\uFF1A${key}`);
@@ -17693,41 +18955,41 @@ function validateRuleset(value) {
   const p = value.parameters;
   if (p.actionsPerTurn < 2 || p.turnsPerGeneration < 1 || p.generations < 1 || p.foodPerTurn < 1 || p.foodPrice < 1 || p.trialSeasons < 2 || p.studyMultiplier < 1) throw new Error("\u65F6\u95F4\u3001\u8D44\u6E90\u6216\u5B66\u4E60\u53C2\u6570\u8FDD\u53CD\u57FA\u672C\u7EA6\u675F");
   if (!Object.keys(value.scenarios).length) throw new Error("\u89C4\u5219\u81F3\u5C11\u9700\u8981\u4E00\u4E2A\u573A\u666F");
-  for (var _i63 = 0, _Object$entries18 = Object.entries(value.scenarios); _i63 < _Object$entries18.length; _i63++) {
-    const _Object$entries18$_i = _slicedToArray(_Object$entries18[_i63], 2),
+  for (var _i64 = 0, _Object$entries18 = Object.entries(value.scenarios); _i64 < _Object$entries18.length; _i64++) {
+    const _Object$entries18$_i = _slicedToArray(_Object$entries18[_i64], 2),
       id = _Object$entries18$_i[0],
       scenario = _Object$entries18$_i[1];
     if (!isRecord(scenario) || scenario.id !== id || typeof scenario.name !== "string" || typeof scenario.text !== "string" || ![scenario.drought, scenario.wet, scenario.water].every(Number.isInteger) || scenario.drought < 0 || scenario.wet < 0 || scenario.drought + scenario.wet > 100 || scenario.water < 0) throw new Error(`\u573A\u666F\u65E0\u6548\uFF1A${id}`);
   }
   const ids = /* @__PURE__ */new Set();
-  var _iterator31 = _createForOfIteratorHelper(value.technologies),
-    _step31;
+  var _iterator40 = _createForOfIteratorHelper(value.technologies),
+    _step40;
   try {
-    for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
-      const node = _step31.value;
+    for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
+      const node = _step40.value;
       if (!isRecord(node) || typeof node.id !== "string" || ids.has(node.id) || typeof node.name !== "string" || typeof node.branch !== "string" || typeof node.world !== "string" || !value.worldTechnologies.includes(node.world) || !strings(node.prerequisites) || !strings(node.practices) || !node.practices.length || !Number.isInteger(node.study) || node.study < 1 || typeof node.benefit !== "string" || typeof node.practiceText !== "string" || !(node.insight === null || typeof node.insight === "string")) throw new Error("\u79D1\u6280\u5B9A\u4E49\u65E0\u6548\u6216 ID \u91CD\u590D");
-      var _iterator32 = _createForOfIteratorHelper(node.practices),
-        _step32;
+      var _iterator41 = _createForOfIteratorHelper(node.practices),
+        _step41;
       try {
-        for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
-          const tag = _step32.value;
+        for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
+          const tag = _step41.value;
           if (typeof value.practiceNames[tag] !== "string") throw new Error(`\u5B9E\u8DF5\u540D\u79F0\u7F3A\u5931\uFF1A${tag}`);
         }
       } catch (err) {
-        _iterator32.e(err);
+        _iterator41.e(err);
       } finally {
-        _iterator32.f();
+        _iterator41.f();
       }
       ids.add(node.id);
     }
   } catch (err) {
-    _iterator31.e(err);
+    _iterator40.e(err);
   } finally {
-    _iterator31.f();
+    _iterator40.f();
   }
   if (!value.economy) {
-    for (var _i64 = 0, _arr12 = ["observation", "survey", "ditch", "allocation", "selection", "trial", "stabilize"]; _i64 < _arr12.length; _i64++) {
-      const id = _arr12[_i64];
+    for (var _i65 = 0, _arr12 = ["observation", "survey", "ditch", "allocation", "selection", "trial", "stabilize"]; _i65 < _arr12.length; _i65++) {
+      const id = _arr12[_i65];
       if (!ids.has(id)) throw new Error(`\u7F3A\u5C11\u89C4\u5219\u5B9E\u73B0\u9700\u8981\u7684\u8282\u70B9\uFF1A${id}`);
     }
   }
@@ -17743,8 +19005,8 @@ function validateRuleset(value) {
     const keys = ["transport", "stock", "deviceFee", "importFee", "textbookBase", "lessonBase", "trainingPrice", "trainingExperience", "granaryPrice", "granaryCapacity", "libraryPrice", "repairPercent"];
     if (!isRecord(value.shop) || !integerFields(value.shop, keys) || Object.keys(value.shop).length !== keys.length || Object.values(value.shop).some(n => !Number.isInteger(n) || n < 1 || n > 100) || value.shop.repairPercent >= 100) throw new Error("\u5546\u57CE\u53C2\u6570\u65E0\u6548\uFF1A\u6574\u65701\u2014100\uFF0C\u7EF4\u4FEE\u6BD4\u4F8B\u5C0F\u4E8E100");
   }
-  if (isRecord(value.shop)) for (var _i65 = 0, _Object$entries19 = Object.entries(SHOP_BOUNDS); _i65 < _Object$entries19.length; _i65++) {
-    const _Object$entries19$_i = _slicedToArray(_Object$entries19[_i65], 2),
+  if (isRecord(value.shop)) for (var _i66 = 0, _Object$entries19 = Object.entries(SHOP_BOUNDS); _i66 < _Object$entries19.length; _i66++) {
+    const _Object$entries19$_i = _slicedToArray(_Object$entries19[_i66], 2),
       key = _Object$entries19$_i[0],
       _Object$entries19$_i$ = _slicedToArray(_Object$entries19$_i[1], 2),
       min = _Object$entries19$_i$[0],
@@ -17755,8 +19017,8 @@ function validateRuleset(value) {
   if (["0.11.0", "0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0"].includes(value.rulesVersion) !== (value.operations !== void 0)) throw new Error("\u957F\u671F\u7ECF\u8425\u7248\u672C\u4E0D\u5339\u914D");
   if (value.operations !== void 0) {
     if (!isRecord(value.operations) || Object.keys(value.operations).length !== Object.keys(OPERATIONS_BOUNDS).length) throw new Error("\u957F\u671F\u7ECF\u8425\u53C2\u6570\u4E0D\u5B8C\u6574");
-    for (var _i66 = 0, _Object$entries20 = Object.entries(OPERATIONS_BOUNDS); _i66 < _Object$entries20.length; _i66++) {
-      const _Object$entries20$_i = _slicedToArray(_Object$entries20[_i66], 2),
+    for (var _i67 = 0, _Object$entries20 = Object.entries(OPERATIONS_BOUNDS); _i67 < _Object$entries20.length; _i67++) {
+      const _Object$entries20$_i = _slicedToArray(_Object$entries20[_i67], 2),
         k = _Object$entries20$_i[0],
         _Object$entries20$_i$ = _slicedToArray(_Object$entries20$_i[1], 2),
         min = _Object$entries20$_i$[0],
@@ -17768,8 +19030,8 @@ function validateRuleset(value) {
   if (["0.12.0", "0.13.0", "0.14.0", "0.15.0", "0.16.0", "0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0"].includes(value.rulesVersion) !== (value.workshops !== void 0)) throw new Error("\u4F5C\u574A\u89C4\u5219\u7248\u672C\u4E0D\u5339\u914D");
   if (value.workshops !== void 0) {
     if (!isRecord(value.workshops) || Object.keys(value.workshops).length !== 2) throw new Error("\u4F5C\u574A\u53C2\u6570\u4E0D\u5B8C\u6574");
-    for (var _i67 = 0, _Object$entries21 = Object.entries(WORKSHOP_BOUNDS); _i67 < _Object$entries21.length; _i67++) {
-      const _Object$entries21$_i = _slicedToArray(_Object$entries21[_i67], 2),
+    for (var _i68 = 0, _Object$entries21 = Object.entries(WORKSHOP_BOUNDS); _i68 < _Object$entries21.length; _i68++) {
+      const _Object$entries21$_i = _slicedToArray(_Object$entries21[_i68], 2),
         k = _Object$entries21$_i[0],
         _Object$entries21$_i$ = _slicedToArray(_Object$entries21$_i[1], 2),
         min = _Object$entries21$_i$[0],
@@ -17781,8 +19043,8 @@ function validateRuleset(value) {
   if (["0.13.0", "0.14.0"].includes(value.rulesVersion) !== (value.tower !== void 0)) throw new Error("\u6587\u660E\u8BD5\u70BC\u7248\u672C\u4E0D\u5339\u914D");
   if (value.tower !== void 0) {
     if (!isRecord(value.tower) || Object.keys(value.tower).length !== Object.keys(TOWER_BOUNDS).length) throw new Error("\u8BD5\u70BC\u53C2\u6570\u4E0D\u5B8C\u6574");
-    for (var _i68 = 0, _Object$entries22 = Object.entries(TOWER_BOUNDS); _i68 < _Object$entries22.length; _i68++) {
-      const _Object$entries22$_i = _slicedToArray(_Object$entries22[_i68], 2),
+    for (var _i69 = 0, _Object$entries22 = Object.entries(TOWER_BOUNDS); _i69 < _Object$entries22.length; _i69++) {
+      const _Object$entries22$_i = _slicedToArray(_Object$entries22[_i69], 2),
         k = _Object$entries22$_i[0],
         _Object$entries22$_i$ = _slicedToArray(_Object$entries22$_i[1], 2),
         min = _Object$entries22$_i$[0],
@@ -17795,15 +19057,15 @@ function validateRuleset(value) {
     const d = value.development;
     const keys = ["experienceStep", "equipmentDurability", "marketSupply", "experimentFood", "mentorFood", "tradeSpread"];
     if (!isRecord(d) || !integerFields(d.parameters, keys) || !isRecord(d.parameterBounds) || Object.keys(d.parameterBounds).length !== keys.length) throw new Error("\u6210\u957F\u53C2\u6570\u96C6\u5408\u65E0\u6548");
-    for (var _i69 = 0, _keys = keys; _i69 < _keys.length; _i69++) {
-      const key = _keys[_i69];
+    for (var _i70 = 0, _keys = keys; _i70 < _keys.length; _i70++) {
+      const key = _keys[_i70];
       const b = d.parameterBounds[key],
         n = d.parameters[key];
       if (!Array.isArray(b) || b.length !== 2 || !b.every(Number.isInteger) || b[0] < 1 || b[1] > 20 || b[0] > b[1] || n < b[0] || n > b[1]) throw new Error("\u6210\u957F\u53C2\u6570\u8FB9\u754C\u65E0\u6548");
     }
     if (!value.economy) {
-      for (var _i70 = 0, _arr13 = ["agronomy", "ceramic-engineering", "mechanics", "experimentation", "precision-engineering"]; _i70 < _arr13.length; _i70++) {
-        const id = _arr13[_i70];
+      for (var _i71 = 0, _arr13 = ["agronomy", "ceramic-engineering", "mechanics", "experimentation", "precision-engineering"]; _i71 < _arr13.length; _i71++) {
+        const id = _arr13[_i71];
         if (!ids.has(id)) throw new Error("\u7F3A\u5C11\u5DE5\u4E1A\u79D1\u5B66\u8282\u70B9");
       }
     }
@@ -17813,8 +19075,8 @@ function validateRuleset(value) {
   if (value.householdLineage !== void 0) throw new Error("\u5F53\u524D\u89C4\u5219\u4E0D\u4F7F\u7528\u5BB6\u5B66\u63A5\u7EED\u5F00\u5173");
   if (["0.17.0", "0.18.0", "0.19.0", "0.20.0", "0.21.0", "0.22.0", "0.23.0", "0.24.0", "0.25.0", "0.26.0", "0.27.0"].includes(value.rulesVersion) !== (value.life !== void 0)) throw new Error("\u4EBA\u751F\u89C4\u5219\u7248\u672C\u4E0D\u5339\u914D");
   if (!isRecord(value.sect) || Object.keys(value.sect).length !== Object.keys(SECT_BOUNDS).length) throw new Error("\u7F3A\u5C11\u5E08\u5F92\u4E0E\u9053\u672F\u89C4\u5219\uFF0C\u8BF7\u65B0\u5F00\u6E38\u620F\uFF1B\u65E7\u5B58\u6863\u4E0D\u4FEE\u6539");
-  for (var _i71 = 0, _Object$entries23 = Object.entries(SECT_BOUNDS); _i71 < _Object$entries23.length; _i71++) {
-    const _Object$entries23$_i = _slicedToArray(_Object$entries23[_i71], 2),
+  for (var _i72 = 0, _Object$entries23 = Object.entries(SECT_BOUNDS); _i72 < _Object$entries23.length; _i72++) {
+    const _Object$entries23$_i = _slicedToArray(_Object$entries23[_i72], 2),
       key = _Object$entries23$_i[0],
       _Object$entries23$_i$ = _slicedToArray(_Object$entries23$_i[1], 2),
       min = _Object$entries23$_i$[0],
@@ -17826,8 +19088,8 @@ function validateRuleset(value) {
   if (value.sect.upkeepGain > value.sect.upkeepMax) throw new Error("\u65E5\u8BFE\u8865\u5145\u5929\u6570\u4E0D\u80FD\u8D85\u8FC7\u529F\u8BFE\u50A8\u5907\u4E0A\u9650");
   if (value.life !== void 0) {
     if (!isRecord(value.life) || Object.keys(value.life).length !== Object.keys(LIFE_BOUNDS).length) throw new Error("\u4EBA\u751F\u53C2\u6570\u4E0D\u5B8C\u6574");
-    for (var _i72 = 0, _Object$entries24 = Object.entries(LIFE_BOUNDS); _i72 < _Object$entries24.length; _i72++) {
-      const _Object$entries24$_i = _slicedToArray(_Object$entries24[_i72], 2),
+    for (var _i73 = 0, _Object$entries24 = Object.entries(LIFE_BOUNDS); _i73 < _Object$entries24.length; _i73++) {
+      const _Object$entries24$_i = _slicedToArray(_Object$entries24[_i73], 2),
         key = _Object$entries24$_i[0],
         _Object$entries24$_i$ = _slicedToArray(_Object$entries24$_i[1], 2),
         min = _Object$entries24$_i$[0],
@@ -17856,8 +19118,8 @@ function validateRuleset(value) {
   if (value.rulesVersion === "0.27.0" !== (value.electric !== void 0)) throw new Error("\u7535\u6C14\u89C4\u5219\u7248\u672C\u4E0D\u5339\u914D");
   if (value.electric !== void 0) {
     if (!isRecord(value.electric) || Object.keys(value.electric).length !== Object.keys(ELECTRIC_BOUNDS).length) throw new Error("\u7535\u6C14\u53C2\u6570\u4E0D\u5B8C\u6574");
-    for (var _i73 = 0, _Object$entries25 = Object.entries(ELECTRIC_BOUNDS); _i73 < _Object$entries25.length; _i73++) {
-      const _Object$entries25$_i = _slicedToArray(_Object$entries25[_i73], 2),
+    for (var _i74 = 0, _Object$entries25 = Object.entries(ELECTRIC_BOUNDS); _i74 < _Object$entries25.length; _i74++) {
+      const _Object$entries25$_i = _slicedToArray(_Object$entries25[_i74], 2),
         k = _Object$entries25$_i[0],
         _Object$entries25$_i$ = _slicedToArray(_Object$entries25$_i[1], 2),
         min = _Object$entries25$_i$[0],
@@ -17877,8 +19139,8 @@ function validateRuleset(value) {
     if (visited.has(id)) return;
     const node = rules2.technologies.find(n => n.id === id);
     if (!node) throw new Error(`\u524D\u7F6E\u4E0D\u5B58\u5728\uFF1A${id}`);
-    for (var _i74 = 0, _arr14 = [node.prerequisiteAny, node.helpfulPrerequisites]; _i74 < _arr14.length; _i74++) {
-      const optional = _arr14[_i74];
+    for (var _i75 = 0, _arr14 = [node.prerequisiteAny, node.helpfulPrerequisites]; _i75 < _arr14.length; _i75++) {
+      const optional = _arr14[_i75];
       if (optional !== void 0 && (!strings(optional) || !optional.length || new Set(optional).size !== optional.length)) throw new Error("\u77E5\u8BC6\u4F9D\u8D56\u5217\u8868\u65E0\u6548");
     }
     visiting.add(id);
@@ -17896,25 +19158,25 @@ function integerFields(value, keys) {
 function validateProduction(rules2) {
   const p = rules2.production;
   if (!isRecord(p) || !integerFields(p.parameters, productionKeys) || !isRecord(p.parameterBounds) || Object.keys(p.parameterBounds).length !== productionKeys.length) throw new Error("\u751F\u4EA7\u53C2\u6570\u96C6\u5408\u65E0\u6548");
-  for (var _i75 = 0, _productionKeys = productionKeys; _i75 < _productionKeys.length; _i75++) {
-    const key = _productionKeys[_i75];
+  for (var _i76 = 0, _productionKeys = productionKeys; _i76 < _productionKeys.length; _i76++) {
+    const key = _productionKeys[_i76];
     const range = p.parameterBounds[key],
       value = p.parameters[key];
     if (!Array.isArray(range) || range.length !== 2 || !range.every(Number.isInteger) || range[0] < 1 || range[1] > 100 || range[0] > range[1] || value < range[0] || value > range[1]) throw new Error(`\u751F\u4EA7\u53C2\u6570\u8FB9\u754C\u65E0\u6548\uFF1A${key}`);
   }
   if (!rules2.economy) {
-    for (var _i76 = 0, _arr15 = ["resource-observation", "woodworking", "controlled-fire", "pottery", "storage"]; _i76 < _arr15.length; _i76++) {
-      const id = _arr15[_i76];
+    for (var _i77 = 0, _arr15 = ["resource-observation", "woodworking", "controlled-fire", "pottery", "storage"]; _i77 < _arr15.length; _i77++) {
+      const id = _arr15[_i77];
       if (!rules2.technologies.some(t => t.id === id)) throw new Error(`\u7F3A\u5C11\u751F\u4EA7\u8282\u70B9\uFF1A${id}`);
     }
   }
-  for (var _i77 = 0, _Object$values12 = Object.values(rules2.scenarios); _i77 < _Object$values12.length; _i77++) {
-    const scenario = _Object$values12[_i77];
+  for (var _i78 = 0, _Object$values13 = Object.values(rules2.scenarios); _i78 < _Object$values13.length; _i78++) {
+    const scenario = _Object$values13[_i78];
     const s = scenario.production;
     if (!isRecord(s) || !integerFields(s.stocks, ["wildFood", "timber", "clay"]) || !integerFields(s.recovery, ["wildFood", "timber"]) || !integerFields(s.market, ["food", "jobs", "woodenware", "pottery", "methods"]) || !strings(s.teachers) || !strings(s.imports)) throw new Error(`\u573A\u666F\u751F\u4EA7\u6761\u4EF6\u65E0\u6548\uFF1A${scenario.id}`);
     if (s.recovery.wildFood > s.stocks.wildFood || s.recovery.timber > s.stocks.timber) throw new Error("\u8D44\u6E90\u6062\u590D\u8D85\u8FC7\u5BB9\u91CF");
-    for (var _i78 = 0, _arr16 = [].concat(_toConsumableArray(s.teachers), _toConsumableArray(s.imports)); _i78 < _arr16.length; _i78++) {
-      const id = _arr16[_i78];
+    for (var _i79 = 0, _arr16 = [].concat(_toConsumableArray(s.teachers), _toConsumableArray(s.imports)); _i79 < _arr16.length; _i79++) {
+      const id = _arr16[_i79];
       if (!rules2.technologies.some(t => t.id === id)) throw new Error(`\u672A\u77E5\u6559\u5B66\u6765\u6E90\uFF1A${id}`);
     }
   }
@@ -17953,11 +19215,11 @@ function masterAvailable(state, person, rules2, events) {
   let changed;
   do {
     changed = false;
-    var _iterator33 = _createForOfIteratorHelper(rules2.technologies),
-      _step33;
+    var _iterator42 = _createForOfIteratorHelper(rules2.technologies),
+      _step42;
     try {
-      for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
-        const tech = _step33.value;
+      for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
+        const tech = _step42.value;
         if (!has(person, tech.id) && prerequisites(person, tech) && (person.learning[tech.id] ?? 0) >= studyRequired(rules2, person, tech, state.knowledge.archives) && tech.practices.every(tag => person.practices.includes(tag))) {
           addUnique(person.mastered, tech.id);
           changed = true;
@@ -17973,9 +19235,9 @@ function masterAvailable(state, person, rules2, events) {
         }
       }
     } catch (err) {
-      _iterator33.e(err);
+      _iterator42.e(err);
     } finally {
-      _iterator33.f();
+      _iterator42.f();
     }
   } while (changed);
 }
@@ -18069,8 +19331,8 @@ function renewLocalSupply(state, rules2, events) {
   const s = rules2.scenarios[state.location.id].production,
     local = state.production;
   if (state.clock.absoluteTurn > 1) {
-    for (var _i79 = 0, _arr17 = ["wildFood", "timber"]; _i79 < _arr17.length; _i79++) {
-      const key = _arr17[_i79];
+    for (var _i80 = 0, _arr17 = ["wildFood", "timber"]; _i80 < _arr17.length; _i80++) {
+      const key = _arr17[_i80];
       const recovery = Math.max(0, s.recovery[key] - Number(state.location.weather === "dry"));
       local.stocks[key] = Math.min(s.stocks[key], local.stocks[key] + recovery);
     }
@@ -18169,8 +19431,8 @@ function settleSociety(state, rules2, events) {
   const s = state.society,
     local = state.production,
     p = rules2.production.parameters;
-  for (var _i80 = 0, _arr18 = ["woodenware", "pottery"]; _i80 < _arr18.length; _i80++) {
-    const material = _arr18[_i80];
+  for (var _i81 = 0, _arr18 = ["woodenware", "pottery"]; _i81 < _arr18.length; _i81++) {
+    const material = _arr18[_i81];
     if (s.goods[material] > 0) {
       s.goods[material]--;
       events.push({
@@ -18528,8 +19790,8 @@ function advanceCalendar(s, rules2, days, events, interruptible = false, relaxin
     advanceCultivation(s, step);
     const storageEvents = [];
     spoilEconomy(s, storageEvents, step);
-    for (var _i81 = 0, _storageEvents = storageEvents; _i81 < _storageEvents.length; _i81++) {
-      const event2 = _storageEvents[_i81];
+    for (var _i82 = 0, _storageEvents = storageEvents; _i82 < _storageEvents.length; _i82++) {
+      const event2 = _storageEvents[_i82];
       if (event2.type === "food-spoiled") {
         spoiled += event2.amount;
         protectedFood = event2.protected;
@@ -18605,7 +19867,7 @@ function advanceCalendar(s, rules2, days, events, interruptible = false, relaxin
 }
 
 // core/src/game/systems/labor.ts
-function quoteReservedLabor(state, id, costs, blockers, execute) {
+function quoteReservedLabor(state, id, costs, blockers2, execute) {
   state = structuredClone(state);
   if (state.life) activePerson(state).vitality.pressure += costs.energy ?? 0;
   let reserved = {
@@ -18615,7 +19877,7 @@ function quoteReservedLabor(state, id, costs, blockers, execute) {
     }),
     foodDays: dietView(state)?.days
   };
-  const previewable = (state.socialFood && id.startsWith("economy:") || state.life?.renewal && ["farm", "sysassign", "sysrun", "sysremove"].includes(id.split(":")[1])) && blockers.length === 0 && state.household.money >= costs.money && state.household.food >= costs.food;
+  const previewable = (state.socialFood && id.startsWith("economy:") || state.life?.renewal && ["farm", "sysassign", "sysrun", "sysremove"].includes(id.split(":")[1])) && blockers2.length === 0 && state.household.money >= costs.money && state.household.food >= costs.food;
   if (previewable) {
     const preview = structuredClone(state);
     preview.household.money -= costs.money;
@@ -18638,7 +19900,7 @@ function shedCoversPlot(state, id) {
   const plot = plots[op === "farm" ? HOME_PLOT : plotTargetId(id.split(":")[2] ?? "")];
   return !!plot && shedCovers(state, plot);
 }
-function defineAction(state, id, label, group, costs, blockers, description, execute) {
+function defineAction(state, id, label, group, costs, blockers2, description, execute) {
   const _costs$ap = costs.ap,
     requestedAp = _costs$ap === void 0 ? 1 : _costs$ap,
     _costs$money = costs.money,
@@ -18673,7 +19935,7 @@ function defineAction(state, id, label, group, costs, blockers, description, exe
     const crossed = farmTasks(state).filter(t => t.deadline > now && t.deadline <= now + life.time);
     if (crossed.length) description += " \u6B64\u884C\u52A8\u5C06\u8DE8\u8FC7\u519C\u65F6\u622A\u6B62\uFF1A" + crossed.map(t => t.name).join("\u3001") + "\u3002";
   }
-  const reasons = _toConsumableArray(/* @__PURE__ */new Set([].concat(_toConsumableArray(blockers.map(reason => state.economy?.branches ? reason.replace(/需生产组织第?1阶或家族记录/g, "\u9700\u638C\u63E1\u52B3\u52A8\u5206\u5DE5").replace(/需生产组织第?2阶或家族记录/g, "\u9700\u638C\u63E1\u751F\u4EA7\u5DE5\u5E8F").replace(/需生产组织第?3阶或家族记录/g, "\u9700\u638C\u63E1\u91C7\u8D2D\u4E0E\u4EA4\u4ED8") : reason)), _toConsumableArray(branchActionNeeds(state, id)))));
+  const reasons = _toConsumableArray(/* @__PURE__ */new Set([].concat(_toConsumableArray(blockers2.map(reason => state.economy?.branches ? reason.replace(/需生产组织第?1阶或家族记录/g, "\u9700\u638C\u63E1\u52B3\u52A8\u5206\u5DE5").replace(/需生产组织第?2阶或家族记录/g, "\u9700\u638C\u63E1\u751F\u4EA7\u5DE5\u5E8F").replace(/需生产组织第?3阶或家族记录/g, "\u9700\u638C\u63E1\u91C7\u8D2D\u4E0E\u4EA4\u4ED8") : reason)), _toConsumableArray(branchActionNeeds(state, id)))));
   const reserved = quoteReservedLabor(state, id, {
     money,
     food,
@@ -18687,8 +19949,8 @@ function defineAction(state, id, label, group, costs, blockers, description, exe
   if (state.ap < ap) reasons.push("\u884C\u52A8\u70B9\u4E0D\u8DB3");
   if (state.household.money < money) reasons.push("\u94B1\u8D22\u4E0D\u8DB3");
   if (state.household.food < food) reasons.push("\u53E3\u7CAE\u4E0D\u8DB3");
-  for (var _i82 = 0, _Object$entries26 = Object.entries(costs.materials ?? {}); _i82 < _Object$entries26.length; _i82++) {
-    const _Object$entries26$_i = _slicedToArray(_Object$entries26[_i82], 2),
+  for (var _i83 = 0, _Object$entries26 = Object.entries(costs.materials ?? {}); _i83 < _Object$entries26.length; _i83++) {
+    const _Object$entries26$_i = _slicedToArray(_Object$entries26[_i83], 2),
       material = _Object$entries26$_i[0],
       amount2 = _Object$entries26$_i[1];
     if ((state.production?.inventory[material] ?? 0) < amount2) reasons.push(`${MATERIAL_NAMES[material]}\u4E0D\u8DB3`);
@@ -18733,11 +19995,11 @@ function landscapeActions(s) {
   if (!farm) return [];
   const result = [],
     r = farm.rules;
-  for (var _i83 = 0, _Object$values13 = Object.values(farm.plots); _i83 < _Object$values13.length; _i83++) {
-    const p = _Object$values13[_i83];
+  for (var _i84 = 0, _Object$values14 = Object.values(farm.plots); _i84 < _Object$values14.length; _i84++) {
+    const p = _Object$values14[_i84];
     if (!p.landscape) continue;
-    for (var _i84 = 0, _arr19 = ["tea", "reading", "garden", "memorial"]; _i84 < _arr19.length; _i84++) {
-      const kind = _arr19[_i84];
+    for (var _i85 = 0, _arr19 = ["tea", "reading", "garden", "memorial"]; _i85 < _arr19.length; _i85++) {
+      const kind = _arr19[_i85];
       const current = p.landscape,
         same = current.kind === kind;
       if (same && current.level === 3) continue;
@@ -18807,8 +20069,8 @@ function eraActions(s) {
   }, e.closed ? ["\u793E\u4F1A\u5386\u7A0B\u5DF2\u7ED3\u675F"] : [], "\u7ACB\u5373\u7ED3\u675F\u5F53\u524D\u9636\u6BB5\uFF0C\u4EC5\u5151\u73B0\u5DF2\u53D6\u5F97\u7684\u9636\u6BB5\u56DE\u62A5\uFF1B\u5269\u4F59\u5929\u6570\u6309\u89C4\u5219\u6BD4\u4F8B\u6298\u7B97\u5E76\u5411\u4E0B\u53D6\u6574\u5230\u534A\u5929\uFF0C\u7ED3\u8F6C\u5230\u4E0B\u4E00\u9636\u6BB5\uFF0C\u635F\u8017\u90E8\u5206\u4E0D\u8865\u507F\u3002\u5E08\u5F92\u6362\u4EE3\u4E0D\u91CD\u7F6E\u9636\u6BB5\u5012\u8BA1\u65F6\u3002\u8DE8\u65F6\u4EE3\u5EF6\u7EED\u5E08\u5F92\u3001\u4E2A\u4EBA\u4FEE\u4E3A\u548C\u6240\u5B66\uFF1B\u95E8\u6D3E\u8D44\u4EA7\u4E0E\u89C4\u7A0B\u4FDD\u7559\u3002\u4E0D\u8981\u6C42\u5EFA\u6210\u6C34\u4E95\u6216\u6CF5\u3002\u73B0\u4EE3\u6709\u516C\u5F00\u51C6\u5907\u671F\u9650\uFF0C\u7ED3\u7B97\u5373\u7ED3\u675F\u65C5\u7A0B\uFF1B\u53EA\u6709\u5371\u673A\u526F\u672C\u6700\u9AD8\u96BE\u5EA6\u8BA1\u5206\uFF0C\u56DB\u9879\u81F3\u5C11\u515C\u5E95\u624D\u7B97\u4F7F\u547D\u5B8C\u6210\u3002", d => {
     d.era.pendingSettle = true;
   }));
-  for (var _i85 = 0, _arr20 = [true, false]; _i85 < _arr20.length; _i85++) {
-    const on = _arr20[_i85];
+  for (var _i86 = 0, _arr20 = [true, false]; _i86 < _arr20.length; _i86++) {
+    const on = _arr20[_i86];
     out.push(defineAction(s, "economy:tap:" + (on ? "on" : "off"), on ? "\u63A5\u5165\u5BB6\u5EAD\u7530\u81EA\u6765\u6C34\u670D\u52A1" : "\u6682\u505C\u81EA\u6765\u6C34\u670D\u52A1", "\u793E\u4F1A\u9636\u6BB5", {
       ap: 0
     }, [].concat(_toConsumableArray(e.index !== 3 ? ["\u73B0\u4EE3\u793E\u4F1A\u624D\u63D0\u4F9B\u516C\u5171\u81EA\u6765\u6C34"] : []), _toConsumableArray(e.tap === on ? ["\u5DF2\u7ECF\u662F\u6B64\u5B89\u6392"] : [])), "\u6BCF\u4E2A\u786E\u5B9E\u7F3A\u6C34\u7684\u5B63\u8282\u652F\u4ED81\u94B1\uFF0C\u7531\u516C\u5171\u670D\u52A1\u4EBA\u5458\u4E3A\u5BB6\u5EAD\u7530\u88652\u6C34\u5206\u3002\u65E0\u9700\u6C42\u4E0D\u6536\u8D39\uFF0C\u65E0\u94B1\u65F6\u4FDD\u7559\u81EA\u5BB6\u4F9B\u6C34\u9000\u8DEF\u3002", (d, ev) => {
@@ -18900,11 +20162,11 @@ function eraActions(s) {
     };
   });
   const scoreOf = ids => ids.reduce((a, id) => a + (tasks.find(t => t.id === id)?.progress ?? 0), 0);
-  var _iterator34 = _createForOfIteratorHelper(tasks),
-    _step34;
+  var _iterator43 = _createForOfIteratorHelper(tasks),
+    _step43;
   try {
-    for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
-      const o = _step34.value;
+    for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
+      const o = _step43.value;
       out.push(defineAction(s, "economy:dungeonwork:" + o.id, o.name, "\u6700\u7EC8\u526F\u672C", {
         time: o.time,
         energy: o.energy,
@@ -18915,8 +20177,8 @@ function eraActions(s) {
           const n = Math.min(need, d.household.food);
           d.household.food -= n;
           need -= n;
-          for (var _i86 = 0, _EDIBLE5 = EDIBLE; _i86 < _EDIBLE5.length; _i86++) {
-            const id = _EDIBLE5[_i86];
+          for (var _i87 = 0, _EDIBLE5 = EDIBLE; _i87 < _EDIBLE5.length; _i87++) {
+            const id = _EDIBLE5[_i87];
             const n2 = Math.min(need, amount(d, id));
             if (n2) changeGoods(d, {
               [id]: n2
@@ -18946,9 +20208,9 @@ function eraActions(s) {
       }));
     }
   } catch (err) {
-    _iterator34.e(err);
+    _iterator43.e(err);
   } finally {
-    _iterator34.f();
+    _iterator43.f();
   }
   return out;
 }
@@ -18957,14 +20219,14 @@ function crisisActions(s) {
   if (!x) return [];
   const r = s.sect.rules,
     out = [];
-  for (var _i87 = 0, _CRISES = CRISES; _i87 < _CRISES.length; _i87++) {
-    const c = _CRISES[_i87];
+  for (var _i88 = 0, _CRISES = CRISES; _i88 < _CRISES.length; _i88++) {
+    const c = _CRISES[_i88];
     const p = x.entries[c.id];
     if (p.level >= 3) continue;
     const level2 = p.level + 1,
       quantity = r.crisisSupply * level2;
-    for (var _i88 = 0, _arr21 = ["technical", "coordination"]; _i88 < _arr21.length; _i88++) {
-      const route = _arr21[_i88];
+    for (var _i89 = 0, _arr21 = ["technical", "coordination"]; _i89 < _arr21.length; _i89++) {
+      const route = _arr21[_i89];
       if (p.step > 0 && p.route !== route) continue;
       const knowledge = _toConsumableArray(c[route]);
       if (level2 >= 2) knowledge.push(route === "technical" ? c.advanced : "O5");
@@ -18992,8 +20254,8 @@ function crisisActions(s) {
         const direct = Math.min(need, d.household.food);
         d.household.food -= direct;
         need -= direct;
-        for (var _i89 = 0, _EDIBLE6 = EDIBLE; _i89 < _EDIBLE6.length; _i89++) {
-          const id = _EDIBLE6[_i89];
+        for (var _i90 = 0, _EDIBLE6 = EDIBLE; _i90 < _EDIBLE6.length; _i90++) {
+          const id = _EDIBLE6[_i90];
           const n = Math.min(need, amount(d, id));
           if (n) changeGoods(d, {
             [id]: n
@@ -19022,8 +20284,8 @@ function socialFoodActions(s) {
   const f = s.socialFood;
   if (!f) return [];
   const out = [];
-  for (var _i90 = 0, _Object$entries27 = Object.entries(FOOD_POLICIES); _i90 < _Object$entries27.length; _i90++) {
-    const _Object$entries27$_i = _slicedToArray(_Object$entries27[_i90], 2),
+  for (var _i91 = 0, _Object$entries27 = Object.entries(FOOD_POLICIES); _i91 < _Object$entries27.length; _i91++) {
+    const _Object$entries27$_i = _slicedToArray(_Object$entries27[_i91], 2),
       mode = _Object$entries27$_i[0],
       label = _Object$entries27$_i[1];
     out.push(defineAction(s, "economy:foodpolicy:" + mode, label, "\u793E\u4F1A\u98DF\u54C1", {
@@ -19038,8 +20300,8 @@ function socialFoodActions(s) {
       socialFoodEvent(ev, "policy", "\u751F\u6D3B\u5B89\u6392\uFF1A" + label);
     }));
   }
-  for (var _i91 = 0, _arr22 = [0, 2, 4, 8, 12]; _i91 < _arr22.length; _i91++) {
-    const budget = _arr22[_i91];
+  for (var _i92 = 0, _arr22 = [0, 2, 4, 8, 12]; _i92 < _arr22.length; _i92++) {
+    const budget = _arr22[_i92];
     out.push(defineAction(s, "economy:foodbudget:" + budget, `\u6BCF\u5B63\u8D2D\u7CAE\u9884\u7B97${budget}\u94B1`, "\u793E\u4F1A\u98DF\u54C1", {
       ap: 0
     }, f.budget === budget ? ["\u5DF2\u662F\u6B64\u9884\u7B97"] : [], "\u53EA\u8BBE\u5B9A\u98DF\u54C1\u91C7\u8D2D\u4E0A\u9650\uFF0C\u4E0D\u63D0\u524D\u6263\u94B1\uFF0C\u4E0D\u51BB\u7ED3\u73B0\u94B1\uFF1B\u5B63\u672B\u6309\u53EF\u7528\u8D44\u91D1\u7ED3\u7B97\u3002", (d, ev) => {
@@ -19047,8 +20309,8 @@ function socialFoodActions(s) {
       socialFoodEvent(ev, "budget", "\u6BCF\u5B63\u98DF\u54C1\u91C7\u8D2D\u9884\u7B97\u4E0A\u9650" + budget + "\u94B1");
     }));
   }
-  for (var _i92 = 0, _arr23 = [0, 2, 4, 8]; _i92 < _arr23.length; _i92++) {
-    const reserve = _arr23[_i92];
+  for (var _i93 = 0, _arr23 = [0, 2, 4, 8]; _i93 < _arr23.length; _i93++) {
+    const reserve = _arr23[_i93];
     out.push(defineAction(s, "economy:foodreserve:" + reserve, `\u996D\u540E\u50A8\u5907\u76EE\u6807${reserve}\u4EFD`, "\u793E\u4F1A\u98DF\u54C1", {
       ap: 0
     }, f.reserve === reserve ? ["\u5DF2\u662F\u6B64\u76EE\u6807"] : [], "\u4EC5\u5F71\u54CD\u4FDD\u7559\u50A8\u5907\u6A21\u5F0F\uFF1B\u76EE\u6807\u4E3A\u672C\u5B63\u8FDB\u98DF\u540E\u3001\u4FDD\u5B58\u635F\u8017\u524D\u7684\u5168\u90E8\u53EF\u98DF\u5E93\u5B58\u3002", (d, ev) => {
@@ -19056,8 +20318,8 @@ function socialFoodActions(s) {
       socialFoodEvent(ev, "reserve", "\u996D\u540E\u50A8\u5907\u76EE\u6807" + reserve + "\u4EFD");
     }));
   }
-  for (var _i93 = 0, _arr24 = [true, false]; _i93 < _arr24.length; _i93++) {
-    const delivery = _arr24[_i93];
+  for (var _i94 = 0, _arr24 = [true, false]; _i94 < _arr24.length; _i94++) {
+    const delivery = _arr24[_i94];
     out.push(defineAction(s, "economy:foodplan:" + (delivery ? "on" : "off"), delivery ? "\u59D4\u6258\u793E\u4F1A\u914D\u9001" : "\u6539\u4E3A\u672C\u4EBA\u8D76\u96C6", "\u793E\u4F1A\u98DF\u54C1", {
       ap: 0
     }, [].concat(_toConsumableArray(f.delivery === delivery ? ["\u5DF2\u662F\u6B64\u5B89\u6392"] : []), _toConsumableArray(s.era?.index === 3 ? ["\u73B0\u4EE3\u96F6\u552E\u5DF2\u63D0\u4F9B\u914D\u9001\uFF0C\u65E0\u9700\u5207\u6362"] : delivery ? branchNeeds(s, ["O0"]) : [])), delivery ? "\u6CBF\u7528\u957F\u671F\u4F9B\u7CAE\u670D\u52A1\uFF0C\u7531\u793E\u4F1A\u4EBA\u5458\u914D\u9001\uFF1B\u672C\u4EBA\u4E0D\u8017\u8D76\u96C6\u65F6\u95F4\uFF0C\u4ECD\u6309\u5B9E\u9645\u6570\u91CF\u4ED8\u7CAE\u6B3E\u5E76\u6D88\u8017\u4EBA\u5458\u670D\u52A1\u989D\u5EA6\u3001\u5171\u4EAB\u5E02\u573A\u5E93\u5B58\u4E0E\u8FD0\u8F93\u3002\u4E0D\u6539\u53D8\u751F\u6D3B\u7B56\u7565\u3002" : "\u4EE5\u540E\u9700\u8981\u91C7\u8D2D\u65F6\u9884\u7559\u8D76\u96C6\u65F6\u95F4\uFF1B\u53D6\u6D88\u914D\u9001\u4E0D\u6682\u505C\u91C7\u8D2D\uFF0C\u6682\u505C\u8BF7\u4F7F\u7528\u201C\u6682\u505C\u81EA\u52A8\u8D2D\u4E70\u201D\u3002", (d, ev) => {
@@ -19073,11 +20335,11 @@ function industryActions(s) {
   const x = s.economy?.industry;
   if (!x) return [];
   const result = [];
-  var _iterator35 = _createForOfIteratorHelper(industryProductsFor(s)),
-    _step35;
+  var _iterator44 = _createForOfIteratorHelper(industryProductsFor(s)),
+    _step44;
   try {
-    for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
-      const p = _step35.value;
+    for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
+      const p = _step44.value;
       const equipment = p.kind === "device";
       result.push(defineAction(s, "economy:inspect:" + p.id, "\u68C0\u9A8C\uFF1A" + productName(p.id), "\u4EA7\u54C1\u9A8C\u8BC1", {
         time: s.era && s.economy.branches.learned[s.household.activePersonId]?.includes("Q0") ? 3 : 4,
@@ -19100,15 +20362,15 @@ function industryActions(s) {
       }));
     }
   } catch (err) {
-    _iterator35.e(err);
+    _iterator44.e(err);
   } finally {
-    _iterator35.f();
+    _iterator44.f();
   }
-  var _iterator36 = _createForOfIteratorHelper(systemDefinitions(s)),
-    _step36;
+  var _iterator45 = _createForOfIteratorHelper(systemDefinitions(s)),
+    _step45;
   try {
-    for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
-      const def = _step36.value;
+    for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
+      const def = _step45.value;
       const i = x.instances[def.id];
       result.push(defineAction(s, "economy:sysbuild:" + def.id, "\u5EFA\u8BBE\uFF1A" + def.name, "\u7CFB\u7EDF", {
         time: def.id === "well" ? 6 : 2,
@@ -19155,8 +20417,8 @@ function industryActions(s) {
         if (!d.economy.industry.commissioned.includes(def.id)) d.economy.industry.commissioned.push(def.id);
         industryEvent(ev, "commissioned", def.id, "self", def.name + "\u5B9E\u9645\u8C03\u8BD5\u5B8C\u6210\uFF0C\u5C1A\u672A\u5B89\u6392\u8FD0\u884C");
       }));
-      for (var _i94 = 0, _arr25 = ["self", "laborer", "farmer", "artisan"]; _i94 < _arr25.length; _i94++) {
-        const operator = _arr25[_i94];
+      for (var _i95 = 0, _arr25 = ["self", "laborer", "farmer", "artisan"]; _i95 < _arr25.length; _i95++) {
+        const operator = _arr25[_i95];
         result.push(defineAction(s, `economy:sysassign:${def.id}-${operator}`, "\u5B89\u6392" + (operator === "self" ? "\u672C\u4EBA" : operator === "artisan" ? "\u5DE5\u5320" : operator === "farmer" ? "\u519C\u5DE5" : "\u666E\u901A\u96C7\u5DE5") + "\uFF1A" + def.name, "\u7CFB\u7EDF", {
           ap: 0
         }, [].concat(_toConsumableArray(!i?.commissioned ? ["\u5148\u5EFA\u8BBE\u5E76\u8C03\u8BD5\u7CFB\u7EDF"] : []), _toConsumableArray(assignmentNeeds(s, def, operator)), _toConsumableArray(i?.enabled && i.operator === operator ? ["\u5DF2\u662F\u5F53\u524D\u5B89\u6392"] : [])), "\u5B89\u6392\u5E76\u542F\u7528\u3002\u672C\u4EBA\u4E3A\u5F53\u524D\u7ECF\u8425\u8005\uFF0C\u6362\u4EE3\u540E\u9700\u786E\u8BA4\u63A5\u7EED\uFF1B\u5458\u5DE5\u5171\u4EAB\u5404\u81EA\u5B63\u9884\u7B97\u3002\u7F3A\u6599\u5F85\u547D\u4E0D\u6263\u5DE5\u8D44\uFF0C\u4EBA\u529B\u5DE5\u4F5C\u624D\u8BA1\u8D39\u3002", (d, ev) => {
@@ -19180,9 +20442,9 @@ function industryActions(s) {
       }));
     }
   } catch (err) {
-    _iterator36.e(err);
+    _iterator45.e(err);
   } finally {
-    _iterator36.f();
+    _iterator45.f();
   }
   return result;
 }
@@ -19192,11 +20454,11 @@ function branchActions(s, r) {
   const b = s.economy?.branches;
   if (!b) return [];
   const out = [];
-  var _iterator37 = _createForOfIteratorHelper(branchNodesFor(s)),
-    _step37;
+  var _iterator46 = _createForOfIteratorHelper(branchNodesFor(s)),
+    _step46;
   try {
-    for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
-      const node = _step37.value;
+    for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
+      const node = _step46.value;
       const lesson = studyQuote(s, node.id);
       const unavailable = nodeInEra(s, node.id) ? [] : ["\u5F53\u524D\u793E\u4F1A\u5C1A\u672A\u5F00\u653E\u6B64\u8BFE\u7A0B"];
       const archived = b.archives.includes(node.id),
@@ -19271,12 +20533,12 @@ function branchActions(s, r) {
       }));
     }
   } catch (err) {
-    _iterator37.e(err);
+    _iterator46.e(err);
   } finally {
-    _iterator37.f();
+    _iterator46.f();
   }
-  for (var _i95 = 0, _arr26 = ["electric", "metal"]; _i95 < _arr26.length; _i95++) {
-    const channel2 = _arr26[_i95];
+  for (var _i96 = 0, _arr26 = ["electric", "metal"]; _i96 < _arr26.length; _i96++) {
+    const channel2 = _arr26[_i96];
     const price = channel2 === "electric" ? r.branches.electricFee : r.branches.metalFee;
     out.push(defineAction(s, `economy:channel:${channel2}`, channel2 === "electric" ? "\u8054\u7EDC\u7535\u5DE5\u6750\u6599\u5546" : "\u7B7E\u8BA2\u7A33\u5B9A\u91D1\u5C5E\u4F9B\u8D27", "\u6E20\u9053", {
       money: price
@@ -19331,13 +20593,13 @@ function lifeActions(s) {
     x.health = Math.min(healthCeiling(x, r), x.health + r.careRecovery);
     lifeEvent(ev, d.household.activePersonId, "care", `\u7597\u517B\u6062\u590D${x.health - before}\u5065\u5EB7`);
   })]);
-  var _iterator38 = _createForOfIteratorHelper(Object.values(s.persons).entries()),
-    _step38;
+  var _iterator47 = _createForOfIteratorHelper(Object.values(s.persons).entries()),
+    _step47;
   try {
-    for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
-      const _step38$value = _slicedToArray(_step38.value, 2),
-        index = _step38$value[0],
-        person = _step38$value[1];
+    for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
+      const _step47$value = _slicedToArray(_step47.value, 2),
+        index = _step47$value[0],
+        person = _step47$value[1];
       if (person.id === s.economy?.farm?.neighbor.personId || person.id === s.household.activePersonId || !person.vitality?.alive || !person.vitality.experiences || s.sect && !s.sect.members[person.id]?.admitted) continue;
       actions.push(defineAction(s, "economy:bond:" + index, "\u4E0E" + person.name + "\u8C08\u5FC3", "\u8EAB\u4F53", {
         time: 2,
@@ -19356,9 +20618,9 @@ function lifeActions(s) {
       }));
     }
   } catch (err) {
-    _iterator38.e(err);
+    _iterator47.e(err);
   } finally {
-    _iterator38.f();
+    _iterator47.f();
   }
   const child = heir(s),
     cv = s.household.heirId !== s.household.activePersonId ? child.vitality : void 0;
@@ -19366,16 +20628,16 @@ function lifeActions(s) {
     d.life.seasonCompany = true;
     lifeEvent(ev, d.household.heirId, "company", "\u672C\u5B63\u966A\u4F34\u4E86\u6210\u957F\u4E2D\u7684\u540E\u8F88");
   }));
-  var _iterator39 = _createForOfIteratorHelper(livingElders(s)),
-    _step39;
+  var _iterator48 = _createForOfIteratorHelper(livingElders(s)),
+    _step48;
   try {
-    for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
-      const elder = _step39.value;
-      var _iterator40 = _createForOfIteratorHelper(consultableNodes(s, elder)),
-        _step40;
+    for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
+      const elder = _step48.value;
+      var _iterator49 = _createForOfIteratorHelper(consultableNodes(s, elder)),
+        _step49;
       try {
-        for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
-          const nodeId = _step40.value;
+        for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+          const nodeId = _step49.value;
           const node = branchNodesFor(s).find(n => n.id === nodeId);
           actions.push(defineAction(s, `economy:consult:${nodeId}`, `\u8BF7\u6559${elder.name}\uFF1A${branchName(nodeId)}`, "\u4F20\u627F", {}, [].concat(_toConsumableArray(s.life.consultPending ? ["\u4E00\u6B21\u53EA\u8BB0\u4E00\u95E8\u8BF7\u6559\u7684\u8BFE\u7A0B\uFF0C\u5148\u5B8C\u6210\u5BF9\u5E94\u5B66\u4E60"] : []), _toConsumableArray(node ? branchNeeds(s, node.parents) : [])), `${elder.name}\u638C\u63E1${branchName(nodeId)}\uFF1B\u8BF7\u6559\u540E\u672C\u4EBA\u4E0B\u4E00\u6B21\u5B66\u4E60\u8BE5\u8BFE\u7A0B\u65F6\u95F4\u51CF\u5C11${s.life.renewal?.consultDiscount ?? 2}\u3002\u6BCF\u95E8\u8BFE\u7A0B\u6BCF\u4EE3\u53EA\u8BF7\u6559\u4E00\u6B21\uFF0C\u4EA4\u63A5\u540E\u91CD\u65B0\u8BA1\u7B97\u3002`, (d, ev) => {
             var _a;
@@ -19385,15 +20647,15 @@ function lifeActions(s) {
           }));
         }
       } catch (err) {
-        _iterator40.e(err);
+        _iterator49.e(err);
       } finally {
-        _iterator40.f();
+        _iterator49.f();
       }
     }
   } catch (err) {
-    _iterator39.e(err);
+    _iterator48.e(err);
   } finally {
-    _iterator39.f();
+    _iterator48.f();
   }
   actions.push(defineAction(s, "economy:retire:family", "\u51C6\u5907\u4EA4\u63A5", "\u8EAB\u4F53", {
     ap: 0
@@ -19462,8 +20724,8 @@ function sectActions(s) {
   }, [].concat(_toConsumableArray(!cultivationKnown(s, "C0") ? ["\u5148\u4FEE\u6210\u5165\u95E8\u8BFE\u300C\u4FEE\u8EAB\u300D"] : []), _toConsumableArray(m.cultivation.upkeep >= r.upkeepMax ? ["\u529F\u8BFE\u72B6\u6001\u5DF2\u5145\u8DB3"] : [])), `\u8C03\u606F\u3001\u5BFC\u5F15\u4E0E\u6E29\u4E60\uFF1B\u5B8C\u6210\u540E\u8865\u5145${r.upkeepGain}\u5929\u529F\u8BFE\uFF0C\u6700\u591A\u50A8\u5907${r.upkeepMax}\u5929\u3002\u8BFE\u7A0B\u6548\u679C\u5F85\u5B9A\uFF0C\u5F53\u524D\u4E0D\u589E\u52A0\u5168\u5C40\u52A0\u6210\u3002`, (d, ev) => maintainCultivation(d, id, ev));
   daily.deferred = true;
   out.push(daily);
-  for (var _i96 = 0, _CULTIVATION_COURSES = CULTIVATION_COURSES; _i96 < _CULTIVATION_COURSES.length; _i96++) {
-    const course = _CULTIVATION_COURSES[_i96];
+  for (var _i97 = 0, _CULTIVATION_COURSES = CULTIVATION_COURSES; _i97 < _CULTIVATION_COURSES.length; _i97++) {
+    const course = _CULTIVATION_COURSES[_i97];
     const quote = cultivationQuote(s, course),
       known = cultivationKnown(s, course.id);
     const learn = defineAction(s, "economy:sectlearn:" + course.id, "\u7CBE\u4FEE \xB7 " + course.name, "\u4FEE\u884C", {
@@ -19497,11 +20759,11 @@ function expeditionActions(s, r) {
   if (!x) return [];
   const out = [];
   const catalog = expeditionCatalog(s);
-  var _iterator41 = _createForOfIteratorHelper(catalog),
-    _step41;
+  var _iterator50 = _createForOfIteratorHelper(catalog),
+    _step50;
   try {
-    for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
-      const f2 = _step41.value;
+    for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
+      const f2 = _step50.value;
       const a2 = x.attempts[f2.id];
       out.push(defineAction(s, `economy:expeditionstart:${f2.id}`, "\u6311\u6218\uFF0F\u63A5\u7EED\uFF1A" + f2.name, "\u526F\u672C", {
         ap: 1
@@ -19516,9 +20778,9 @@ function expeditionActions(s, r) {
       }));
     }
   } catch (err) {
-    _iterator41.e(err);
+    _iterator50.e(err);
   } finally {
-    _iterator41.f();
+    _iterator50.f();
   }
   if (!x.selected) return out;
   const f = catalog.find(f2 => f2.id === x.selected),
@@ -19557,10 +20819,10 @@ function modernActions(s) {
   const m = s.economy?.modern;
   if (!m) return [];
   const out = [];
-  for (var _i97 = 0, _arr27 = s.electric ? ["E01", "E02", "E04", "LAMP", "TELEGRAPH"] : [].concat(GENERATORS, ["E04"], SERVICES); _i97 < _arr27.length; _i97++) {
-    const id = _arr27[_i97];
-    for (var _i98 = 0, _arr28 = [true, false]; _i98 < _arr28.length; _i98++) {
-      const on = _arr28[_i98];
+  for (var _i98 = 0, _arr27 = s.electric ? ["E01", "E02", "E04", "LAMP", "TELEGRAPH"] : [].concat(GENERATORS, ["E04"], SERVICES); _i98 < _arr27.length; _i98++) {
+    const id = _arr27[_i98];
+    for (var _i99 = 0, _arr28 = [true, false]; _i99 < _arr28.length; _i99++) {
+      const on = _arr28[_i99];
       out.push(defineAction(s, `economy:utility:${id}-${on ? "on" : "off"}`, `${on ? "\u542F\u7528" : "\u505C\u7528"}${ALL_PRODUCTS.find(p => p.id === id).name}`, "\u80FD\u6E90", {
         ap: 0
       }, [].concat(_toConsumableArray(!equipped(s, id) && on ? ["\u9700\u53EF\u7528\u8BBE\u5907"] : []), _toConsumableArray(m.enabled.includes(id) === on ? ["\u5DF2\u662F\u5F53\u524D\u5B89\u6392"] : [])), "\u8BBE\u5907\u6309\u771F\u5B9E\u539F\u6599\u3001\u7535\u529B\u4E0E\u8010\u7528\u8FD0\u884C\uFF1B\u542F\u505C\u672C\u8EAB\u4E0D\u4EA7\u751F\u7535\u3002", (d, ev) => {
@@ -19615,9 +20877,9 @@ function towerActions(s, _r) {
   const t = s.economy?.tower;
   if (!t || t.floor >= floorsFor(s).length) return [];
   const out = [];
-  const add = (op, target, label, ap, blockers, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u8BD5\u70BC", {
+  const add = (op, target, label, ap, blockers2, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u8BD5\u70BC", {
     ap
-  }, blockers, description, execute));
+  }, blockers2, description, execute));
   const emit = (ev, detail) => ev.push({
     type: "tower",
     operation: "plan",
@@ -19625,13 +20887,13 @@ function towerActions(s, _r) {
     detail,
     goods: {}
   });
-  var _iterator42 = _createForOfIteratorHelper(floorsFor(s).entries()),
-    _step42;
+  var _iterator51 = _createForOfIteratorHelper(floorsFor(s).entries()),
+    _step51;
   try {
-    for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
-      const _step42$value = _slicedToArray(_step42.value, 2),
-        i = _step42$value[0],
-        f = _step42$value[1];
+    for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
+      const _step51$value = _slicedToArray(_step51.value, 2),
+        i = _step51$value[0],
+        f = _step51$value[1];
       add("towerstart", f.id, (t.active ? "\u8FDB\u884C\u4E2D\uFF1A" : "\u5F00\u5DE5\uFF1A") + f.name, 1, [].concat(_toConsumableArray(i !== t.floor ? ["\u9700\u6309\u987A\u5E8F\u5B8C\u6210\u524D\u5C42"] : []), _toConsumableArray(t.active ? ["\u672C\u5C42\u5DF2\u5F00\u5DE5"] : []), _toConsumableArray(s.economy.operations.paused ? ["\u5148\u63A5\u7EED\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392"] : [])), "\u5F00\u5DE5\u5E76\u542F\u7528\u5DE5\u5730\u4F9B\u8D27\u3002\u5B63\u672B\u53EA\u8FD0\u5BB6\u5EAD\u73B0\u6709\u4F59\u6599\uFF0C\u5BB6\u5EAD\u53E3\u7CAE\u4F18\u5148\uFF1B\u4E0B\u4E00\u5B63\u5230\u8D27\u3002\u4E0D\u4F1A\u76F4\u63A5\u6263\u94B1\u6362\u53D6\u5DE5\u7A0B\u8FDB\u5EA6\u3002", (d, ev) => {
         const x = d.economy.tower;
         x.active = true;
@@ -19640,17 +20902,17 @@ function towerActions(s, _r) {
       });
     }
   } catch (err) {
-    _iterator42.e(err);
+    _iterator51.e(err);
   } finally {
-    _iterator42.f();
+    _iterator51.f();
   }
   add("towerpause", "current", "\u6682\u505C\u5F53\u524D\u65BD\u5DE5", 0, t.active ? [] : ["\u5F53\u524D\u672A\u5F00\u5DE5"], "\u505C\u6B62\u65B0\u53D1\u8FD0\u4E0E\u65BD\u5DE5\uFF0C\u73B0\u573A\u548C\u5728\u9014\u6750\u6599\u4FDD\u7559\uFF1B\u5408\u9F99\u9636\u6BB5\u505C\u5DE5\u8DE8\u5B63\u4F1A\u4E2D\u65AD\u8FDE\u7EED\u9A8C\u8BC1\u3002", (d, ev) => {
     d.economy.tower.active = false;
     d.economy.tower.delivery = false;
     emit(ev, "\u65BD\u5DE5\u6682\u505C\uFF0C\u5DF2\u6295\u5165\u5DE5\u7A0B\u548C\u8D27\u7269\u4FDD\u7559");
   });
-  for (var _i99 = 0, _arr29 = [true, false]; _i99 < _arr29.length; _i99++) {
-    const enabled = _arr29[_i99];
+  for (var _i100 = 0, _arr29 = [true, false]; _i100 < _arr29.length; _i100++) {
+    const enabled = _arr29[_i100];
     add("towerdelivery", enabled ? "on" : "off", enabled ? "\u6062\u590D\u5DE5\u5730\u4F9B\u8D27" : "\u6682\u505C\u5DE5\u5730\u4F9B\u8D27", 0, [].concat(_toConsumableArray(!t.active ? ["\u5148\u5F00\u5DE5"] : []), _toConsumableArray(t.delivery === enabled ? ["\u5DF2\u662F\u6B64\u5B89\u6392"] : [])), "\u4EC5\u6539\u53D8\u53D1\u8D27\uFF0C\u4E0D\u64A4\u56DE\u5728\u9014\u8D27\u7269\uFF1B\u73B0\u573A\u7269\u6599\u4ECD\u53EF\u7528\u4E8E\u65BD\u5DE5\u3002", (d, ev) => {
       d.economy.tower.delivery = enabled;
       emit(ev, enabled ? "\u5DE5\u5730\u4F9B\u8D27\u6062\u590D" : "\u5DE5\u5730\u4F9B\u8D27\u6682\u505C");
@@ -19665,8 +20927,8 @@ function workshopActions(s, r) {
     net = e.workshops;
   if (!net) return [];
   const out = [];
-  for (var _i100 = 0, _WORKSHOPS5 = WORKSHOPS; _i100 < _WORKSHOPS5.length; _i100++) {
-    const spec = _WORKSHOPS5[_i100];
+  for (var _i101 = 0, _WORKSHOPS5 = WORKSHOPS; _i101 < _WORKSHOPS5.length; _i101++) {
+    const spec = _WORKSHOPS5[_i101];
     const w = net.nodes[spec.id];
     const add = (op, label, cost, blocked, description, execute) => out.push(defineAction(s, `economy:${op}:${spec.id}`, label, "\u4F5C\u574A", cost, [].concat(_toConsumableArray(e.operations.paused ? ["\u5148\u63A5\u7EED\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392"] : []), _toConsumableArray(blocked)), description, execute));
     const log2 = (events, detail) => events.push({
@@ -19728,8 +20990,8 @@ function workshopActions(s, r) {
       d.economy.workshops.nodes[spec.id].logistics = 2;
       log2(ev, spec.name + "\u8FD0\u8F93\u5BB9\u91CF\u7FFB\u500D");
     });
-    if (spec.id === "rope") for (var _i101 = 0, _arr30 = ["household", "upstream"]; _i101 < _arr30.length; _i101++) {
-      const source = _arr30[_i101];
+    if (spec.id === "rope") for (var _i102 = 0, _arr30 = ["household", "upstream"]; _i102 < _arr30.length; _i102++) {
+      const source = _arr30[_i102];
       add(source === "household" ? "workshophousehold" : "workshopupstream", source === "household" ? "\u7EF3\u7D22\u6539\u7528\u5BB6\u5EAD\u7EA4\u7EF4" : "\u8FDE\u63A5\u7EA4\u7EF4\u4F5C\u574A \u2192 \u7EF3\u7D22\u4F5C\u574A", {}, [].concat(_toConsumableArray(w.source === source ? ["\u5DF2\u91C7\u7528\u6B64\u6765\u6E90"] : []), _toConsumableArray(source === "upstream" && !net.nodes.fiber ? ["\u5148\u5EFA\u7ACB\u7EA4\u7EF4\u4F5C\u574A"] : [])), "\u4EC5\u6539\u53D8\u540E\u7EED\u53D1\u8D27\u6765\u6E90\uFF1B\u73B0\u6709\u539F\u6599\u548C\u5728\u9014\u8D27\u7269\u4FDD\u7559\u3002\u5BB6\u5EAD\u7EA4\u7EF4\u53EF\u624B\u5DE5\u751F\u4EA7\u6216\u4ECE\u5E02\u573A\u8D2D\u5165\u3002", (d, ev) => {
         d.economy.workshops.nodes.rope.source = source;
         log2(ev, source === "household" ? "\u7EF3\u7D22\u4ECE\u5BB6\u5EAD\u5E93\u5B58\u53D6\u7EA4\u7EF4" : "\u7EA4\u7EF4\u4F5C\u574A\u5DF2\u8FDE\u63A5\u7EF3\u7D22\u4F5C\u574A");
@@ -19745,7 +21007,7 @@ function operationsActions(s, r) {
     o = e.operations,
     out = [],
     org = organizationLevel(s);
-  const add = (op, target, label, cost, blockers, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u7ECF\u8425", cost, [].concat(_toConsumableArray(blockers), _toConsumableArray(o.paused && !["resumeplans", "charter", "projectpause"].includes(op) && target !== "off" ? ["\u5148\u63A5\u7EED\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392"] : [])), description, execute));
+  const add = (op, target, label, cost, blockers2, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u7ECF\u8425", cost, [].concat(_toConsumableArray(blockers2), _toConsumableArray(o.paused && !["resumeplans", "charter", "projectpause"].includes(op) && target !== "off" ? ["\u5148\u63A5\u7EED\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392"] : [])), description, execute));
   add("resumeplans", "family", "\u63A5\u7EED\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392", {}, o.paused ? [] : ["\u7ECF\u8425\u5B89\u6392\u672A\u6682\u505C"], "\u6062\u590D\u4FDD\u5B58\u7684\u4F9B\u7CAE\u3001\u519C\u4E1A\u3001\u751F\u4EA7\u3001\u8865\u8D27\u4E0E\u7EF4\u62A4\u914D\u7F6E\u3002\u8BA2\u7ACB\u5BB6\u65CF\u5951\u7EA6\u53EF\u8BA9\u672A\u6765\u6362\u4EE3\u81EA\u52A8\u63A5\u7EED\u3002", (d, ev) => {
     const ops = d.economy.operations;
     ops.paused = false;
@@ -19754,8 +21016,8 @@ function operationsActions(s, r) {
     reserveFood(d, r, ev);
     opEvent(ev, "resumed", "family", "\u7ECF\u8425\u5B89\u6392\u5DF2\u63A5\u7EED");
   });
-  for (var _i102 = 0, _arr31 = [true, false]; _i102 < _arr31.length; _i102++) {
-    const active = _arr31[_i102];
+  for (var _i103 = 0, _arr31 = [true, false]; _i103 < _arr31.length; _i103++) {
+    const active = _arr31[_i103];
     const t = active ? "on" : "off";
     if (!s.socialFood) add("foodplan", t, active ? "\u7B7E\u8BA2\u957F\u671F\u4F9B\u7CAE\u534F\u8BAE" : "\u6682\u505C\u4F9B\u7CAE\u534F\u8BAE", {}, [].concat(_toConsumableArray(active && org < 1 ? ["\u9700\u751F\u4EA7\u7EC4\u7EC71\u9636\u6216\u5BB6\u65CF\u8BB0\u5F55"] : []), _toConsumableArray(o.food === active ? ["\u5DF2\u7ECF\u662F\u6B64\u5B89\u6392"] : [])), `\u5B63\u672B\u6309\u9700\u8D2D\u5165\u81F3${foodTarget(s, r)}\u4EFD\u53EF\u98DF\u50A8\u5907\uFF0C\u6309\u666E\u901A\u7CAE\u4EF7\u4ED8\u8D39\u3001\u4E0D\u82B1\u884C\u52A8\uFF1B\u6BCF\u5B63\u5148\u4ECE\u5E02\u573A\u9884\u7559\u4F9B\u5E94\uFF0C\u7F3A\u94B1\u624D\u505C\u4F9B\u3002`, (d, ev) => {
       const ops = d.economy.operations;
@@ -19766,8 +21028,8 @@ function operationsActions(s, r) {
       }
       opEvent(ev, "plan", "food", active ? "\u957F\u671F\u4F9B\u7CAE\u5DF2\u7B7E\u8BA2" : "\u4F9B\u7CAE\u5DF2\u6682\u505C");
     });
-    for (var _i103 = 0, _arr32 = [["supplyplan", "supplies", "\u81EA\u52A8\u8865\u8D27", 2], ["salesplan", "sales", "\u81EA\u52A8\u4EA4\u4ED8", 2], ["careplan", "maintenance", "\u59D4\u6258\u7EF4\u62A4", 2]]; _i103 < _arr32.length; _i103++) {
-      const _arr32$_i = _slicedToArray(_arr32[_i103], 4),
+    for (var _i104 = 0, _arr32 = [["supplyplan", "supplies", "\u81EA\u52A8\u8865\u8D27", 2], ["salesplan", "sales", "\u81EA\u52A8\u4EA4\u4ED8", 2], ["careplan", "maintenance", "\u59D4\u6258\u7EF4\u62A4", 2]]; _i104 < _arr32.length; _i104++) {
+      const _arr32$_i = _slicedToArray(_arr32[_i104], 4),
         op = _arr32$_i[0],
         key = _arr32$_i[1],
         label = _arr32$_i[2],
@@ -19777,8 +21039,8 @@ function operationsActions(s, r) {
         opEvent(ev, "plan", key, label + (active ? "\u5DF2\u5F00\u542F" : "\u5DF2\u6682\u505C"));
       });
     }
-    for (var _i104 = 0, _arr33 = [["mineplan", "mine", "mine", "\u77FF\u573A\u6392\u6C34"], ["steamplan", "steam", "steam", "\u84B8\u6C7D\u4F9B\u80FD"]]; _i104 < _arr33.length; _i104++) {
-      const _arr33$_i = _slicedToArray(_arr33[_i104], 4),
+    for (var _i105 = 0, _arr33 = [["mineplan", "mine", "mine", "\u77FF\u573A\u6392\u6C34"], ["steamplan", "steam", "steam", "\u84B8\u6C7D\u4F9B\u80FD"]]; _i105 < _arr33.length; _i105++) {
+      const _arr33$_i = _slicedToArray(_arr33[_i105], 4),
         op = _arr33$_i[0],
         key = _arr33$_i[1],
         project2 = _arr33$_i[2],
@@ -19789,8 +21051,8 @@ function operationsActions(s, r) {
       });
     }
   }
-  for (var _i105 = 0, _arr34 = ["wheat", "soy", "flax", "rotation", "off"]; _i105 < _arr34.length; _i105++) {
-    const crop = _arr34[_i105];
+  for (var _i106 = 0, _arr34 = ["wheat", "soy", "flax", "rotation", "off"]; _i106 < _arr34.length; _i106++) {
+    const crop = _arr34[_i106];
     const active = crop !== "off";
     add("farmplan", crop, active ? "\u6258\u7BA1\uFF1A" + (crop === "rotation" ? "\u5C0F\u9EA6\u5927\u8C46\u8F6E\u4F5C" : CROPS[crop].name) : "\u6682\u505C\u519C\u4E1A\u6258\u7BA1", {}, [].concat(_toConsumableArray(active && org < 2 ? ["\u9700\u751F\u4EA7\u7EC4\u7EC72\u9636\u6216\u5BB6\u65CF\u8BB0\u5F55"] : []), _toConsumableArray(active && !e.workers.farmer ? ["\u5148\u62DB\u52DF\u719F\u7EC3\u519C\u5DE5"] : []), _toConsumableArray(o.farm === (active ? crop : null) ? ["\u5DF2\u7ECF\u662F\u6B64\u5B89\u6392"] : [])), "\u7531\u719F\u7EC3\u519C\u5DE5\u6309\u5B63\u64AD\u79CD\u3001\u7167\u6599\u3001\u6536\u83B7\u5E76\u7559\u79CD\uFF1B\u4F4E\u80A5\u529B\u65F6\u7528\u5E93\u5B58\u5806\u80A5\u3002\u9700\u8865\u8D27\u3001\u4F9B\u7CAE\u6216\u7EF4\u4FEE\u65F6\u53EF\u53E6\u5916\u7B7E\u7EA6\u3002\u9009\u62E9\u8F6E\u4F5C\u5C06\u5728\u7A7A\u7530\u65F6\u5207\u6362\u4F5C\u7269\uFF0C\u4E0D\u94F2\u9664\u5728\u7530\u4F5C\u7269\u3002", (d, ev) => {
       const ops = d.economy.operations;
@@ -19803,13 +21065,13 @@ function operationsActions(s, r) {
       opEvent(ev, "plan", "farm", active ? "\u519C\u4E1A\u6258\u7BA1\u5DF2\u5B89\u6392" : "\u519C\u4E1A\u6258\u7BA1\u5DF2\u6682\u505C");
     });
   }
-  var _iterator43 = _createForOfIteratorHelper(processesFor(s)),
-    _step43;
+  var _iterator52 = _createForOfIteratorHelper(processesFor(s)),
+    _step52;
   try {
-    for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
-      const recipe = _step43.value;
-      for (var _i107 = 0, _arr35 = ["stock", "sell"]; _i107 < _arr35.length; _i107++) {
-        const mode = _arr35[_i107];
+    for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
+      const recipe = _step52.value;
+      for (var _i108 = 0, _arr35 = ["stock", "sell"]; _i108 < _arr35.length; _i108++) {
+        const mode = _arr35[_i108];
         add("productionplan", recipe.id + "-" + mode, recipe.name + " \xB7 " + (mode === "stock" ? "\u5907\u8D27\u540E\u505C\u4EA7" : "\u6301\u7EED\u751F\u4EA7"), {}, [].concat(_toConsumableArray(org < 2 ? ["\u9700\u751F\u4EA7\u7EC4\u7EC72\u9636\u6216\u5BB6\u65CF\u8BB0\u5F55"] : []), _toConsumableArray(!e.workers.artisan ? ["\u5148\u62DB\u52DF\u719F\u7EC3\u5DE5\u5320"] : []), _toConsumableArray(e.workers.artisan?.project && e.workers.artisan.project.good !== recipe.id ? ["\u5148\u5B8C\u6210\u6B64\u4EBA\u7684\u5728\u5236\u5DE5\u5E8F\u518D\u6362\u914D\u65B9"] : []), _toConsumableArray(o.production?.recipe === recipe.id && o.production.mode === mode && e.workers.artisan?.active ? ["\u5DF2\u5B89\u6392\u6B64\u8BA1\u5212"] : []), _toConsumableArray(recipe.equipment && e.equipment[recipe.equipment] === void 0 ? ["\u5148\u53D6\u5F97" + ALL_PRODUCTS.find(p => p.id === recipe.equipment).name] : [])), `\u5DE5\u5320\u6BCF\u5B63\u6267\u884C\u4E00\u9879\u5DE5\u5E8F\uFF0C\u8DE8\u5B63\u9879\u76EE\u81EA\u52A8\u5B8C\u6210\uFF1B${mode === "stock" ? "\u4EA7\u7269\u8FBE\u5230\u50A8\u5907\u76EE\u6807\u81EA\u52A8\u5F85\u547D" : "\u6301\u7EED\u751F\u4EA7\uFF0C\u53EF\u5F00\u542F\u81EA\u52A8\u4EA4\u4ED8"}\u3002\u5DE5\u8D44\u3001\u6750\u6599\u548C\u8BBE\u5907\u4ECD\u771F\u5B9E\u6D88\u8017\u3002`, (d, ev) => {
           d.economy.operations.production = {
             recipe: recipe.id,
@@ -19823,9 +21085,9 @@ function operationsActions(s, r) {
       }
     }
   } catch (err) {
-    _iterator43.e(err);
+    _iterator52.e(err);
   } finally {
-    _iterator43.f();
+    _iterator52.f();
   }
   add("productionplan", "off", "\u6682\u505C\u751F\u4EA7\u8BA1\u5212", {}, o.production && e.workers.artisan?.active ? [] : ["\u6CA1\u6709\u8FD0\u884C\u4E2D\u7684\u751F\u4EA7\u8BA1\u5212"], "\u6682\u505C\u5E76\u4FDD\u7559\u5458\u5DE5\u7ECF\u9A8C\u4E0E\u5728\u5236\u9879\u76EE\uFF0C\u6062\u590D\u65F6\u987B\u63A5\u7EED\u539F\u9879\u76EE\u3002", (d, ev) => {
     if (d.economy.workers.artisan) d.economy.workers.artisan.active = false;
@@ -19837,8 +21099,8 @@ function operationsActions(s, r) {
     d.economy.operations.charter = true;
     opEvent(ev, "charter", "family", "\u5BB6\u65CF\u7ECF\u8425\u5B89\u6392\u53EF\u8DE8\u4EE3\u81EA\u52A8\u63A5\u7EED");
   });
-  for (var _i106 = 0, _REGIONAL_PROJECTS = REGIONAL_PROJECTS; _i106 < _REGIONAL_PROJECTS.length; _i106++) {
-    const p = _REGIONAL_PROJECTS[_i106];
+  for (var _i107 = 0, _REGIONAL_PROJECTS = REGIONAL_PROJECTS; _i107 < _REGIONAL_PROJECTS.length; _i107++) {
+    const p = _REGIONAL_PROJECTS[_i107];
     const saved = o.projects[p.id];
     add("projectstart", p.id, (saved ? "\u7EE7\u7EED" : "\u542F\u52A8") + p.name, {
       money: saved ? 0 : r.operations.projectFee
@@ -19869,15 +21131,15 @@ function shopActions(s, r) {
   const e = s.economy,
     sh = e.shop,
     out = [];
-  const add = (op, target, label, cost, blockers, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u5546\u57CE", cost, blockers, description, execute));
+  const add = (op, target, label, cost, blockers2, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, "\u5546\u57CE", cost, blockers2, description, execute));
   const quote = cartQuote(s, r),
     instant = electricOnline(s, "TELEGRAPH");
   const final = !r.civilization && s.clock.generation >= r.parameters.generations && s.clock.turn >= r.parameters.turnsPerGeneration;
-  var _iterator44 = _createForOfIteratorHelper(shopCatalog(s, r)),
-    _step44;
+  var _iterator53 = _createForOfIteratorHelper(shopCatalog(s, r)),
+    _step53;
   try {
-    for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
-      const item = _step44.value;
+    for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
+      const item = _step53.value;
       if (s.era?.index === 0) {
         const one = cartQuote(s, r, {
           [item.id]: 1
@@ -19906,9 +21168,9 @@ function shopActions(s, r) {
       });
     }
   } catch (err) {
-    _iterator44.e(err);
+    _iterator53.e(err);
   } finally {
-    _iterator44.f();
+    _iterator53.f();
   }
   if (s.era?.index !== 0) add("clearcart", "all", "\u6E05\u7A7A\u91C7\u8D2D\u6E05\u5355", {
     ap: 0
@@ -19928,13 +21190,13 @@ function shopActions(s, r) {
   function purchase(draft, quote2, events) {
     const shop = draft.economy.shop;
     shop.transport -= quote2.weight;
-    var _iterator45 = _createForOfIteratorHelper(quote2.lines),
-      _step45;
+    var _iterator54 = _createForOfIteratorHelper(quote2.lines),
+      _step54;
     try {
-      for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
-        const _step45$value = _step45.value,
-          item = _step45$value.item,
-          quantity = _step45$value.quantity;
+      for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
+        const _step54$value = _step54.value,
+          item = _step54$value.item,
+          quantity = _step54$value.quantity;
         if (item.id === "good-food") {
           draft.production.market.food -= quantity;
           if (draft.socialFood) draft.socialFood.serviceRemaining -= quantity;
@@ -19950,16 +21212,16 @@ function shopActions(s, r) {
         if (item.local || instant) deliverShop(draft, r, order, events);else shop.orders.push(order);
       }
     } catch (err) {
-      _iterator45.e(err);
+      _iterator54.e(err);
     } finally {
-      _iterator45.f();
+      _iterator54.f();
     }
   }
-  var _iterator46 = _createForOfIteratorHelper(productsFor(s)),
-    _step46;
+  var _iterator55 = _createForOfIteratorHelper(productsFor(s)),
+    _step55;
   try {
-    for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
-      const p = _step46.value;
+    for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
+      const p = _step55.value;
       const durability = e.equipment[p.id];
       add("repair", p.id, "\u7EF4\u4FEE" + p.name, {
         money: repairPrice(s, r, p.id)
@@ -19975,15 +21237,15 @@ function shopActions(s, r) {
       });
     }
   } catch (err) {
-    _iterator46.e(err);
+    _iterator55.e(err);
   } finally {
-    _iterator46.f();
+    _iterator55.f();
   }
-  var _iterator47 = _createForOfIteratorHelper(topicsFor(s)),
-    _step47;
+  var _iterator56 = _createForOfIteratorHelper(topicsFor(s)),
+    _step56;
   try {
-    for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
-      const t = _step47.value;
+    for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
+      const t = _step56.value;
       const n = e.knowledge[s.household.activePersonId]?.[t.subject] ?? 0;
       add("tuition", t.id, "\u6388\u8BFE\uFF1A" + t.name, {
         money: r.shop.lessonBase + t.level
@@ -20002,12 +21264,12 @@ function shopActions(s, r) {
       });
     }
   } catch (err) {
-    _iterator47.e(err);
+    _iterator56.e(err);
   } finally {
-    _iterator47.f();
+    _iterator56.f();
   }
-  for (var _i108 = 0, _Object$keys4 = Object.keys(WORKER_NAMES); _i108 < _Object$keys4.length; _i108++) {
-    const kind = _Object$keys4[_i108];
+  for (var _i109 = 0, _Object$keys4 = Object.keys(WORKER_NAMES); _i109 < _Object$keys4.length; _i109++) {
+    const kind = _Object$keys4[_i109];
     const w = e.workers[kind];
     add("paidtrain", kind, "\u59D4\u6258\u57F9\u8BAD" + WORKER_NAMES[kind], {
       money: r.shop.trainingPrice
@@ -20030,20 +21292,20 @@ function economyActions(s, rules2) {
   const e = s.economy,
     p = rules2.economy,
     out = [].concat(_toConsumableArray(modernActions(s)), _toConsumableArray(farmMapActions(s)));
-  const add = (op, target, label, group, cost, blockers, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, group, cost, blockers, description, execute));
-  if (e.farm) for (var _i109 = 0, _COOKING2 = COOKING; _i109 < _COOKING2.length; _i109++) {
-    const recipe = _COOKING2[_i109];
+  const add = (op, target, label, group, cost, blockers2, description, execute) => out.push(defineAction(s, `economy:${op}:${target}`, label, group, cost, blockers2, description, execute));
+  if (e.farm) for (var _i110 = 0, _COOKING2 = COOKING; _i110 < _COOKING2.length; _i110++) {
+    const recipe = _COOKING2[_i110];
     const ingredients = Object.entries(recipe.inputs).map(([id, n]) => `${n}\u4EFD${ALL_GOODS[id].name}`).join("\u3001");
     add("cook", recipe.id, "\u70F9\u996A" + recipe.name, "\u70F9\u996A", {
       time: recipe.time,
       energy: recipe.energy
     }, [].concat(_toConsumableArray(missingGoods(s, recipe.inputs)), _toConsumableArray((s.life?.calendar?.mealDays ?? 0) > 0 ? ["\u5F53\u524D\u9910\u98DF\u6062\u590D\u6548\u679C\u5C1A\u672A\u7ED3\u675F"] : [])), `${ingredients} \u2192 ${recipe.food}\u5929\u9910\u98DF\u6062\u590D\u52A0\u6210\u3002\u5F53\u6B21\u4EAB\u7528\uFF0C\u63D0\u4F9B\u77ED\u671F\u653E\u677E\u51CF\u538B\u52A0\u6210\uFF1B\u65E5\u5E38\u996E\u98DF\u53E6\u6309\u5929\u81EA\u52A8\u73B0\u505A\u73B0\u5403\uFF0C\u4E0D\u6D88\u8017\u79CD\u5B50\u3002`, (d, ev) => cookMeal(d, recipe, ev));
   }
-  var _iterator48 = _createForOfIteratorHelper(topicsFor(s)),
-    _step48;
+  var _iterator57 = _createForOfIteratorHelper(topicsFor(s)),
+    _step57;
   try {
-    for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
-      const t = _step48.value;
+    for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
+      const t = _step57.value;
       const current = level(s, t.subject),
         evidence = (e.evidence[s.household.activePersonId] ?? []).includes(t.id);
       const source = e.shop?.books.includes(t.id) || (e.notes[t.subject] ?? 0) >= t.level || (e.regional.teaching[t.subject] ?? 0) >= t.level;
@@ -20085,12 +21347,12 @@ function economyActions(s, rules2) {
       });
     }
   } catch (err) {
-    _iterator48.e(err);
+    _iterator57.e(err);
   } finally {
-    _iterator48.f();
+    _iterator57.f();
   }
-  for (var _i110 = 0, _arr36 = e.branches ? [] : SUBJECTS; _i110 < _arr36.length; _i110++) {
-    const subject = _arr36[_i110];
+  for (var _i111 = 0, _arr36 = e.branches ? [] : SUBJECTS; _i111 < _arr36.length; _i111++) {
+    const subject = _arr36[_i111];
     const n = level(s, subject),
       child = level(s, subject, s.household.heirId);
     add("archive", subject, "\u7559\u5B58\uFF1A" + SUBJECT_NAMES[subject], "\u4F20\u627F", {}, [].concat(_toConsumableArray(n < 1 ? ["\u5C1A\u672A\u638C\u63E1"] : []), _toConsumableArray((e.notes[subject] ?? 0) >= n ? ["\u5BB6\u65CF\u8BB0\u5F55\u5DF2\u5B8C\u6574"] : [])), "\u4FDD\u5B58\u672C\u4EBA\u7684\u5F53\u524D\u5B66\u79D1\u8FDB\u5C55\uFF0C\u540E\u8F88\u53EF\u636E\u6B64\u5B66\u4E60\u3002" + (e.shop?.assets.includes("library") ? "\u5BB6\u5B66\u4E66\u5BA4\u540C\u65F6\u6559\u5BFC\u540E\u8F88\u4E0B\u4E00\u8BFE\u9898\uFF0C\u4E0A\u9650\u4E3A\u672C\u4EBA\u6C34\u5E73\u3002" : "\u8BBE\u5907\u548C\u8BB0\u5F55\u4E0D\u4F1A\u81EA\u52A8\u590D\u5236\u4E2A\u4EBA\u7406\u89E3\u3002"), (draft, events) => {
@@ -20137,8 +21399,8 @@ function economyActions(s, rules2) {
       });
     });
   }
-  for (var _i111 = 0, _arr37 = ["wood", "clay", "food"]; _i111 < _arr37.length; _i111++) {
-    const resource = _arr37[_i111];
+  for (var _i112 = 0, _arr37 = ["wood", "clay", "food"]; _i112 < _arr37.length; _i112++) {
+    const resource = _arr37[_i112];
     const key = resource === "wood" ? "timber" : resource === "food" ? "wildFood" : "clay",
       available = s.production.stocks[key];
     const take = Math.min(available, 2 + (resource === "wood" && equipped(s, "T01") ? 1 : 0) + (resource === "food" ? s.era ? stageOf(s).gatherBonus : 0 : 0));
@@ -20167,8 +21429,8 @@ function economyActions(s, rules2) {
       amount: pay
     });
   });
-  for (var _i112 = 0, _Object$entries28 = Object.entries(goodsFor(s)); _i112 < _Object$entries28.length; _i112++) {
-    const _Object$entries28$_i = _slicedToArray(_Object$entries28[_i112], 2),
+  for (var _i113 = 0, _Object$entries28 = Object.entries(goodsFor(s)); _i113 < _Object$entries28.length; _i113++) {
+    const _Object$entries28$_i = _slicedToArray(_Object$entries28[_i113], 2),
       id = _Object$entries28$_i[0],
       good = _Object$entries28$_i[1];
     const regional = id === "iron" && e.regional.iron || id === "fiber" && e.regional.fiber;
@@ -20192,8 +21454,8 @@ function economyActions(s, rules2) {
         money: price
       });
     });
-    for (var _i113 = 0, _arr38 = [false, true]; _i113 < _arr38.length; _i113++) {
-      const food = _arr38[_i113];
+    for (var _i114 = 0, _arr38 = [false, true]; _i114 < _arr38.length; _i114++) {
+      const food = _arr38[_i114];
       add(food ? "sellfood" : "sell", id, "\u4EA4\u4ED8" + good.name + (food ? "\u5E76\u8D2D\u7CAE" : ""), "\u4EA4\u6362", {}, [].concat(_toConsumableArray(missingGoods(s, {
         [id]: 1
       })), _toConsumableArray(e.market < 1 ? ["\u672C\u5B63\u8BA2\u5355\u5DF2\u6EE1"] : []), _toConsumableArray(food && s.production.market.food < 2 ? ["\u5E02\u573A\u4E0D\u8DB32\u7CAE"] : []), _toConsumableArray(food && s.socialFood && s.socialFood.serviceRemaining < 2 ? ["\u98DF\u54C1\u670D\u52A1\u4EBA\u5458\u989D\u5EA6\u4E0D\u8DB3"] : []), _toConsumableArray(food && s.socialFood && e.shop.transport < 2 ? ["\u98DF\u54C1\u5171\u4EAB\u8FD0\u8F93\u4E0D\u8DB3"] : []), _toConsumableArray(food && s.household.money + salePrice(s, id) < 2 * (s.socialFood?.price ?? rules2.parameters.foodPrice) ? ["\u8D27\u6B3E\u4E0E\u73B0\u94B1\u4E0D\u8DB3\u8D2D\u7CAE"] : [])), `\u4EA4\u4ED81\u4EF6\u5F97${salePrice(s, id)}\u94B1${food ? `\uFF0C\u540C\u65F6\u82B1${2 * (s.socialFood?.price ?? rules2.parameters.foodPrice)}\u94B1\u4E702\u7CAE` : ""}\uFF1B\u5546\u54C1\u3001\u94B1\u6B3E\u3001\u8BA2\u5355\u548C\u7CAE\u6E90\u771F\u5B9E\u6263\u51CF\u3002`, (draft, events) => {
@@ -20240,8 +21502,8 @@ function economyActions(s, rules2) {
       amount: 4
     });
   });
-  for (var _i114 = 0, _Object$keys5 = Object.keys(CROPS); _i114 < _Object$keys5.length; _i114++) {
-    const crop = _Object$keys5[_i114];
+  for (var _i115 = 0, _Object$keys5 = Object.keys(CROPS); _i115 < _Object$keys5.length; _i115++) {
+    const crop = _Object$keys5[_i115];
     add("farm", crop, (e.field.crop ? "\u7BA1\u7406\uFF0F\u6536\u83B7" : "\u64AD\u79CD") + CROPS[crop].name, "\u519C\u4E1A", {
       ap: e.shop && !e.field.crop && equipped(s, "U02") && e.shop.seededTurn !== s.clock.absoluteTurn ? 0 : 1
     }, [].concat(_toConsumableArray(e.farm && !e.farm.discovered.includes(crop) ? ["\u5C1A\u672A\u53D1\u73B0\u6B64\u79CD\u5B50"] : []), _toConsumableArray(e.field.crop && e.field.crop !== crop ? ["\u7530\u91CC\u79CD\u690D\u7684\u662F\u5176\u4ED6\u4F5C\u7269"] : []), _toConsumableArray(farmBlocker(s, crop))), "\u7A7A\u7530\u64AD\u79CD\uFF1B\u751F\u957F\u671F\u7F3A\u6C34\u65F6\u704C\u6E89\uFF1B\u6210\u719F\u540E\u6536\u83B7\u3002\u6B64\u5165\u53E3\u64CD\u4F5C\u8D77\u59CB\u7530\uFF0C\u4E2A\u4EBA\u4E0E\u96C7\u5DE5\u5171\u7528\u3002", (draft, events) => farmWork(draft, crop, events));
@@ -20260,11 +21522,11 @@ function economyActions(s, rules2) {
     if (plan) plan.fertilized = true;
     recordEvidence(draft, "agronomy", events, "\u5806\u80A5\u65BD\u7528");
   });
-  var _iterator49 = _createForOfIteratorHelper(productsFor(s)),
-    _step49;
+  var _iterator58 = _createForOfIteratorHelper(productsFor(s)),
+    _step58;
   try {
-    for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
-      const product = _step49.value;
+    for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
+      const product = _step58.value;
       add("build", product.id, "\u5236\u9020\u5E76\u5B89\u88C5" + product.name, "\u4EA7\u54C1", {}, [].concat(_toConsumableArray(requirements(s, product.requires)), _toConsumableArray(missingGoods(s, product.inputs)), _toConsumableArray(equipped(s, product.id) ? ["\u5DF2\u6709\u53EF\u7528\u8BBE\u5907"] : []), _toConsumableArray(deviceReserved(s, product.id) ? ["\u8BBE\u5907\u5728\u5236\u3001\u7EF4\u4FEE\u6216\u5F85\u4EA4\u4ED8"] : [])), `${e.shop && product.id === "U02" ? "\u6BCF\u5B63\u4E00\u6B21\u672C\u4EBA\u64AD\u79CD\u514D\u884C\u52A8\uFF0C\u4ECD\u6263\u79CD\u5B50\u548C\u8010\u7528\u5EA6" : product.effect} \u6D88\u8017${Object.entries(product.inputs).map(([id, n]) => n + ALL_GOODS[id].name).join("\u3001")}\uFF1B\u5B89\u88C5\u5373\u5177\u5907\u80FD\u529B\uFF0C\u53EF\u4F20\u7ED9\u540E\u4EE3\u3002`, (draft, events) => {
         changeGoods(draft, product.inputs, -1, events, "\u5236\u9020" + product.name);
         draft.economy.equipment[product.id] = p.durability;
@@ -20274,22 +21536,22 @@ function economyActions(s, rules2) {
           product: product.id,
           durability: p.durability
         });
-        for (var _i116 = 0, _Object$keys7 = Object.keys(product.requires); _i116 < _Object$keys7.length; _i116++) {
-          const d = _Object$keys7[_i116];
+        for (var _i117 = 0, _Object$keys7 = Object.keys(product.requires); _i117 < _Object$keys7.length; _i117++) {
+          const d = _Object$keys7[_i117];
           recordEvidence(draft, d, events, "\u5236\u9020" + product.name);
         }
       });
     }
   } catch (err) {
-    _iterator49.e(err);
+    _iterator58.e(err);
   } finally {
-    _iterator49.f();
+    _iterator58.f();
   }
-  var _iterator50 = _createForOfIteratorHelper(processesFor(s)),
-    _step50;
+  var _iterator59 = _createForOfIteratorHelper(processesFor(s)),
+    _step59;
   try {
-    for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
-      const recipe = _step50.value;
+    for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
+      const recipe = _step59.value;
       const steam = steamReady(s, rules2) && ["mill", "thresh", "oil"].includes(recipe.id) && (e.goods.wood ?? 0) >= (recipe.inputs.wood ?? 0) + rules2.operations.steamFuel;
       const electric = (!e.branches || branchHas(s, "L7")) && !!e.modern && e.modern.power >= 1 && ["mill", "thresh", "oil"].includes(recipe.id);
       const powered = electric || ["mill", "thresh", "oil"].includes(recipe.id) && (steam || equipped(s, "P03") && s.location.water > 0 && e.poweredTurn !== s.clock.absoluteTurn);
@@ -20305,15 +21567,15 @@ function economyActions(s, rules2) {
       });
     }
   } catch (err) {
-    _iterator50.e(err);
+    _iterator59.e(err);
   } finally {
-    _iterator50.f();
+    _iterator59.f();
   }
   add("finish", "project", "\u5B8C\u6210\u672C\u4EBA\u5728\u5236\u9879\u76EE", "\u751F\u4EA7", {}, [].concat(_toConsumableArray(!e.project ? ["\u6CA1\u6709\u672C\u4EBA\u5728\u5236\u9879\u76EE"] : []), _toConsumableArray(e.project && s.clock.absoluteTurn <= e.project.started ? ["\u9700\u8DE8\u5B63"] : [])), "\u5B8C\u6210\u5DF2\u4ED8\u6599\u7684\u5728\u5236\u54C1\uFF0C\u540E\u8F88\u4E5F\u53EF\u63A5\u7EED\u3002", (draft, events) => finishProcess(draft, events));
   const org = organizationLevel(s),
     capacity = org >= 5 ? 4 : org >= 3 ? 3 : org >= 2 ? 2 : 1;
-  for (var _i115 = 0, _Object$keys6 = Object.keys(WORKER_NAMES); _i115 < _Object$keys6.length; _i115++) {
-    const kind = _Object$keys6[_i115];
+  for (var _i116 = 0, _Object$keys6 = Object.keys(WORKER_NAMES); _i116 < _Object$keys6.length; _i116++) {
+    const kind = _Object$keys6[_i116];
     const worker = e.workers[kind],
       required = kind === "laborer" ? 1 : kind === "manager" ? 5 : 2;
     add("hire", kind, "\u96C7\u4F63" + WORKER_NAMES[kind], "\u96C7\u4F63", {
@@ -20345,11 +21607,11 @@ function economyActions(s, rules2) {
     });
     const crops = Object.keys(CROPS);
     const jobs = kind === "laborer" || kind === "farmer" ? crops : kind === "artisan" ? ["ceramics", "iron", "fiber"] : [].concat(crops, ["ceramics", "iron", "fiber"]);
-    var _iterator51 = _createForOfIteratorHelper(jobs),
-      _step51;
+    var _iterator60 = _createForOfIteratorHelper(jobs),
+      _step60;
     try {
-      for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
-        const job = _step51.value;
+      for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
+        const job = _step60.value;
         add("assign", kind + "-" + job, WORKER_NAMES[kind] + "\uFF1A" + ALL_JOB_NAMES[job], "\u96C7\u4F63", {}, [].concat(_toConsumableArray(!worker ? ["\u5C1A\u672A\u62DB\u52DF"] : []), _toConsumableArray(worker?.project ? ["\u5148\u5B8C\u6210\u6216\u63A5\u7EED\u6B64\u4EBA\u7684\u5728\u5236\u5DE5\u5E8F"] : []), _toConsumableArray(worker?.active && worker.job === job ? ["\u5DF2\u5B89\u6392\u6B64\u4EFB\u52A1"] : [])), "\u5B89\u6392\u540E\u6BCF\u5B63\u5C1D\u8BD5\u4E00\u6B21\u5DE5\u4F5C\uFF1B\u5DE5\u8D44\u4E0E\u6761\u4EF6\u5728\u5B63\u672B\u91CD\u65B0\u68C0\u67E5\u3002\u6682\u505C\u4E0D\u4F1A\u6E05\u9664\u7ECF\u9A8C\u6216\u5728\u5236\u54C1\u3002", (draft, events) => {
           if (draft.economy.operations) {
             if (kind === "farmer") draft.economy.operations.farm = null;
@@ -20368,9 +21630,9 @@ function economyActions(s, rules2) {
         });
       }
     } catch (err) {
-      _iterator51.e(err);
+      _iterator60.e(err);
     } finally {
-      _iterator51.f();
+      _iterator60.f();
     }
     add("pause", kind, "\u6682\u505C\uFF0F\u6062\u590D" + WORKER_NAMES[kind], "\u96C7\u4F63", {}, !worker || worker.job === "rest" ? ["\u5148\u62DB\u52DF\u5E76\u5B89\u6392\u4EFB\u52A1"] : [], "\u4FDD\u7559\u5408\u540C\u3001\u7ECF\u9A8C\u4E0E\u5728\u5236\u54C1\uFF1B\u6682\u505C\u671F\u95F4\u4E0D\u5DE5\u4F5C\u3001\u4E0D\u6263\u5DE5\u8D44\u3002", (draft, events) => {
       const w = draft.economy.workers[kind];
@@ -20414,9 +21676,9 @@ function farmMapActions(s) {
     operation: "farm-map",
     detail
   });
-  for (var _i117 = 0, _Object$values14 = Object.values(farm.plots); _i117 < _Object$values14.length; _i117++) {
-    const p = _Object$values14[_i117];
-    if (p.kind === "unknown" && farmNeighbors(p).some(n2 => farm.plots[n2.id] && farm.plots[n2.id].kind !== "unknown")) out.push(defineAction(s, "economy:farmexplore:" + p.id, "\u63A2\u7D22 " + p.id, "\u519C\u4E1A", {
+  for (var _i118 = 0, _Object$values15 = Object.values(farm.plots); _i118 < _Object$values15.length; _i118++) {
+    const p = _Object$values15[_i118];
+    if (p.kind === "unknown" && explorationStatus(farm.plots, p).reachable) out.push(defineAction(s, "economy:farmexplore:" + p.id, "\u63A2\u7D22 " + p.id, "\u519C\u4E1A", {
       time: branchHas(s, "A11") ? Math.max(3, r.surveyDays - 2) : r.surveyDays,
       energy: r.exploreEnergy
     }, [], "\u63ED\u5F00\u76F8\u90BB\u5730\u5757\uFF1B\u63A2\u7D22\u7ED3\u679C\u6C38\u4E45\u4FDD\u7559\uFF0C\u4E0D\u63D0\u524D\u663E\u793A\u8D44\u6E90\u3002", (d, ev) => {
@@ -20440,45 +21702,22 @@ function farmMapActions(s) {
     if (p.improvement === "canal" && waterConnected(s, p)) out.push(defineAction(s, "economy:floodgate:" + p.id, "\u5F00\u95F8\u653E\u6C34 " + p.id, "\u519C\u4E1A", {
       time: r.gateTime,
       energy: r.gateEnergy
-    }, [], "\u6CBF\u6E20\u94FE\u653E\u6C34\uFF1A\u6E20\u94FE\u6B63\u4EA4\u76F8\u90BB\u7684\u7530\u5757\u704C\u5230\u5404\u81EA\u4F5C\u7269\u6240\u9700\u6C34\u5206\uFF0C\u4E0D\u8017\u516C\u5171\u6C34\u3002", (d, ev) => {
-      const plots = d.economy.farm.plots,
-        seen = /* @__PURE__ */new Set([p.id]),
-        queue = [p.id],
-        targets = /* @__PURE__ */new Set();
-      while (queue.length) {
-        const at = plots[queue.shift()];
-        var _iterator52 = _createForOfIteratorHelper(farmNeighbors(at)),
-          _step52;
-        try {
-          for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
-            const n2 = _step52.value;
-            const next = plots[n2.id];
-            if (!next) continue;
-            if (next.kind === "field" && next.land && at.land && next.land.elevation <= at.land.elevation) targets.add(next.id);else if (!seen.has(next.id) && waterConnected(d, next)) {
-              seen.add(next.id);
-              queue.push(next.id);
-            }
-          }
-        } catch (err) {
-          _iterator52.e(err);
-        } finally {
-          _iterator52.f();
-        }
-      }
-      var _iterator53 = _createForOfIteratorHelper(targets),
-        _step53;
+    }, [], "\u6CBF\u6E20\u94FE\u653E\u6C34\uFF1A\u6E20\u94FE\u573A\u666F\u76F8\u90BB\u7684\u7530\u5757\u704C\u5230\u5404\u81EA\u4F5C\u7269\u6240\u9700\u6C34\u5206\uFF0C\u4E0D\u8017\u516C\u5171\u6C34\u3002", (d, ev) => {
+      const targets = irrigationTargets(d, d.economy.farm.plots[p.id]);
+      var _iterator61 = _createForOfIteratorHelper(targets),
+        _step61;
       try {
-        for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
-          const id = _step53.value;
+        for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
+          const id = _step61.value;
           const f = plotField(d, id);
           if (f) irrigateField(d, f);
         }
       } catch (err) {
-        _iterator53.e(err);
+        _iterator61.e(err);
       } finally {
-        _iterator53.f();
+        _iterator61.f();
       }
-      event2(d, ev, `${p.id} \u5F00\u95F8\u653E\u6C34\uFF1A\u6E20\u94FE\u6B63\u4EA4\u76F8\u90BB${targets.size}\u5757\u7530\u704C\u5230\u6240\u9700\u6C34\u5206\uFF0C\u672A\u8017\u516C\u5171\u6C34`);
+      event2(d, ev, `${p.id} \u5F00\u95F8\u653E\u6C34\uFF1A\u6E20\u94FE\u573A\u666F\u76F8\u90BB${targets.size}\u5757\u7530\u704C\u5230\u6240\u9700\u6C34\u5206\uFF0C\u672A\u8017\u516C\u5171\u6C34`);
     }));
     if (p.improvement === "pit" && s.life?.calendar) out.push(defineAction(s, "economy:pit:" + p.id, "\u7ED9 " + p.id + " \u5806\u80A5\u5751\u6295\u6599", "\u519C\u4E1A", {
       time: r.interactionTime,
@@ -20499,8 +21738,8 @@ function farmMapActions(s) {
     }));
     if (p.kind === "wild" || p.kind === "field" || p.discovery && !p.discovery.resolved) {
       const kinds = p.kind === "field" ? p.purpose === "sowing" ? ["paddy"] : ["canal", "drain", "yard", "cellar", "pit", "shed", "retting"] : p.kind === "wild" ? [] : p.discovery?.id === "fallow" ? ["restore"] : p.discovery?.id === "woodland" ? ["timber", "clearwood", "shelter"] : [];
-      for (var _i118 = 0, _kinds = kinds; _i118 < _kinds.length; _i118++) {
-        const kind = _kinds[_i118];
+      for (var _i119 = 0, _kinds = kinds; _i119 < _kinds.length; _i119++) {
+        const kind = _kinds[_i119];
         const pending = p.project && p.project.done < p.project.total ? p.project : void 0;
         if (pending && pending.kind !== kind) continue;
         if (kind === "paddy" ? p.land?.paddy : !!p.improvement) continue;
@@ -20512,19 +21751,19 @@ function farmMapActions(s) {
         const harvest = Math.min.apply(Math, [Infinity].concat(_toConsumableArray(Object.values(farm.plots).map(t => plotField(s, t.id)).filter(f => f?.crop).map(f => Math.max(0, f.duration - f.growth)))));
         const maximum = Math.max(0, Math.floor(Math.min(stageEnd - done, Math.min(availableDays(s), dietView(s)?.days ?? 0, harvest) / pressureMultiplier(activePerson(s).vitality.pressure, s.life?.rules)) * 2) / 2);
         const options = _toConsumableArray(/* @__PURE__ */new Set([Math.min(3, maximum), Math.min(7, maximum), maximum]));
-        var _iterator54 = _createForOfIteratorHelper(options),
-          _step54;
+        var _iterator62 = _createForOfIteratorHelper(options),
+          _step62;
         try {
-          for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
-            const days = _step54.value;
+          for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
+            const days = _step62.value;
             const woodNeed = ["canal", "paddy", "drain", "yard", "cellar", "retting"].includes(kind) ? r.projectWood : kind === "shed" ? 1 : 0;
             const materials = woodNeed > 0 && !pending ? missingGoods(s, {
               wood: woodNeed
             }) : [];
-            const effect = kind === "canal" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5F15\u6C34\u94FE\uFF1A\u4E0E\u6C34\u6E90\u6216\u901A\u6C34\u6E20\u76F8\u90BB\u624D\u80FD\u5F00\u5DE5\uFF1B\u5B8C\u5DE5\u540E\u53EF\u7528\u5F00\u95F8\u653E\u6C34` : kind === "paddy" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u6B64\u7530\u53D8\u4E3A\u6C34\u7530\uFF0C\u6C34\u5206\u6052\u4E3A\u8FC7\u6E7F\uFF0C\u53EF\u79CD\u6C34\u7A3B` : kind === "drain" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u6709\u4F4E\u4F4D\u51FA\u53E3\u65F6\uFF0C\u6B63\u4EA4\u76F8\u90BB\u7530\u8FC7\u6E7F\uFF0F\u79EF\u6C34\u81EA\u7136\u9000\u6863\u6240\u9700\u5929\u6570-1\uFF08\u4E0B\u96501\u5929\uFF09` : kind === "restore" ? "\u5B8C\u6210\u540E\u76F4\u63A5\u5EFA\u6210\u80A5\u529B3\u7684\u7530" : kind === "timber" ? `\u5B8C\u6210\u540E\u83B7\u5F97${r.timberYield}\u6728\u6750\uFF0C\u7559\u4E0B\u666E\u901A\u8352\u5730` : kind === "clearwood" ? "\u5B8C\u6210\u540E\u76F4\u63A5\u5EFA\u6210\u80A5\u529B2\u7684\u7530\uFF0C\u4E0D\u989D\u5916\u83B7\u5F97\u6728\u6750" : kind === "yard" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u76F8\u90BB\u7530\u6B63\u5E38\u6536\u83B7\u671F\u5EF6\u957F7\u5929\uFF0C\u5BBD\u9650\u540E\u4ECD\u7EDD\u6536` : kind === "cellar" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u76F8\u90BB\u7530\u7559\u79CD+1` : kind === "pit" ? `\u4E0D\u8017\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u62953\u79F8\u79C6\uFF0C${r.pitConvertDays}\u5929\u540E\u81EA\u8F6C2\u5806\u80A5` : kind === "shed" ? `\u9996\u6BB5\u80171\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u9644\u8FD1\u7530\u7684\u519C\u6D3B\u65F6\u95F4\u51CF\u534A` : kind === "retting" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u53EF\u5728\u519C\u573A\u6CA4\u9EBB\uFF1A2\u4E9A\u9EBB\u830E\u21921\u7EA4\u7EF4\uFF0C\u8DE8\u5B63` : `\u5B8C\u6210\u540E\u6B63\u4EA4\u56DB\u683C\u5931\u6C34\u95F4\u9694\u5EF6\u957F${r.shelterDays}\u5929\uFF0C\u4E0D\u53E0\u52A0`;
+            const effect = kind === "canal" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5F15\u6C34\u94FE\uFF1A\u4E0E\u6C34\u6E90\u6216\u901A\u6C34\u6E20\u76F8\u90BB\u624D\u80FD\u5F00\u5DE5\uFF1B\u5B8C\u5DE5\u540E\u53EF\u7528\u5F00\u95F8\u653E\u6C34` : kind === "paddy" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u6B64\u7530\u53D8\u4E3A\u6C34\u7530\uFF0C\u6C34\u5206\u6052\u4E3A\u8FC7\u6E7F\uFF0C\u53EF\u79CD\u6C34\u7A3B` : kind === "drain" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u6709\u4F4E\u4F4D\u51FA\u53E3\u65F6\uFF0C\u573A\u666F\u76F8\u90BB\u7530\u8FC7\u6E7F\uFF0F\u79EF\u6C34\u81EA\u7136\u9000\u6863\u6240\u9700\u5929\u6570-1\uFF08\u4E0B\u96501\u5929\uFF09` : kind === "restore" ? "\u5B8C\u6210\u540E\u76F4\u63A5\u5EFA\u6210\u80A5\u529B3\u7684\u7530" : kind === "timber" ? `\u5B8C\u6210\u540E\u83B7\u5F97${r.timberYield}\u6728\u6750\uFF0C\u7559\u4E0B\u666E\u901A\u8352\u5730` : kind === "clearwood" ? "\u5B8C\u6210\u540E\u76F4\u63A5\u5EFA\u6210\u80A5\u529B2\u7684\u7530\uFF0C\u4E0D\u989D\u5916\u83B7\u5F97\u6728\u6750" : kind === "yard" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u76F8\u90BB\u7530\u6B63\u5E38\u6536\u83B7\u671F\u5EF6\u957F7\u5929\uFF0C\u5BBD\u9650\u540E\u4ECD\u7EDD\u6536` : kind === "cellar" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u76F8\u90BB\u7530\u7559\u79CD+1` : kind === "pit" ? `\u4E0D\u8017\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u62953\u79F8\u79C6\uFF0C${r.pitConvertDays}\u5929\u540E\u81EA\u8F6C2\u5806\u80A5` : kind === "shed" ? `\u9996\u6BB5\u80171\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u9644\u8FD1\u7530\u7684\u519C\u6D3B\u65F6\u95F4\u51CF\u534A` : kind === "retting" ? `\u9996\u6BB5\u8017${r.projectWood}\u6728\u6750\uFF1B\u5B8C\u5DE5\u540E\u53EF\u5728\u519C\u573A\u6CA4\u9EBB\uFF1A2\u4E9A\u9EBB\u830E\u21921\u7EA4\u7EF4\uFF0C\u8DE8\u5B63` : `\u5B8C\u6210\u540E\u573A\u666F\u76F8\u90BB\u7530\u5757\u5931\u6C34\u95F4\u9694\u5EF6\u957F${r.shelterDays}\u5929\uFF0C\u4E0D\u53E0\u52A0`;
             const facility = [].concat(_toConsumableArray(technology ? branchNeeds(s, [technology]) : []), _toConsumableArray(p.kind === "field" && plotField(s, p.id)?.crop ? ["\u9700\u5148\u6536\u83B7\uFF0C\u7A7A\u7530\u624D\u80FD\u5EFA\u8BBE\u9644\u52A0\u529F\u80FD"] : []));
-            const source = kind === "canal" && !waterAccess(s, p) ? ["\u65B0\u6E20\u9700\u4E0E\u6C34\u6E90\u683C\u6216\u901A\u6C34\u6E20\u6B63\u4EA4\u76F8\u90BB"] : kind === "paddy" ? [].concat(_toConsumableArray(branchNeeds(s, ["A1"])), _toConsumableArray(plotField(s, p.id)?.crop ? ["\u9700\u5148\u6536\u83B7\uFF0C\u7A7A\u7530\u624D\u80FD\u6539\u9020"] : []), _toConsumableArray(!waterAccess(s, p) ? ["\u9700\u4E0E\u6C34\u6E90\u683C\u6216\u901A\u6C34\u6E20\u6B63\u4EA4\u76F8\u90BB"] : []), _toConsumableArray(p.land?.paddy ? ["\u6B64\u7530\u5DF2\u662F\u6C34\u7530"] : [])) : [];
-            const outlet = kind === "drain" && !drainOutlet(s, p) ? ["\u9700\u6B63\u4EA4\u76F8\u90BB\u4F4E\u5730\u3001\u8FDE\u901A\u6709\u51FA\u53E3\u7684\u6C9F\uFF0C\u6216\u4F4D\u4E8E\u5317/\u897F\u5730\u56FE\u8FB9\u754C"] : [];
+            const source = kind === "canal" && !waterAccess(s, p) ? ["\u65B0\u6E20\u9700\u4E0E\u6CB3\u6D41\u3001\u6CC9\u773C\u6216\u901A\u6C34\u6E20\u76F8\u90BB\u4E14\u6C34\u4F4D\u4E0D\u4F4E\u4E8E\u672C\u7530"] : kind === "paddy" ? [].concat(_toConsumableArray(branchNeeds(s, ["A1"])), _toConsumableArray(plotField(s, p.id)?.crop ? ["\u9700\u5148\u6536\u83B7\uFF0C\u7A7A\u7530\u624D\u80FD\u6539\u9020"] : []), _toConsumableArray(!waterAccess(s, p) ? ["\u9700\u4E0E\u6CB3\u6D41\u3001\u6CC9\u773C\u6216\u901A\u6C34\u6E20\u76F8\u90BB\u4E14\u6C34\u4F4D\u4E0D\u4F4E\u4E8E\u672C\u7530"] : []), _toConsumableArray(p.land?.paddy ? ["\u6B64\u7530\u5DF2\u662F\u6C34\u7530"] : [])) : [];
+            const outlet = kind === "drain" && !drainOutlet(s, p) ? ["\u9700\u76F8\u90BB\u4F4E\u5730\u3001\u8FDE\u901A\u6709\u51FA\u53E3\u7684\u6C9F\uFF0C\u6216\u6C34\u4F4D\u66F4\u4F4E\u7684\u6CB3\u6D41"] : [];
             const date = s.life?.calendar ? lunarDateAt(s.life.calendar.rules.referenceYear, s.life.calendar.absoluteDay + pressureTime(s, days)).date : "";
             const definition = defineAction(s, `economy:farmproject:${p.id}-${kind}-${days * 2}`, `${FARM_PROJECT_NAMES[kind]} \xB7 ${days ? `\u5B8C\u6210${days}\u5DE5\u65E5` : "\u6682\u7F13"}`, "\u5730\u5757\u5DE5\u7A0B", {
               time: days,
@@ -20534,22 +21773,22 @@ function farmMapActions(s) {
             out.push(definition);
           }
         } catch (err) {
-          _iterator54.e(err);
+          _iterator62.e(err);
         } finally {
-          _iterator54.f();
+          _iterator62.f();
         }
       }
       const key = p.discovery && !p.discovery.resolved ? p.discovery.id : void 0;
-      const choice = (id, label, time, energy, blockers, description, food = 0) => out.push(defineAction(s, `economy:farmstory:${p.id}-${id}`, label, "\u63A2\u7D22", {
+      const choice = (id, label, time, energy, blockers2, description, food = 0) => out.push(defineAction(s, `economy:farmstory:${p.id}-${id}`, label, "\u63A2\u7D22", {
         time,
         energy,
         food
-      }, blockers, description, (d, ev) => resolveFarmDiscovery(d, p.id, id, ev)));
+      }, blockers2, description, (d, ev) => resolveFarmDiscovery(d, p.id, id, ev)));
       if (key === "brambles") choice("clear", "\u6E05\u7406\u8346\u68D8", r.clearTime, r.clearEnergy, [], "\u6295\u5165\u52B3\u529B\u6E05\u7406\uFF0C\u6B64\u540E\u53EF\u4EE5\u5F00\u57A6\uFF1B\u4E5F\u53EF\u4FDD\u7559\u5E76\u63A2\u7D22\u65C1\u8FB9\u3002");
       if (key === "seedbag" || key === "heritage") choice("identify", "\u8FA8\u79CD\u4E0E\u7559\u79CD", branchHas(s, "A11") ? Math.min(r.identifyTime, r.interactionTime) : r.identifyTime, 1, branchNeeds(s, ["A0"]), "\u8FA8\u8BA4\u4E00\u6B21\uFF0C\u9886\u53D6\u79CD\u5B50\uFF1B\u5730\u5757\u968F\u540E\u53EF\u5F00\u57A6\u3002\u5F02\u7A57\u9EA6\u72EC\u7ACB\u7559\u79CD\uFF0C\u4E0D\u80FD\u5728\u96C6\u5E02\u8D2D\u4E70\u3002");
       if (key === "traveler") choice("share", "\u5206\u4E00\u4EFD\u53E3\u7CAE\uFF0C\u542C\u65C5\u4EBA\u8BB2\u8FF0", r.interactionTime, 0, [], `\u4ED8${r.storyFood}\u4EFD\u5373\u98DF\u53E3\u7CAE\uFF0C\u56DE\u8D60${r.discoverySeeds}\u9EA6\u79CD\uFF1B\u4E0D\u4F1A\u6263\u79CD\u5B50\u5F53\u53E3\u7CAE\u3002`, r.storyFood);
       if (key === "shrine") choice("preserve", "\u63CF\u4E0B\u65E7\u754C\uFF0C\u4FDD\u7559\u5730\u6807", r.interactionTime, 0, [], "\u6C38\u4E45\u4FDD\u7559\u6B64\u683C\uFF0C\u4E0D\u80FD\u5F00\u57A6\uFF1B\u5468\u8FB9\u4ECD\u53EF\u63A2\u7D22\u3002");
-      if (key === "spring") choice("dredge", "\u758F\u6D5A\u6EAA\u6DA7\uFF0C\u7559\u51FA\u6C34\u6E90", r.clearTime, r.clearEnergy, [], "\u6E05\u7406\u6DE4\u585E\uFF0C\u6B64\u683C\u6210\u4E3A\u6C38\u4E45\u6C34\u6E90\uFF0C\u4E0D\u80FD\u518D\u5F00\u57A6\uFF1B\u6C34\u6E20\u9700\u4E0E\u6C34\u6E90\u683C\u6216\u901A\u6C34\u6E20\u6B63\u4EA4\u76F8\u90BB\u624D\u80FD\u4FEE\u5EFA\uFF0C\u6CBF\u94FE\u9AD8\u7A0B\u4E0D\u5347\u3002");
+      if (key === "spring") choice("dredge", "\u758F\u6D5A\u6EAA\u6DA7\uFF0C\u7559\u51FA\u6C34\u6E90", r.clearTime, r.clearEnergy, [], "\u6E05\u7406\u6DE4\u585E\uFF0C\u6B64\u683C\u6210\u4E3A\u6C38\u4E45\u6C34\u6E90\uFF0C\u4E0D\u80FD\u518D\u5F00\u57A6\uFF1B\u6C34\u6E20\u9700\u4E0E\u6CB3\u6D41\u3001\u6CC9\u773C\u6216\u901A\u6C34\u6E20\u76F8\u90BB\u4E14\u6C34\u4F4D\u4E0D\u4F4E\u4E8E\u672C\u7530\u624D\u80FD\u4FEE\u5EFA\uFF0C\u6CBF\u94FE\u9AD8\u7A0B\u4E0D\u5347\u3002");
       if (key === "spring") choice("fill", "\u586B\u5E73\u6EAA\u6DA7\uFF0C\u6574\u4E3A\u8352\u5730", r.interactionTime, 0, [], "\u586B\u5E73\u6B64\u5904\uFF0C\u6574\u6210\u666E\u901A\u8352\u5730\uFF1B\u4E0D\u83B7\u5F97\u6C34\u6E90\u3002");
       if (p.kind === "story" && !p.project && !["woodland", "spring"].includes(key ?? "")) choice("leave", key === "traveler" ? "\u6307\u8DEF\u544A\u522B" : "\u6574\u7406\u4E3A\u666E\u901A\u8352\u5730", r.interactionTime, 0, [], "\u7ED3\u675F\u8FD9\u6B21\u4E8B\u4EF6\uFF0C\u653E\u5F03\u5956\u52B1\uFF0C\u6B64\u683C\u53EF\u6309\u666E\u901A\u8352\u5730\u5F00\u57A6\u3002");
     }
@@ -20570,14 +21809,14 @@ function farmMapActions(s) {
     }
     if (p.kind !== "field") continue;
     const field = plotField(s, p.id);
-    for (var _i119 = 0, _arr39 = ["sowing", "other"]; _i119 < _arr39.length; _i119++) {
-      const purpose = _arr39[_i119];
-      const blockers = [].concat(_toConsumableArray(p.purpose === purpose ? ["\u5DF2\u662F\u6B64\u7528\u9014"] : []), _toConsumableArray(purpose === "other" && !otherFarmUseUnlocked(s) ? ["\u70B9\u4EAE\u9996\u4E2A\u5730\u5757\u8BBE\u65BD\u5B9E\u8DF5\u540E\u5F00\u653E\u5176\u4ED6\u7528\u9014"] : []), _toConsumableArray(field.crop ? ["\u5148\u6536\u83B7\u5F53\u524D\u4F5C\u7269"] : []), _toConsumableArray((p.plans ?? []).some(v => !v.harvested && !v.failed) ? ["\u5148\u5728\u519C\u65F6\u5B89\u6392\u4E2D\u53D6\u6D88\u672A\u5B8C\u6210\u8BA1\u5212"] : []), _toConsumableArray(p.project && p.project.done < p.project.total ? ["\u5148\u5B8C\u6210\u5F53\u524D\u5DE5\u7A0B"] : []), _toConsumableArray(p.improvement ? ["\u5DF2\u5EFA\u8BBE\u65BD\u7684\u7528\u9014\u4E0D\u80FD\u76F4\u63A5\u66F4\u6539"] : []), _toConsumableArray(purpose === "other" && p.land?.paddy ? ["\u6C34\u7530\u4FDD\u7559\u64AD\u79CD\u7528\u9014"] : []));
+    for (var _i120 = 0, _arr39 = ["sowing", "other"]; _i120 < _arr39.length; _i120++) {
+      const purpose = _arr39[_i120];
+      const blockers2 = [].concat(_toConsumableArray(p.purpose === purpose ? ["\u5DF2\u662F\u6B64\u7528\u9014"] : []), _toConsumableArray(purpose === "other" && !otherFarmUseUnlocked(s) ? ["\u70B9\u4EAE\u9996\u4E2A\u5730\u5757\u8BBE\u65BD\u5B9E\u8DF5\u540E\u5F00\u653E\u5176\u4ED6\u7528\u9014"] : []), _toConsumableArray(field.crop ? ["\u5148\u6536\u83B7\u5F53\u524D\u4F5C\u7269"] : []), _toConsumableArray((p.plans ?? []).some(v => !v.harvested && !v.failed) ? ["\u5148\u5728\u519C\u65F6\u5B89\u6392\u4E2D\u53D6\u6D88\u672A\u5B8C\u6210\u8BA1\u5212"] : []), _toConsumableArray(p.project && p.project.done < p.project.total ? ["\u5148\u5B8C\u6210\u5F53\u524D\u5DE5\u7A0B"] : []), _toConsumableArray(p.improvement ? ["\u5DF2\u5EFA\u8BBE\u65BD\u7684\u7528\u9014\u4E0D\u80FD\u76F4\u63A5\u66F4\u6539"] : []), _toConsumableArray(purpose === "other" && p.land?.paddy ? ["\u6C34\u7530\u4FDD\u7559\u64AD\u79CD\u7528\u9014"] : []));
       out.push(defineAction(s, `economy:farmuse:${p.id}-${purpose}`, purpose === "sowing" ? "\u8BBE\u4E3A\u64AD\u79CD\u7528\u9014" : "\u8BBE\u4E3A\u5176\u4ED6\u7528\u9014", "\u571F\u5730\u7528\u9014", {
         ap: 0,
         time: 0,
         energy: 0
-      }, blockers, "\u53EA\u6539\u53D8\u7A7A\u95F2\u571F\u5730\u7528\u9014\uFF0C\u4E0D\u8017\u65F6\u95F4\u4E0E\u7269\u8D44\uFF1B\u64AD\u79CD\u7528\u9014\u7EDF\u4E00\u5728\u519C\u65F6\u5B89\u6392\u9875\u751F\u4EA7\uFF0C\u5176\u4ED6\u7528\u9014\u5EFA\u8BBE\u5DF2\u89E3\u9501\u8BBE\u65BD\u3002", (d, ev) => {
+      }, blockers2, "\u53EA\u6539\u53D8\u7A7A\u95F2\u571F\u5730\u7528\u9014\uFF0C\u4E0D\u8017\u65F6\u95F4\u4E0E\u7269\u8D44\uFF1B\u64AD\u79CD\u7528\u9014\u7EDF\u4E00\u5728\u519C\u65F6\u5B89\u6392\u9875\u751F\u4EA7\uFF0C\u5176\u4ED6\u7528\u9014\u5EFA\u8BBE\u5DF2\u89E3\u9501\u8BBE\u65BD\u3002", (d, ev) => {
         d.economy.farm.plots[p.id].purpose = purpose;
         event2(d, ev, p.id + " \u5DF2\u8BBE\u4E3A" + (purpose === "sowing" ? "\u64AD\u79CD\u7528\u9014" : "\u5176\u4ED6\u7528\u9014"));
       }));
@@ -20585,18 +21824,18 @@ function farmMapActions(s) {
     if (p.purpose !== "sowing") continue;
     const year = farmYear(s),
       now = s.life.calendar.absoluteDay;
-    const planAction = (target, label, blockers, execute) => out.push(defineAction(s, "economy:plotplan:" + p.id + "-" + target, label, "\u5730\u5757\u8BA1\u5212", {
+    const planAction = (target, label, blockers2, execute) => out.push(defineAction(s, "economy:plotplan:" + p.id + "-" + target, label, "\u5730\u5757\u8BA1\u5212", {
       ap: 0,
       time: 0,
       energy: 0
-    }, blockers, "\u53EA\u66F4\u65B0\u8BA1\u5212\uFF0C\u4E0D\u6D88\u8017\u65F6\u95F4\u4E0E\u7269\u8D44\uFF1B\u5230\u671F\u519C\u6D3B\u9700\u624B\u52A8\u786E\u8BA4\u3002", execute));
-    for (var _i120 = 0, _arr40 = [year, year + 1]; _i120 < _arr40.length; _i120++) {
-      const y = _arr40[_i120];
-      var _iterator55 = _createForOfIteratorHelper(cropBatches(s, y)),
-        _step55;
+    }, blockers2, "\u53EA\u66F4\u65B0\u8BA1\u5212\uFF0C\u4E0D\u6D88\u8017\u65F6\u95F4\u4E0E\u7269\u8D44\uFF1B\u5230\u671F\u519C\u6D3B\u9700\u624B\u52A8\u786E\u8BA4\u3002", execute));
+    for (var _i121 = 0, _arr40 = [year, year + 1]; _i121 < _arr40.length; _i121++) {
+      const y = _arr40[_i121];
+      var _iterator63 = _createForOfIteratorHelper(cropBatches(s, y)),
+        _step63;
       try {
-        for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
-          const batch = _step55.value;
+        for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
+          const batch = _step63.value;
           const exists = p.plans?.some(v => v.batchId === batch.id && v.year === y);
           if (batch.end <= now || exists) continue;
           planAction(`add-${y}-${batch.id}`, `\u5B89\u6392 ${farmYearLabel(s, y)} ${batch.name}`, [], d => {
@@ -20618,21 +21857,21 @@ function farmMapActions(s) {
           });
         }
       } catch (err) {
-        _iterator55.e(err);
+        _iterator63.e(err);
       } finally {
-        _iterator55.f();
+        _iterator63.f();
       }
     }
-    for (var _i121 = 0, _arr41 = _toConsumableArray(new Set((p.plans ?? []).map(v => v.year))); _i121 < _arr41.length; _i121++) {
-      const y = _arr41[_i121];
+    for (var _i122 = 0, _arr41 = _toConsumableArray(new Set((p.plans ?? []).map(v => v.year))); _i122 < _arr41.length; _i122++) {
+      const y = _arr41[_i122];
       const existing = p.plans?.some(v => v.year === y + 1);
       planAction(`copy-${y}`, `\u590D\u5236${farmYearLabel(s, y)}\u8BA1\u5212\u81F3${farmYearLabel(s, y + 1)}`, existing ? ["\u76EE\u6807\u5E74\u5EA6\u5DF2\u6709\u5B89\u6392\uFF0C\u4E0D\u8986\u76D6"] : [], d => {
         const plot = d.economy.farm.plots[p.id];
-        var _iterator56 = _createForOfIteratorHelper(_toConsumableArray(plot.plans ?? []).filter(v => v.year === y)),
-          _step56;
+        var _iterator64 = _createForOfIteratorHelper(_toConsumableArray(plot.plans ?? []).filter(v => v.year === y)),
+          _step64;
         try {
-          for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
-            const old = _step56.value;
+          for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
+            const old = _step64.value;
             const before = cropBatches(d, y).find(b => b.id === old.batchId),
               after = cropBatches(d, y + 1).find(b => b.id === old.batchId);
             plot.plans.push({
@@ -20652,17 +21891,17 @@ function farmMapActions(s) {
             });
           }
         } catch (err) {
-          _iterator56.e(err);
+          _iterator64.e(err);
         } finally {
-          _iterator56.f();
+          _iterator64.f();
         }
       });
     }
-    var _iterator57 = _createForOfIteratorHelper(p.plans ?? []),
-      _step57;
+    var _iterator65 = _createForOfIteratorHelper(p.plans ?? []),
+      _step65;
     try {
-      for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
-        const plan = _step57.value;
+      for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
+        const plan = _step65.value;
         if (plan.harvested || plan.failed) continue;
         const batch = cropBatches(s, plan.year).find(b => b.id === plan.batchId);
         const live = plan.sown && field.batch?.id === plan.batchId && field.batch.year === plan.year ? field : plannedField(s, p, plan);
@@ -20673,8 +21912,8 @@ function farmMapActions(s) {
             const plot = d.economy.farm.plots[p.id];
             plot.plans = plot.plans.filter(v => v.id !== plan.id);
           });
-          for (var _i123 = 0, _arr42 = [-1, 1]; _i123 < _arr42.length; _i123++) {
-            const shift = _arr42[_i123];
+          for (var _i124 = 0, _arr42 = [-1, 1]; _i124 < _arr42.length; _i124++) {
+            const shift = _arr42[_i124];
             planAction(`sow${shift < 0 ? "earlier" : "later"}-${plan.year}-${plan.batchId}`, `\u64AD\u79CD${shift < 0 ? "\u63D0\u524D" : "\u63A8\u8FDF"}1\u5929`, plan.sowDay + shift < Math.max(now, batch.start) || plan.sowDay + shift >= batch.end ? ["\u8D85\u51FA\u64AD\u79CD\u7A97\u53E3"] : [], d => {
               const v = target(d);
               v.sowDay += shift;
@@ -20682,14 +21921,14 @@ function farmMapActions(s) {
             });
           }
         }
-        for (var _i124 = 0, _arr43 = [-1, 1]; _i124 < _arr43.length; _i124++) {
-          const shift = _arr43[_i124];
+        for (var _i125 = 0, _arr43 = [-1, 1]; _i125 < _arr43.length; _i125++) {
+          const shift = _arr43[_i125];
           planAction(`harvest${shift < 0 ? "earlier" : "later"}-${plan.year}-${plan.batchId}`, `\u6536\u83B7${shift < 0 ? "\u63D0\u524D" : "\u63A8\u8FDF"}1\u5929`, plan.harvestDay + shift < Math.max(now, dates.mature) || plan.harvestDay + shift >= dates.deadline || plan.fertilizeDay !== void 0 && plan.harvestDay + shift <= plan.fertilizeDay ? ["\u8D85\u51FA\u6536\u83B7\u7A97\u53E3"] : [], d => {
             target(d).harvestDay += shift;
           });
         }
-        if (!plan.fertilized && plan.fertilizeDay !== void 0) for (var _i125 = 0, _arr44 = [-1, 1]; _i125 < _arr44.length; _i125++) {
-          const shift = _arr44[_i125];
+        if (!plan.fertilized && plan.fertilizeDay !== void 0) for (var _i126 = 0, _arr44 = [-1, 1]; _i126 < _arr44.length; _i126++) {
+          const shift = _arr44[_i126];
           planAction(`fertilize${shift < 0 ? "earlier" : "later"}-${plan.year}-${plan.batchId}`, `\u65BD\u80A5${shift < 0 ? "\u63D0\u524D" : "\u63A8\u8FDF"}1\u5929`, plan.fertilizeDay + shift < Math.max(now, plan.sowDay) || plan.fertilizeDay + shift >= Math.min(dates.mature, plan.harvestDay) ? ["\u8D85\u51FA\u7167\u6599\u671F\u95F4"] : [], d => {
             target(d).fertilizeDay += shift;
           });
@@ -20700,35 +21939,35 @@ function farmMapActions(s) {
         });
       }
     } catch (err) {
-      _iterator57.e(err);
+      _iterator65.e(err);
     } finally {
-      _iterator57.f();
+      _iterator65.f();
     }
     if (s.life?.calendar && field.crop && field.growth < field.duration) out.push(defineAction(s, "economy:wait:" + p.id, "\u7B49\u5230 " + p.id + " \u6536\u83B7", "\u65E5\u5386", {
       ap: 0,
       time: Math.min(field.duration - field.growth, availableDays(s)),
       energy: 0
     }, [], "\u6700\u591A\u7B49\u5230\u6B64\u7530\u6210\u719F\uFF1B\u5176\u4ED6\u7530\u6210\u719F\u3001\u7F3A\u7CAE\u3001\u8282\u6C14\u6216\u8282\u65E5\u4E5F\u4F1A\u63D0\u524D\u505C\u4E0B\u3002", () => {}));
-    for (var _i122 = 0, _Object$keys8 = Object.keys(CROPS); _i122 < _Object$keys8.length; _i122++) {
-      const crop = _Object$keys8[_i122];
+    for (var _i123 = 0, _Object$keys8 = Object.keys(CROPS); _i123 < _Object$keys8.length; _i123++) {
+      const crop = _Object$keys8[_i123];
       out.push(defineAction(s, `economy:farmplot:${p.id}-${crop}`, `${p.id} ${!field.crop ? "\u64AD\u79CD" : field.growth >= field.duration ? "\u6536\u83B7" : "\u704C\u6E89"}${CROPS[crop].name}`, "\u519C\u4E1A", {
         ap: s.economy.shop && !field.crop && equipped(s, "U02") && s.economy.shop.seededTurn !== s.clock.absoluteTurn ? 0 : 1
-      }, [].concat(_toConsumableArray(field.crop && field.crop !== crop ? ["\u7530\u91CC\u662F\u53E6\u4E00\u79CD\u4F5C\u7269"] : []), _toConsumableArray(!farm.discovered.includes(crop) ? ["\u5C1A\u672A\u53D1\u73B0\u6B64\u79CD\u5B50"] : []), _toConsumableArray(farmBlocker(s, crop, void 0, field))), "\u53EA\u5904\u7406\u6307\u5B9A\u7530\u5757\uFF0C\u5B9E\u9645\u6263\u79CD\u5B50\u3001\u6C34\u3001\u65F6\u95F4\u3001\u538B\u529B\u548C\u5DE5\u5177\u8010\u7528\uFF1B\u751F\u957F\u3001\u80A5\u529B\u4E0E\u7559\u79CD\u6CBF\u7528\u519C\u4E1A\u89C4\u5219\u3002", (d, ev) => {
+      }, [].concat(_toConsumableArray(field.crop && field.crop !== crop ? ["\u7530\u91CC\u662F\u53E6\u4E00\u79CD\u4F5C\u7269"] : []), _toConsumableArray(!farm.discovered.includes(crop) ? ["\u5C1A\u672A\u53D1\u73B0\u6B64\u79CD\u5B50"] : []), _toConsumableArray(farmBlocker(s, crop, void 0, field))), "\u53EA\u5904\u7406\u6307\u5B9A\u7530\u5757\uFF1B\u704C\u6E89\u4F18\u5148\u4F7F\u7528\u5DF2\u63A5\u901A\u7684\u6CB3\u6D41\u3001\u6CC9\u773C\u6216\u6C34\u6E20\uFF0C\u5426\u5219\u6D88\u8017\u516C\u5171\u6C34\u3002\u5B9E\u9645\u6263\u79CD\u5B50\u3001\u6C34\u3001\u65F6\u95F4\u3001\u538B\u529B\u548C\u5DE5\u5177\u8010\u7528\uFF1B\u751F\u957F\u3001\u80A5\u529B\u4E0E\u7559\u79CD\u6CBF\u7528\u519C\u4E1A\u89C4\u5219\u3002", (d, ev) => {
         const start = ev.length;
         farmWork(d, crop, ev, void 0, plotField(d, p.id));
-        var _iterator58 = _createForOfIteratorHelper(ev.slice(start)),
-          _step58;
+        var _iterator66 = _createForOfIteratorHelper(ev.slice(start)),
+          _step66;
         try {
-          for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
-            const e = _step58.value;
+          for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
+            const e = _step66.value;
             if (e.type === "economy-farm") {
               e.plotId = p.id;
             }
           }
         } catch (err) {
-          _iterator58.e(err);
+          _iterator66.e(err);
         } finally {
-          _iterator58.f();
+          _iterator66.f();
         }
       }));
     }
@@ -20737,17 +21976,17 @@ function farmMapActions(s) {
     }, [].concat(_toConsumableArray(branchNeeds(s, ["A0"])), _toConsumableArray(field.crop ? ["\u7530\u91CC\u5DF2\u6709\u4F5C\u7269"] : []), _toConsumableArray(farmBlocker(s, "wheat", void 0, field, true))), `\u6D88\u80171\u4EFD\u5F02\u7A57\u9EA6\u79CD\uFF1B\u6210\u719F\u6536\u6210\u589E\u52A0${r.rareBonus}\uFF0C\u6536\u83B7\u8FD4\u8FD81\u4EFD\u5F02\u7A57\u9EA6\u79CD\uFF1B\u4E0D\u6D88\u8017\u666E\u901A\u9EA6\u79CD\uFF0C\u4ECD\u53D7\u707E\u5BB3\u5F71\u54CD\u3002`, (d, ev) => {
       const start = ev.length;
       farmWork(d, "wheat", ev, void 0, plotField(d, p.id), true);
-      var _iterator59 = _createForOfIteratorHelper(ev.slice(start)),
-        _step59;
+      var _iterator67 = _createForOfIteratorHelper(ev.slice(start)),
+        _step67;
       try {
-        for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
-          const e = _step59.value;
+        for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
+          const e = _step67.value;
           if (e.type === "economy-farm") e.plotId = p.id;
         }
       } catch (err) {
-        _iterator59.e(err);
+        _iterator67.e(err);
       } finally {
-        _iterator59.f();
+        _iterator67.f();
       }
     }));
     out.push(defineAction(s, "economy:farmfertilize:" + p.id, "\u7ED9 " + p.id + " \u65BD\u5806\u80A5", "\u519C\u4E1A", {}, [].concat(_toConsumableArray(branchNeeds(s, ["A3"])), _toConsumableArray(missingGoods(s, {
@@ -20787,8 +22026,8 @@ function farmMapActions(s) {
     d.economy.farm.neighbor.talked = d.clock.absoluteTurn;
     event2(d, ev, `\u4E0E${person.name}\u4EA4\u8C08\uFF0C\u5173\u7CFB${v}`);
   }));
-  for (var _i126 = 0, _arr45 = ["soy", "flax", "mallow", "rice"]; _i126 < _arr45.length; _i126++) {
-    const crop = _arr45[_i126];
+  for (var _i127 = 0, _arr45 = ["soy", "flax", "mallow", "rice"]; _i127 < _arr45.length; _i127++) {
+    const crop = _arr45[_i127];
     out.push(defineAction(s, "economy:neighbor:trade-" + crop, `\u4E0E\u540C\u95E8\u6362${CROPS[crop].name}\u79CD\u5B50`, "\u540C\u95E8", {
       time: r.interactionTime,
       energy: 0
@@ -20824,11 +22063,11 @@ function farmMapActions(s) {
       detail: `\u5411\u540C\u95E8${person.name}\u5B66\u4F1A\u6CB9\u6599\u4E0E\u7EA4\u7EF4\u79CD\u690D`
     });
   }));
-  var _iterator60 = _createForOfIteratorHelper(Object.values(farm.plots).filter(p2 => p2.kind === "field")),
-    _step60;
+  var _iterator68 = _createForOfIteratorHelper(Object.values(farm.plots).filter(p2 => p2.kind === "field")),
+    _step68;
   try {
-    for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
-      const p = _step60.value;
+    for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
+      const p = _step68.value;
       const f = plotField(s, p.id);
       out.push(defineAction(s, "economy:neighbor:help-" + p.id, "\u8BF7\u540C\u95E8\u7ED9 " + p.id + " \u6D47\u6C34", "\u540C\u95E8", {
         time: r.interactionTime,
@@ -20848,9 +22087,9 @@ function farmMapActions(s) {
       }));
     }
   } catch (err) {
-    _iterator60.e(err);
+    _iterator68.e(err);
   } finally {
-    _iterator60.f();
+    _iterator68.f();
   }
   return out;
 }
@@ -20860,11 +22099,11 @@ function productNetworkActions(s, rules2) {
   const n = s.productNetwork;
   if (!n) return [];
   const actions = [];
-  for (var _i127 = 0, _DEVICE_RECIPES2 = DEVICE_RECIPES; _i127 < _DEVICE_RECIPES2.length; _i127++) {
-    const r = _DEVICE_RECIPES2[_i127];
+  for (var _i128 = 0, _DEVICE_RECIPES2 = DEVICE_RECIPES; _i128 < _DEVICE_RECIPES2.length; _i128++) {
+    const r = _DEVICE_RECIPES2[_i128];
     actions.push(defineAction(s, `fabricate:${r.id}`, `\u5236\u9020${NETWORK_NAMES[r.id]}`, "\u5DE5\u4E1A", {}, [].concat(_toConsumableArray(methodBlockers(s, rules2, r.method)), _toConsumableArray(n.project || s.development.project || s.production.project ? ["\u5148\u5B8C\u6210\u5BB6\u5EAD\u5728\u5236\u9879\u76EE"] : []), _toConsumableArray(Object.entries(r.inputs).filter(([id, count]) => productAmount(s, id) < count).map(([id, count]) => `\u9700${count}${PRODUCT_NAMES[id]}`))), `${Object.entries(r.inputs).map(([id, count]) => `${count}${PRODUCT_NAMES[id]}`).join(" + ")}\uFF1B\u5F00\u5DE5\u3001\u5B8C\u6210\u54041\u884C\u52A8\u3002${rules2.passiveInvestment ? PASSIVE_EFFECTS[r.id] : r.effect}`, (draft, events) => {
-      for (var _i128 = 0, _Object$entries29 = Object.entries(r.inputs); _i128 < _Object$entries29.length; _i128++) {
-        const _Object$entries29$_i = _slicedToArray(_Object$entries29[_i128], 2),
+      for (var _i129 = 0, _Object$entries29 = Object.entries(r.inputs); _i129 < _Object$entries29.length; _i129++) {
+        const _Object$entries29$_i = _slicedToArray(_Object$entries29[_i129], 2),
           id = _Object$entries29$_i[0],
           count = _Object$entries29$_i[1];
         changeProduct(draft, id, -count);
@@ -20889,8 +22128,8 @@ function productNetworkActions(s, rules2) {
       device
     });
   }));
-  for (var _i129 = 0, _DEVICES = DEVICES; _i129 < _DEVICES.length; _i129++) {
-    const device = _DEVICES[_i129];
+  for (var _i130 = 0, _DEVICES = DEVICES; _i130 < _DEVICES.length; _i130++) {
+    const device = _DEVICES[_i130];
     actions.push(defineAction(s, `install-product:${device}`, `\u5B89\u88C5${NETWORK_NAMES[device]}`, "\u8BBE\u65BD", {}, [].concat(_toConsumableArray(n.goods[device] < 1 ? ["\u6CA1\u6709\u5BF9\u5E94\u8BBE\u5907"] : []), _toConsumableArray(n.installed[device] > 0 ? ["\u73B0\u6709\u8BBE\u5907\u4ECD\u53EF\u4F7F\u7528"] : [])), `\u6D88\u80171\u4EF6\u8BBE\u5907\uFF0C\u63D0\u4F9B${rules2.development.parameters.equipmentDurability}\u6B21${rules2.passiveInvestment ? "\u81EA\u52A8\u8FD0\u884C\uFF08\u5B89\u88C5\u65F6\u53CA\u5B63\u672B\uFF0C\u6BCF\u5B63\u6700\u591A\u4E00\u6B21\uFF0C\u4E0D\u82B1\u884C\u52A8\uFF09" : "\u4E13\u7528\u64CD\u4F5C"}\u3002\u7EE7\u627F\u8005\u53EF\u4F7F\u7528\uFF0C\u4E0D\u81EA\u52A8\u5B66\u4F1A\u5236\u9020\u3002`, (draft, events) => {
       const x = draft.productNetwork;
       x.goods[device]--;
@@ -20981,8 +22220,8 @@ function handover(state, rules2, events) {
     delete state.life.pendingRetirement;
     handoverOperations(state, events);
     if (state.economy?.industry) {
-      for (var _i130 = 0, _Object$values15 = Object.values(state.economy.industry.instances); _i130 < _Object$values15.length; _i130++) {
-        const i = _Object$values15[_i130];
+      for (var _i131 = 0, _Object$values16 = Object.values(state.economy.industry.instances); _i131 < _Object$values16.length; _i131++) {
+        const i = _Object$values16[_i131];
         if (i?.operator === "self") i.enabled = false;
       }
     }
@@ -21000,8 +22239,8 @@ function handover(state, rules2, events) {
   const child = heir(state),
     fromPersonId = state.household.activePersonId;
   if (state.economy?.lineage) {
-    for (var _i131 = 0, _SUBJECTS = SUBJECTS; _i131 < _SUBJECTS.length; _i131++) {
-      const subject = _SUBJECTS[_i131];
+    for (var _i132 = 0, _SUBJECTS = SUBJECTS; _i132 < _SUBJECTS.length; _i132++) {
+      const subject = _SUBJECTS[_i132];
       const n = level(state, subject, fromPersonId);
       if (n > (state.economy.notes[subject] ?? 0)) {
         state.economy.notes[subject] = n;
@@ -21013,8 +22252,8 @@ function handover(state, rules2, events) {
         });
       }
     }
-    for (var _i132 = 0, _SUBJECTS2 = SUBJECTS; _i132 < _SUBJECTS2.length; _i132++) {
-      const subject = _SUBJECTS2[_i132];
+    for (var _i133 = 0, _SUBJECTS2 = SUBJECTS; _i133 < _SUBJECTS2.length; _i133++) {
+      const subject = _SUBJECTS2[_i133];
       const documented = state.economy.notes[subject] ?? 0,
         current = level(state, subject, child.id);
       if (documented > current) {
@@ -21050,8 +22289,8 @@ function handover(state, rules2, events) {
     state.household.heirId = id;
   }
   if (state.economy && !state.economy.operations?.charter && (state.economy.notes.organization ?? 0) < 3) {
-    for (var _i133 = 0, _Object$values16 = Object.values(state.economy.workers); _i133 < _Object$values16.length; _i133++) {
-      const w = _Object$values16[_i133];
+    for (var _i134 = 0, _Object$values17 = Object.values(state.economy.workers); _i134 < _Object$values17.length; _i134++) {
+      const w = _Object$values17[_i134];
       if (w) w.active = false;
     }
   }
@@ -21069,8 +22308,8 @@ function handover(state, rules2, events) {
   handoverOperations(state, events);
   if (state.economy?.industry) {
     state.economy.operations.paused = false;
-    for (var _i134 = 0, _Object$values17 = Object.values(state.economy.industry.instances); _i134 < _Object$values17.length; _i134++) {
-      const i = _Object$values17[_i134];
+    for (var _i135 = 0, _Object$values18 = Object.values(state.economy.industry.instances); _i135 < _Object$values18.length; _i135++) {
+      const i = _Object$values18[_i135];
       if (i && i.operator === "self") i.enabled = false;
     }
   }
@@ -21299,11 +22538,11 @@ function educationActions(state, rules2) {
     person = activePerson(state),
     child = heir(state),
     p = rules2.parameters;
-  var _iterator61 = _createForOfIteratorHelper(rules2.technologies),
-    _step61;
+  var _iterator69 = _createForOfIteratorHelper(rules2.technologies),
+    _step69;
   try {
-    for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
-      const tech = _step61.value;
+    for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
+      const tech = _step69.value;
       const progress = person.learning[tech.id] ?? 0,
         required = studyRequired(rules2, person, tech, state.knowledge.archives);
       const missing = tech.prerequisites.filter(id => !has(person, id)).map(id => techById(rules2, id).name);
@@ -21312,11 +22551,11 @@ function educationActions(state, rules2) {
       actions.push(defineAction(state, `study:${tech.id}`, `\u5B66\u4E60\uFF1A${tech.name}`, "\u5B66\u4E60", {
         money: state.knowledge.archives.includes(tech.id) ? 0 : p.studyCost
       }, [].concat(_toConsumableArray(common), _toConsumableArray(!accessible(state, tech) ? ["\u5F53\u5730\u6CA1\u6709\u6559\u5E08\uFF0C\u5BB6\u5EAD\u4E5F\u65E0\u6750\u6599"] : []), _toConsumableArray(has(person, tech.id) ? ["\u5DF2\u7ECF\u638C\u63E1"] : []), _toConsumableArray(progress >= required ? ["\u5B66\u4E60\u6B21\u6570\u5DF2\u8DB3\u591F\uFF0C\u9700\u5B8C\u6210\u5B9E\u8DF5"] : [])), `\u5B66\u4E60 ${progress}/${required}\uFF1B\u5B9E\u8DF5\uFF1A${tech.practices.map(tag => rules2.practiceNames[tag]).join("\u3001")}\u3002${tech.benefit}`, (draft, events) => study(draft, tech.id, events)));
-      var _iterator62 = _createForOfIteratorHelper(tech.practices),
-        _step62;
+      var _iterator70 = _createForOfIteratorHelper(tech.practices),
+        _step70;
       try {
-        for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
-          const tag = _step62.value;
+        for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
+          const tag = _step70.value;
           if (tag.startsWith("development-")) continue;
           if (["cultivation", "trial-completed", "stock-release", "wood-shaped", "pot-fired", "storage-fitted"].includes(tag)) continue;
           actions.push(defineAction(state, `practice:${tech.id}:${tag}`, `\u5B9E\u8DF5\uFF1A${rules2.practiceNames[tag]}`, "\u5B9E\u8DF5", {
@@ -21330,9 +22569,9 @@ function educationActions(state, rules2) {
           }, [].concat(_toConsumableArray(common), _toConsumableArray(!accessible(state, tech) ? ["\u6CA1\u6709\u53D7\u6307\u5BFC\u5B9E\u8DF5\u6E20\u9053"] : []), _toConsumableArray(progress < 1 ? ["\u5148\u5B8C\u6210\u4E00\u6B21\u5B66\u4E60"] : []), _toConsumableArray(person.practices.includes(tag) ? ["\u5DF2\u5B8C\u6210\u8BE5\u9879\u5B9E\u8DF5"] : []), _toConsumableArray(tag === "water-plan" && !((channel(state)?.durability ?? 0) > 0) ? ["\u9700\u8981\u53EF\u7528\u5F15\u6C34\u6E20"] : [])), "\u53D7\u6307\u5BFC\u7EC3\u4E60\u53EA\u83B7\u5F97\u5177\u4F53\u5B9E\u8DF5\u8BB0\u5F55\uFF0C\u4E0D\u51ED\u7A7A\u751F\u6210\u5BB6\u5EAD\u751F\u4EA7\u8BBE\u65BD\u3002", (draft, events) => practice(draft, tech.id, tag, events)));
         }
       } catch (err) {
-        _iterator62.e(err);
+        _iterator70.e(err);
       } finally {
-        _iterator62.f();
+        _iterator70.f();
       }
       actions.push(defineAction(state, `archive:${tech.id}`, `\u7559\u5B58\u65B9\u6CD5\uFF1A${tech.name}`, "\u4F20\u627F", {
         money: p.archiveCost
@@ -21360,9 +22599,9 @@ function educationActions(state, rules2) {
       }, [].concat(_toConsumableArray(!has(person, tech.id) ? ["\u81EA\u5DF1\u5C1A\u672A\u638C\u63E1"] : []), _toConsumableArray(heirMissing ? ["\u540E\u8F88\u7F3A\u5C11\u524D\u7F6E\u57FA\u7840"] : []), _toConsumableArray(has(child, tech.id) ? ["\u540E\u8F88\u5DF2\u7ECF\u638C\u63E1"] : []), _toConsumableArray((!heirNeedsStudy || familyLesson) && heirPractice === "trial-completed" && !state.knowledge.reportIds.length ? ["\u9700\u8981\u5BB6\u5EAD\u8BD5\u79CD\u8BB0\u5F55\u4F9B\u540E\u8F88\u590D\u76D8"] : []), _toConsumableArray((!heirNeedsStudy || familyLesson) && heirPractice === "water-plan" && !((channel(state)?.durability ?? 0) > 0) ? ["\u9700\u8981\u53EF\u7528\u5F15\u6C34\u6E20"] : []), _toConsumableArray((!heirNeedsStudy || familyLesson) && heirPractice === "storage-fitted" && !state.production?.storage.woodenware && !state.production?.storage.pottery ? ["\u9700\u8981\u5DF2\u914D\u7F6E\u5BB9\u5668\u4F9B\u540E\u8F88\u7EC3\u4E60"] : [])), familyLesson ? "\u5BB6\u5B66\u5408\u6388\uFF1A\u540C\u4E00\u884C\u52A8\u5185\u8BB2\u6388\u4E00\u6B21\u7406\u8BBA\u5E76\u6307\u5BFC\u4E00\u9879\u5B9E\u8DF5\uFF1B\u7EC3\u4E60\u8017\u6750\u7167\u6263\uFF0C\u4F20\u6388\u6709\u9650\u719F\u7EC3\u7ECF\u9A8C\u3002" : heirNeedsStudy ? "\u6295\u5165\u4E00\u70B9\u884C\u52A8\uFF0C\u5B8C\u6210\u540E\u8F88\u7684\u4E00\u6B21\u5B66\u4E60\u3002" : "\u6295\u5165\u4E00\u70B9\u884C\u52A8\u5F00\u5C55\u6709\u6307\u5BFC\u7684\u7EC3\u4E60\uFF0F\u9879\u76EE\u590D\u76D8\uFF1B\u4E0D\u989D\u5916\u4EA7\u751F\u4EA7\u54C1\u3002", (draft, events) => teach(draft, tech.id, rules2, events, familyLesson)));
     }
   } catch (err) {
-    _iterator61.e(err);
+    _iterator69.e(err);
   } finally {
-    _iterator61.f();
+    _iterator69.f();
   }
   return actions;
 }
@@ -21378,8 +22617,8 @@ function researchActions(state, rules2) {
     money: p.trialCost
   }, [].concat(_toConsumableArray(!prerequisites(person, techById(rules2, "trial")) || (person.learning.trial ?? 0) < 1 ? ["\u9700\u8981\u9009\u79CD\u57FA\u7840\u5E76\u5B66\u4E60\u8FC7\u5BF9\u7167\u8BD5\u79CD"] : []), _toConsumableArray(!family.candidateId ? ["\u5148\u51C6\u5907\u5019\u9009\u79CD\u6E90"] : []), _toConsumableArray(project(state) ? ["\u5DF2\u6709\u8BD5\u79CD\u9879\u76EE"] : []), _toConsumableArray(state.knowledge.reportIds.length ? ["\u672C\u8F6E\u5019\u9009\u8BD5\u9A8C\u5DF2\u5B8C\u6210\uFF0C\u5148\u5B9A\u9009"] : [])), `\u9700\u8981 ${p.trialSeasons} \u4E2A\u5B9E\u9645\u8015\u4F5C\u5B63\uFF1B\u6BCF\u4E2A\u8015\u4F5C\u5B63\u5C11\u4EA7 ${p.trialLandCost} \u53E3\u7CAE\uFF0C\u8BB0\u5F55\u4E24\u79CD\u79CD\u6E90\u7684\u540C\u6761\u4EF6\u8868\u73B0\u3002`, startTrial)];
   const canRelease = prerequisites(person, techById(rules2, "stabilize")) && (person.learning.stabilize ?? 0) >= 1;
-  for (var _i135 = 0, _arr46 = ["keep", "adopt"]; _i135 < _arr46.length; _i135++) {
-    const decision = _arr46[_i135];
+  for (var _i136 = 0, _arr46 = ["keep", "adopt"]; _i136 < _arr46.length; _i136++) {
+    const decision = _arr46[_i136];
     actions.push(defineAction(state, `release:${decision}`, decision === "keep" ? "\u5B9A\u9009\uFF1A\u4FDD\u7559\u539F\u79CD\u6E90" : "\u5B9A\u9009\uFF1A\u91C7\u7528\u5019\u9009\u79CD\u6E90", "\u7814\u7A76", {}, [].concat(_toConsumableArray(!canRelease ? ["\u9700\u8981\u8BD5\u79CD\u57FA\u7840\u5E76\u5B66\u4E60\u8FC7\u79CD\u6E90\u5B9A\u9009"] : []), _toConsumableArray(!state.knowledge.reportIds.length ? ["\u9700\u8981\u5B8C\u6574\u6BD4\u8F83\u8BB0\u5F55"] : []), _toConsumableArray(!family.candidateId ? ["\u6CA1\u6709\u5F85\u5B9A\u9009\u7684\u79CD\u6E90"] : [])), "\u8FD9\u662F\u9009\u62E9\u9002\u5408\u672C\u5730\u7684\u65E2\u6709\u79CD\u6E90\uFF0C\u4E0D\u662F\u5BA3\u79F0\u80B2\u6210\u4E86\u65B0\u54C1\u79CD\uFF1B\u6BD4\u8F83\u8BB0\u5F55\u4E0D\u4FDD\u8BC1\u672A\u6765\u5929\u6C14\u76F8\u540C\u3002", (draft, events) => selectStock(draft, decision, events)));
   }
   return actions;
@@ -21393,8 +22632,8 @@ function craftActions(state, rules2) {
     actions = [];
   if (rules2.technologyFeedback) {
     const config = rules2.technologyFeedback;
-    for (var _i136 = 0, _arr47 = ["woodenware", "pottery"]; _i136 < _arr47.length; _i136++) {
-      const material = _arr47[_i136];
+    for (var _i137 = 0, _arr47 = ["woodenware", "pottery"]; _i137 < _arr47.length; _i137++) {
+      const material = _arr47[_i137];
       const mastered = activePerson(state).mastered.includes(recipeMethod(material));
       const fluent = Boolean(rules2.householdProgress && material === "woodenware" && skillLevel(state, rules2, "woodwork") >= 1);
       actions.push(defineAction(state, `build-workshop:${material}`, `\u5EFA\u9020${WORKSHOP_NAMES[material]}`, "\u8BBE\u65BD", {
@@ -21447,8 +22686,8 @@ function craftActions(state, rules2) {
       }));
     }
   }
-  for (var _i137 = 0, _arr48 = ["food", "wood", "clay"]; _i137 < _arr48.length; _i137++) {
-    const resource = _arr48[_i137];
+  for (var _i138 = 0, _arr48 = ["food", "wood", "clay"]; _i138 < _arr48.length; _i138++) {
+    const resource = _arr48[_i138];
     const amount2 = gatherPreview(state, rules2, resource),
       name = resource === "food" ? "\u91CE\u751F\u98DF\u7269" : MATERIAL_NAMES[resource];
     actions.push(defineAction(state, `gather:${resource}`, `\u91C7\u96C6${name}`, "\u83B7\u53D6", {}, amount2 ? [] : ["\u5F53\u5730\u53EF\u91C7\u8D44\u6E90\u5DF2\u7ECF\u8017\u5C3D"], `\u672C\u6B21\u53D6\u5F97 ${amount2}\uFF1B\u6263\u51CF\u5F53\u5730\u5E93\u5B58\u3002${resource === "clay" ? "\u9ECF\u571F\u5728\u672C\u6B21\u7A97\u53E3\u5185\u4E0D\u6062\u590D\u3002" : "\u4E0B\u5B63\u6309\u73AF\u5883\u6761\u4EF6\u6709\u9650\u6062\u590D\u3002"}${resource === "wood" && local.toolDurability > 0 ? "\u4F7F\u7528\u5DE5\u5177\u5E76\u6D88\u8017\u4E00\u6B21\u8010\u7528\u5EA6\u3002" : ""}`, (draft, events) => {
@@ -21468,8 +22707,8 @@ function craftActions(state, rules2) {
       });
     }));
   }
-  for (var _i138 = 0, _arr49 = ["woodenware", "pottery", "gather-tool"]; _i138 < _arr49.length; _i138++) {
-    const recipe = _arr49[_i138];
+  for (var _i139 = 0, _arr49 = ["woodenware", "pottery", "gather-tool"]; _i139 < _arr49.length; _i139++) {
+    const recipe = _arr49[_i139];
     const materials = recipe === "pottery" ? {
       clay: p.potteryClayCost,
       wood: p.potteryFuelCost
@@ -21520,8 +22759,8 @@ function craftActions(state, rules2) {
       } : {})
     });
   }));
-  for (var _i139 = 0, _arr50 = ["woodenware", "pottery"]; _i139 < _arr50.length; _i139++) {
-    const material = _arr50[_i139];
+  for (var _i140 = 0, _arr50 = ["woodenware", "pottery"]; _i140 < _arr50.length; _i140++) {
+    const material = _arr50[_i140];
     const price = material === "woodenware" ? p.woodenwarePrice : p.potteryPrice;
     actions.push(defineAction(state, `sell-good:${material}`, `\u51FA\u552E\u4E00\u4EF6${MATERIAL_NAMES[material]}`, "\u4EA4\u6362", {
       materials: {
@@ -21552,11 +22791,11 @@ function craftActions(state, rules2) {
       });
     }));
   }
-  var _iterator63 = _createForOfIteratorHelper(rules2.scenarios[state.location.id].production.imports),
-    _step63;
+  var _iterator71 = _createForOfIteratorHelper(rules2.scenarios[state.location.id].production.imports),
+    _step71;
   try {
-    for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
-      const id = _step63.value;
+    for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
+      const id = _step71.value;
       const tech = rules2.technologies.find(t => t.id === id);
       actions.push(defineAction(state, `buy-method:${id}`, `\u53D6\u5F97\u5916\u6765\u65B9\u6CD5\uFF1A${tech.name}`, "\u4EA4\u6362", {
         money: p.methodPrice
@@ -21570,9 +22809,9 @@ function craftActions(state, rules2) {
       }));
     }
   } catch (err) {
-    _iterator63.e(err);
+    _iterator71.e(err);
   } finally {
-    _iterator63.f();
+    _iterator71.f();
   }
   return actions;
 }
@@ -21582,11 +22821,11 @@ function societyActions(state, rules2) {
   if (!state.society || !rules2.socialInheritance) return [];
   const s = state.society,
     actions = [];
-  var _iterator64 = _createForOfIteratorHelper(rules2.technologies),
-    _step64;
+  var _iterator72 = _createForOfIteratorHelper(rules2.technologies),
+    _step72;
   try {
-    for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
-      const tech = _step64.value;
+    for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
+      const tech = _step72.value;
       const practical = (s.teaching[tech.id] ?? 0) >= 1;
       const materialPractice = practical && ["woodworking", "controlled-fire", "pottery"].includes(tech.id);
       actions.push(defineAction(state, `share:${tech.id}`, `${practical ? "\u6307\u5BFC\u90BB\u91CC\u5B9E\u8DF5" : "\u5411\u90BB\u91CC\u8BB2\u6388"}\uFF1A${tech.name}`, "\u793E\u4F1A", {
@@ -21615,12 +22854,12 @@ function societyActions(state, rules2) {
       }));
     }
   } catch (err) {
-    _iterator64.e(err);
+    _iterator72.e(err);
   } finally {
-    _iterator64.f();
+    _iterator72.f();
   }
-  for (var _i140 = 0, _arr51 = ["woodenware", "pottery"]; _i140 < _arr51.length; _i140++) {
-    const material = _arr51[_i140];
+  for (var _i141 = 0, _arr51 = ["woodenware", "pottery"]; _i141 < _arr51.length; _i141++) {
+    const material = _arr51[_i141];
     const c = s.contracts[material];
     actions.push(defineAction(state, `entrust:${material}`, `\u59D4\u6258\u5320\u4EBA\u7ECF\u8425${WORKSHOP_NAMES[material]}`, "\u793E\u4F1A", {}, [].concat(_toConsumableArray(!state.production.workshops?.[material] ? ["\u9700\u5BB6\u65CF\u5DF2\u5EFA\u6210\u5BF9\u5E94\u8BBE\u65BD"] : []), _toConsumableArray(!s.methods.includes(recipeMethod(material)) ? ["\u9700\u5148\u5B8C\u6210\u5BF9\u5E94\u5DE5\u827A\u7684\u90BB\u91CC\u4F20\u6388"] : []), _toConsumableArray(c.active ? ["\u59D4\u6258\u5DF2\u751F\u6548"] : []), _toConsumableArray(state.production.project ? ["\u5148\u5B8C\u6210\u5BB6\u5EAD\u5728\u5236\u9879\u76EE"] : [])), `\u6BCF\u6B21\u5F00\u5DE5\u4ED8 ${rules2.socialInheritance.wage} \u94B1\u5DE5\u8D44\uFF0C\u5320\u4EBA\u4ECE\u5F53\u5730\u53D6\u5F97\u914D\u65B9\u539F\u6599\uFF1B\u4E4B\u540E\u5B63\u672B\u5B8C\u5DE5\u5E76\u6309\u5269\u4F59\u8BA2\u5355\u51FA\u552E\uFF0C\u5BB6\u65CF\u6536\u8D27\u6B3E\u3002\u8BBE\u65BD\u4E0D\u80FD\u540C\u65F6\u7528\u4E8E\u4E2A\u4EBA\u6279\u91CF\u5236\u4F5C\u3002`, (draft, events) => {
       draft.society.contracts[material].active = true;
@@ -21660,8 +22899,8 @@ function developmentActions(state, rules2) {
   if (!d || !rules2.development) return [];
   const p = rules2.development.parameters,
     actions = [];
-  for (var _i141 = 0, _DEVELOPMENT_RECIPES2 = DEVELOPMENT_RECIPES; _i141 < _DEVELOPMENT_RECIPES2.length; _i141++) {
-    const r = _DEVELOPMENT_RECIPES2[_i141];
+  for (var _i142 = 0, _DEVELOPMENT_RECIPES2 = DEVELOPMENT_RECIPES; _i142 < _DEVELOPMENT_RECIPES2.length; _i142++) {
+    const r = _DEVELOPMENT_RECIPES2[_i142];
     const missing = Object.entries(r.inputs).filter(([g, n]) => d.goods[g] < n).map(([g]) => `${GOOD_NAMES[g]}\u4E0D\u8DB3`);
     const wood = Math.max(r.wood ? 1 : 0, r.wood - Math.min(1, d.designs[r.domain]));
     actions.push(defineAction(state, `develop:${r.id}`, r.name, "\u5DE5\u4E1A", {
@@ -21671,8 +22910,8 @@ function developmentActions(state, rules2) {
         clay: r.clay
       }
     }, [].concat(_toConsumableArray(methodBlockers(state, rules2, r.method)), _toConsumableArray(missing), _toConsumableArray(skillLevel(state, rules2, r.domain) < r.level ? [`\u9700${DISCIPLINE_NAMES[r.domain]}\u719F\u7EC3\u7B49\u7EA7${r.level}`] : []), _toConsumableArray(d.project || state.production.project || state.productNetwork?.project ? ["\u5148\u5B8C\u6210\u5BB6\u5EAD\u5728\u5236\u9879\u76EE"] : [])), `${r.benefit} \u5F00\u5DE5\u6295\u5165${Object.entries(r.inputs).map(([g, n]) => `${n}${GOOD_NAMES[g]}`).join("\u3001") || "\u539F\u6599"}\uFF1B\u518D\u75281\u884C\u52A8\u5B8C\u6210${r.wait ? "\uFF0C\u9700\u8DE8\u5B63" : ""}\u3002`, (draft, events) => {
-      for (var _i142 = 0, _Object$entries30 = Object.entries(r.inputs); _i142 < _Object$entries30.length; _i142++) {
-        const _Object$entries30$_i = _slicedToArray(_Object$entries30[_i142], 2),
+      for (var _i143 = 0, _Object$entries30 = Object.entries(r.inputs); _i143 < _Object$entries30.length; _i143++) {
+        const _Object$entries30$_i = _slicedToArray(_Object$entries30[_i143], 2),
           g = _Object$entries30$_i[0],
           n = _Object$entries30$_i[1];
         draft.development.goods[g] -= n;
@@ -21730,8 +22969,8 @@ function developmentActions(state, rules2) {
       equipped: equipped2
     });
   }));
-  for (var _i143 = 0, _DISCIPLINES = DISCIPLINES; _i143 < _DISCIPLINES.length; _i143++) {
-    const domain = _DISCIPLINES[_i143];
+  for (var _i144 = 0, _DISCIPLINES = DISCIPLINES; _i144 < _DISCIPLINES.length; _i144++) {
+    const domain = _DISCIPLINES[_i144];
     const rank = d.designs[domain],
       level2 = skillLevel(state, rules2, domain);
     actions.push(defineAction(state, `refine:${domain}`, `\u6539\u826F${DISCIPLINE_NAMES[domain]}\u5DE5\u827A\uFF08\u7B2C${rank + 1}\u6B21\uFF09`, "\u79D1\u5B66", {}, [].concat(_toConsumableArray(level2 < rank + 1 ? [`\u9700${DISCIPLINE_NAMES[domain]}\u719F\u7EC3\u7B49\u7EA7${rank + 1}`] : []), _toConsumableArray(d.goods.findings < rank + 1 ? [`\u9700${rank + 1}\u7814\u7A76\u8BB0\u5F55`] : []), _toConsumableArray(d.goods.supplies < 1 ? ["\u97001\u5DE5\u574A\u8865\u7ED9"] : []), _toConsumableArray(d.project ? ["\u5B8C\u6210\u5DE5\u4E1A\u5728\u5236\u9879\u76EE\u540E\u518D\u6539\u826F"] : [])), "\u7814\u7A76\u8BB0\u5F55\u4E0E\u8865\u7ED9\u771F\u5B9E\u6D88\u8017\u3002\u7B2C\u4E00\u6B21\u964D\u4F4E\u9676\u4F5C/\u673A\u68B0\u9879\u76EE1\u6728\u6750\u6295\u5165\uFF08\u81F3\u5C111\uFF09\uFF0C\u519C\u4E1A\u52A0\u5DE5\u5C11\u75281\u7CAE\uFF0C\u5B9E\u9A8C\u989D\u5916\u53E3\u7CAE\u5C111\uFF1B\u6BCF\u4E24\u6B21\u6539\u826F\u589E\u52A0\u5BF9\u5E94\u5DE5\u4E1A\u9879\u76EE1\u4EA7\u51FA\u3002\u540E\u7EED\u6539\u826F\u9700\u66F4\u9AD8\u719F\u7EC3\u5EA6\uFF0C\u6210\u679C\u7559\u5728\u5BB6\u65CF\u3002", (draft, events) => {
@@ -21751,8 +22990,8 @@ function developmentActions(state, rules2) {
       food: p.mentorFood
     }, [].concat(_toConsumableArray(parentXP < 2 ? ["\u672C\u4EBA\u5B9E\u8DF5\u79EF\u7D2F\u4E0D\u8DB3"] : []), _toConsumableArray(childXP >= Math.floor(parentXP / 2) ? ["\u540E\u8F88\u5DF2\u8FBE\u5230\u5F53\u524D\u53EF\u4F20\u6388\u7684\u5B9E\u8DF5\u6C34\u5E73"] : [])), `\u82B11\u884C\u52A8\u4E0E${p.mentorFood}\u7CAE\u4F20\u6388\u6700\u591A${rules2.passiveInvestment ? 2 : 1}\u70B9\u7ECF\u9A8C\uFF1B\u540E\u8F88${childXP}\uFF0C\u672C\u4EE3${parentXP}\uFF0C\u53EF\u4F20\u81F3${Math.floor(parentXP / 2)}\u3002\u4E0D\u66FF\u4EE3\u7406\u8BBA\u4E0E\u5B9E\u8DF5\u6761\u4EF6\u3002`, (draft, events) => gainExperience(draft, domain, Math.min(rules2.passiveInvestment ? 2 : 1, Math.floor(parentXP / 2) - childXP), events, draft.household.heirId)));
   }
-  for (var _i144 = 0, _Object$entries31 = Object.entries(DEVELOPMENT_PRICES); _i144 < _Object$entries31.length; _i144++) {
-    const _Object$entries31$_i = _slicedToArray(_Object$entries31[_i144], 2),
+  for (var _i145 = 0, _Object$entries31 = Object.entries(DEVELOPMENT_PRICES); _i145 < _Object$entries31.length; _i145++) {
+    const _Object$entries31$_i = _slicedToArray(_Object$entries31[_i145], 2),
       good = _Object$entries31$_i[0],
       price = _Object$entries31$_i[1];
     const g = good;
@@ -21815,8 +23054,8 @@ function developmentActions(state, rules2) {
       amount: 2
     });
   }));
-  for (var _i145 = 0, _arr52 = ["field", "lab"]; _i145 < _arr52.length; _i145++) {
-    const kind = _arr52[_i145];
+  for (var _i146 = 0, _arr52 = ["field", "lab"]; _i146 < _arr52.length; _i146++) {
+    const kind = _arr52[_i146];
     const g = kind === "field" ? "fieldTools" : "labTools",
       key = kind === "field" ? "fieldDurability" : "labDurability";
     actions.push(defineAction(state, `equip:${kind}`, kind === "field" ? "\u88C5\u5907\u519C\u4E1A\u8BBE\u5907" : "\u88C5\u5907\u5B9E\u9A8C\u8BBE\u5907", "\u8BBE\u65BD", {}, [].concat(_toConsumableArray(d.goods[g] < 1 ? [`\u97001${GOOD_NAMES[g]}`] : []), _toConsumableArray(d[key] > 0 ? ["\u73B0\u6709\u8BBE\u5907\u5C1A\u53EF\u4F7F\u7528"] : [])), `\u6D88\u80171\u4EF6\u8BBE\u5907\uFF0C\u63D0\u4F9B${p.equipmentDurability}\u6B21\u4F7F\u7528\uFF1B\u8DE8\u4EE3\u4FDD\u7559\uFF0C\u4E0D\u80FD\u91CD\u590D\u53E0\u52A0\u3002`, (draft, events) => {
@@ -21956,17 +23195,17 @@ function createInitialState(rules2, seed, frameworkId) {
     if (rules2.householdLineage) state.economy.lineage = true;
   }
   if (rules2.branches) {
-    var _iterator65 = _createForOfIteratorHelper(/* @__PURE__ */new Set([state.household.activePersonId, state.household.heirId])),
-      _step65;
+    var _iterator73 = _createForOfIteratorHelper(/* @__PURE__ */new Set([state.household.activePersonId, state.household.heirId])),
+      _step73;
     try {
-      for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
-        const id = _step65.value;
+      for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
+        const id = _step73.value;
         state.persons[id].practices.push("technology:A0");
       }
     } catch (err) {
-      _iterator65.e(err);
+      _iterator73.e(err);
     } finally {
-      _iterator65.f();
+      _iterator73.f();
     }
     state.economy.branches = {
       learned: {
@@ -22069,8 +23308,8 @@ function transition(state, action, rules2) {
   next.ap -= ap;
   next.household.money -= money;
   next.household.food -= food;
-  if (materials) for (var _i146 = 0, _Object$entries32 = Object.entries(materials); _i146 < _Object$entries32.length; _i146++) {
-    const _Object$entries32$_i = _slicedToArray(_Object$entries32[_i146], 2),
+  if (materials) for (var _i147 = 0, _Object$entries32 = Object.entries(materials); _i147 < _Object$entries32.length; _i147++) {
+    const _Object$entries32$_i = _slicedToArray(_Object$entries32[_i147], 2),
       material = _Object$entries32$_i[0],
       amount2 = _Object$entries32$_i[1];
     next.production.inventory[material] -= amount2;
@@ -22413,14 +23652,15 @@ function parseSession(value) {
   if (!isRecord(economy) || !isRecord(economy.farm)) farmInvalid();
   const farm = economy.farm;
   const validField = f => isRecord(f) && [null].concat(_toConsumableArray(Object.keys(CROPS))).includes(f.crop) && [null].concat(_toConsumableArray(Object.keys(CROPS))).includes(f.lastCrop) && ["planted", "moisture", "growth", "stress", "fertility", "tended", "bonus", "duration"].every(k => finite(f[k])) && Number(f.fertility) <= 3 && Number(f.duration) >= 1 && typeof f.composted === "boolean" && (f.variety === void 0 || f.variety === "heritage" && f.crop === "wheat");
+  if (!isRecord(farm.scene) || farm.scene.id !== SCENE_ID || farm.scene.version !== SCENE_VERSION) throw new Error("\u573A\u666F\u5B58\u6863\u7248\u672C\u65E0\u6CD5\u8BC6\u522B\uFF0C\u539F\u5B58\u6863\u4FDD\u7559\u3002");
   if (farm.calendarVersion !== 1 || farm.landVersion !== 2 || farm.explorationVersion !== 3 || !Number.isSafeInteger(farm.rareSeeds) || farm.rareSeeds < 0) farmInvalid();
   if (!isRecord(farm.rules) || canonical(farm.rules) !== canonical(record.manifest.ruleset.farm) || !isRecord(farm.plots) || !Array.isArray(farm.discovered) || !farm.discovered.includes("wheat") || new Set(farm.discovered).size !== farm.discovered.length || farm.discovered.some(c => !Object.keys(CROPS).includes(String(c))) || !Number.isSafeInteger(farm.explored) || farm.explored < 0) farmInvalid();
   if (!validField(economy.field) || farm.plots.p2q2?.kind !== "field") farmInvalid();
-  for (var _i147 = 0, _Object$entries33 = Object.entries(farm.plots); _i147 < _Object$entries33.length; _i147++) {
-    const _Object$entries33$_i = _slicedToArray(_Object$entries33[_i147], 2),
+  for (var _i148 = 0, _Object$entries33 = Object.entries(farm.plots); _i148 < _Object$entries33.length; _i148++) {
+    const _Object$entries33$_i = _slicedToArray(_Object$entries33[_i148], 2),
       id = _Object$entries33$_i[0],
       raw = _Object$entries33$_i[1];
-    if (!isRecord(raw) || raw.id !== id || !Number.isSafeInteger(raw.x) || !Number.isSafeInteger(raw.y) || id !== `p${raw.x}q${raw.y}` || !["unknown", "wild", "field", "tree", "rock", "brush", "story", "water"].includes(String(raw.kind))) farmInvalid();
+    if (!isRecord(raw) || raw.id !== id || !Number.isSafeInteger(raw.x) || !Number.isSafeInteger(raw.y) || id !== `p${raw.x}q${raw.y}` || !isValidPlotCell(Number(raw.x), Number(raw.y)) || !["unknown", "wild", "field", "tree", "rock", "brush", "story", "water"].includes(String(raw.kind))) farmInvalid();
     const p = raw;
     if (p.kind === "field" ? !["sowing", "other"].includes(p.purpose) : p.purpose !== void 0) farmInvalid();
     if (p.kind === "field" && id !== "p2q2" ? !validField(p.field) : p.field !== void 0) farmInvalid();
@@ -22447,19 +23687,19 @@ function parseSession(value) {
     if (p.wild !== void 0 && (!recordShape(p.wild) || p.kind !== "wild" || p.project !== void 0 || !["mushroom", "yam"].includes(p.wild.kind) || !["stock", "year", "bursts", "wetDays", "expires"].every(k => Number.isSafeInteger(p.wild[k]) && p.wild[k] >= 0) || !Number.isSafeInteger(p.wild.lastSpawn) || p.wild.stock > (p.wild.kind === "yam" ? farm.rules.yamYield : farm.rules.mushroomYield) || p.wild.bursts > farm.rules.mushroomMaxBursts)) farmInvalid();
     if (p.plans !== void 0) {
       if (p.kind !== "field" || !Array.isArray(p.plans) || new Set(p.plans.map(v => v.id)).size !== p.plans.length) farmInvalid();
-      var _iterator66 = _createForOfIteratorHelper(p.plans),
-        _step66;
+      var _iterator74 = _createForOfIteratorHelper(p.plans),
+        _step74;
       try {
-        for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
-          const plan = _step66.value;
+        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+          const plan = _step74.value;
           if (!recordShape(plan) || typeof plan.id !== "string" || typeof plan.batchId !== "string" || !Number.isSafeInteger(plan.year) || plan.year < 1900 || plan.year > 2500 || plan.id !== `${id}-${plan.year}-${plan.batchId}` || !["sowDay", "harvestDay"].every(k => finite(plan[k]) && Number.isInteger(plan[k] * 2)) || plan.harvestDay <= plan.sowDay || !["sown", "fertilized", "harvested", "failed"].every(k => typeof plan[k] === "boolean") || plan.fertilizeDay !== void 0 && (!finite(plan.fertilizeDay) || plan.fertilizeDay < plan.sowDay || plan.fertilizeDay >= plan.harvestDay)) farmInvalid();
           const batch = cropBatches(value.state, plan.year).find(v => v.id === plan.batchId);
           if (!batch || plan.sowDay < batch.start || plan.sowDay >= batch.end || plan.harvested && !plan.sown) farmInvalid();
         }
       } catch (err) {
-        _iterator66.e(err);
+        _iterator74.e(err);
       } finally {
-        _iterator66.f();
+        _iterator74.f();
       }
     }
     const field = id === "p2q2" ? economy.field : p.field;
@@ -22476,15 +23716,15 @@ function parseSession(value) {
   if (!isRecord(neighbor) || neighbor.personId !== q.current[1] || !validField(neighbor.field) || !isRecord(neighbor.goods) || !Object.values(neighbor.goods).every(finite) || typeof neighbor.busy !== "boolean" || !["talked", "traded", "helped"].every(k => Number.isSafeInteger(neighbor[k]) && Number(neighbor[k]) >= -1)) farmInvalid();
   if (!["doctrine", "research", "fortune", "draws", "seasonChance"].every(k => finite(q[k])) || !Array.isArray(q.improvements) || !isRecord(q.cards) || !["study", "craft", "teach", "prepare"].every(k => Number.isInteger(q.cards[k]) && q.cards[k] >= 0 && q.cards[k] <= q.rules.cardMax) || q.doctrine > q.rules.doctrineMax || q.research >= q.rules.doctrineSteps || q.fortune > q.rules.fortuneCap) invalid();
   const generations = /* @__PURE__ */new Map();
-  for (var _i148 = 0, _Object$entries34 = Object.entries(q.members); _i148 < _Object$entries34.length; _i148++) {
-    const _Object$entries34$_i = _slicedToArray(_Object$entries34[_i148], 2),
+  for (var _i149 = 0, _Object$entries34 = Object.entries(q.members); _i149 < _Object$entries34.length; _i149++) {
+    const _Object$entries34$_i = _slicedToArray(_Object$entries34[_i149], 2),
       id = _Object$entries34$_i[0],
       raw = _Object$entries34$_i[1];
     if (!isRecord(raw) || !people[id] || !["generation", "practice", "rewardedStage", "time"].every(k => finite(raw[k])) || !Number.isInteger(raw.generation) || typeof raw.admitted !== "boolean" || !Array.isArray(raw.consulted)) invalid();
     const m = raw;
     if (!isRecord(m.cultivation) || !isRecord(m.cultivation.progress) || !finite(m.cultivation.upkeep) || Number(m.cultivation.upkeep) > q.rules.upkeepMax) invalid();
-    for (var _i149 = 0, _Object$entries35 = Object.entries(m.cultivation.progress); _i149 < _Object$entries35.length; _i149++) {
-      const _Object$entries35$_i = _slicedToArray(_Object$entries35[_i149], 2),
+    for (var _i150 = 0, _Object$entries35 = Object.entries(m.cultivation.progress); _i150 < _Object$entries35.length; _i150++) {
+      const _Object$entries35$_i = _slicedToArray(_Object$entries35[_i150], 2),
         courseId = _Object$entries35$_i[0],
         progress = _Object$entries35$_i[1];
       const course = CULTIVATION_COURSES.find(c => c.id === courseId);
@@ -22495,8 +23735,8 @@ function parseSession(value) {
     if (!isRecord(experience2) || !Number.isInteger(experience2.learning) || Number(experience2.learning) < 0 || Number(experience2.learning) > 12 || !Number.isInteger(experience2.outlook) || Math.abs(Number(experience2.outlook)) > record.manifest.ruleset.life.eventPersonalityThreshold || typeof experience2.lastEvent !== "string" || !Array.isArray(experience2.talents) || !Array.isArray(experience2.actions) || !Array.isArray(experience2.contacts) || !isRecord(experience2.relationships)) invalid();
     const exp = experience2;
     if (exp.talents.some(t => !["strong", "scholar", "mentor", "organizer", "resilient"].includes(String(t))) || new Set(exp.talents).size !== exp.talents.length || exp.actions.some(a => typeof a !== "string") || exp.contacts.some(other => typeof other !== "string" || !people[other])) invalid();
-    for (var _i150 = 0, _Object$entries36 = Object.entries(exp.relationships); _i150 < _Object$entries36.length; _i150++) {
-      const _Object$entries36$_i = _slicedToArray(_Object$entries36[_i150], 2),
+    for (var _i151 = 0, _Object$entries36 = Object.entries(exp.relationships); _i151 < _Object$entries36.length; _i151++) {
+      const _Object$entries36$_i = _slicedToArray(_Object$entries36[_i151], 2),
         other = _Object$entries36$_i[0],
         trust = _Object$entries36$_i[1];
       if (other === id || !people[other] || !Number.isInteger(trust) || Math.abs(Number(trust)) > 5 || people[other]?.vitality?.experiences?.relationships?.[id] !== trust) invalid();
@@ -22506,8 +23746,8 @@ function parseSession(value) {
     const memories = character.memories;
     if (memories.some(v => !isRecord(v) || typeof v.key !== "string" || !Number.isInteger(v.age) || Number(v.age) < 0 || typeof v.text !== "string") || new Set(memories.map(v => v.key)).size !== memories.length) invalid();
     if (m.practice > q.rules.maxStage * q.rules.stageProgress || m.rewardedStage > q.rules.maxStage) invalid();
-    for (var _i151 = 0, _arr53 = ["masterId", "discipleId", "candidateId"]; _i151 < _arr53.length; _i151++) {
-      const key = _arr53[_i151];
+    for (var _i152 = 0, _arr53 = ["masterId", "discipleId", "candidateId"]; _i152 < _arr53.length; _i152++) {
+      const key = _arr53[_i152];
       if (m[key] !== null && (typeof m[key] !== "string" || !q.members[m[key]])) invalid();
     }
     if (m.masterId && (q.members[m.masterId].generation !== m.generation - 1 || ![q.members[m.masterId].discipleId, q.members[m.masterId].candidateId].includes(id))) invalid();
@@ -22522,8 +23762,8 @@ function parseSession(value) {
     const c = value.state.era.crises;
     if (!isRecord(c) || !finite(c.remaining) || !isRecord(c.entries) || ![null, true, false].includes(c.won)) invalid();
     const entries = c.entries;
-    for (var _i152 = 0, _CRISES2 = CRISES; _i152 < _CRISES2.length; _i152++) {
-      const spec = _CRISES2[_i152];
+    for (var _i153 = 0, _CRISES2 = CRISES; _i153 < _CRISES2.length; _i153++) {
+      const spec = _CRISES2[_i153];
       const p = entries[spec.id];
       if (!isRecord(p) || !Number.isInteger(p.level) || p.level < 0 || p.level > 3 || !Number.isInteger(p.step) || p.step < 0 || p.step > 2 || !Number.isInteger(p.lastTurn) || !["", "technical", "coordination"].includes(p.route)) invalid();
     }
@@ -22545,8 +23785,8 @@ function parseSession(value) {
     })) throw new Error("\u6B64\u5B58\u6863\u7F3A\u5C11\u6709\u6548\u538B\u529B\u503C\u3001\u4EBA\u7269\u6027\u522B\u3001\u8096\u50CF\u6216\u65F6\u4EE3\u6570\u636E\uFF0C\u8BF7\u65B0\u5F00\u6E38\u620F\uFF1B\u539F\u5B58\u6863\u4E0D\u4FEE\u6539\u3002");
   }
   if (!validNarrative(value.state.story)) throw new Error("\u5B58\u6863\u7F3A\u5C11\u5F53\u524D\u72EC\u7ACB\u5267\u60C5\u7ED3\u6784\uFF0C\u8BF7\u65B0\u5F00\u6E38\u620F\uFF1B\u539F\u5B58\u6863\u4E0D\u4FEE\u6539\u3002");
-  for (var _i153 = 0, _Object$values18 = Object.values(value.state.economy?.farm?.plots ?? {}); _i153 < _Object$values18.length; _i153++) {
-    const plot = _Object$values18[_i153];
+  for (var _i154 = 0, _Object$values19 = Object.values(value.state.economy?.farm?.plots ?? {}); _i154 < _Object$values19.length; _i154++) {
+    const plot = _Object$values19[_i154];
     const l = plot.landscape;
     if (l && (!["landmark", "tea", "reading", "garden", "memorial"].includes(l.kind) || ![1, 2, 3].includes(l.level) || l.kind === "landmark" !== (l.level === 1) || !Number.isInteger(l.uses) || l.uses < 0 || !value.state.persons[l.builtBy] || plot.kind !== "rock" || plot.discovery?.id !== "shrine" || !plot.discovery.resolved)) throw new Error("\u666F\u89C2\u5B58\u6863\u7ED3\u6784\u65E0\u6548\uFF0C\u539F\u5B58\u6863\u4E0D\u4FEE\u6539\u3002");
   }
@@ -24402,4 +25642,4 @@ var FarmCore = class {
     }
   }
 };
-export { FarmCore };
+export { BRIDGES, CAMERA_LIFT, CAMERA_LIMITS, CELL_EDGE_NEIGHBOR, CELL_HALF_HEIGHT, CELL_HALF_WIDTH, DEFAULT_CAMERA, FARM_SCENE, FENCES, FLOWER_CELLS, FarmCore, HOMESTEAD, HOMESTEAD_RESERVED, PATHS, QUAD_HALF_HEIGHT, QUAD_HALF_WIDTH, RIVER_CELLS, RIVER_KIND_PORTS, RIVER_SEGMENTS, RIVER_SPRING, SCENE_ID, SCENE_VERSION, SCENIC_DISTRICTS, SCENIC_ORIGIN_SUM, SCENIC_STEP_X, SCENIC_STEP_Y, SIGNPOSTS, TREES, adjacentSceneWater, agriculturalNeighbors, buildSceneSnapshot, cellDiamond, cellEdgeMidpoint, clampScenicCamera, districtCenter, explorationNeighbors, explorationStatus, homesteadFootprint, isHomesteadReservedCell, isRiverCell, isValidPlotCell, logicalToWorld, plotQuad, pointInCellDiamond, pointInPolygon, pointInQuad, riverPorts, sceneHitTest, scenePlotRegion, scenePolygonsIntersect, sceneRange, screenToWorld, segmentsCross, worldToLogical, worldToScreen, zoomCameraAboutPoint };

@@ -1,3 +1,4 @@
+import {explorationStatus} from '../scene/world.js';
 import {activePerson} from '../model/state.js';
 import {pressureMultiplier,pressureTime} from '../systems/life.js';
 import {FARM_PROJECT_TECH} from '../model/economy.js';
@@ -5,7 +6,7 @@ import {cropBatches,farmYearLabel,farmYear,plannedField,harvestDates,planForFiel
 import {availableDays} from '../systems/calendar.js';
 import {dietView} from '../systems/social-food.js';
 import {lunarDateAt} from '../systems/calendar.js';
-import {HOME_PLOT,otherFarmUseUnlocked,FARM_PROJECT_NAMES,workFarmProject,startFarmProject,isCanalBuilt,fieldNeedsWater,irrigateField,farmCoverage,drainOutlet,waterConnected,waterAccess} from '../systems/agriculture.js';
+import {HOME_PLOT,otherFarmUseUnlocked,FARM_PROJECT_NAMES,workFarmProject,startFarmProject,isCanalBuilt,fieldNeedsWater,irrigateField,farmCoverage,irrigationTargets,drainOutlet,waterConnected,waterAccess} from '../systems/agriculture.js';
 import {plotField,blankField,exploreFarm,resolveFarmDiscovery,farmNeighbors,cookMeal} from '../systems/agriculture.js';
 import {COOKING} from '../systems/economy-catalog.js';
 import {stageOf} from '../model/eras.js';
@@ -136,17 +137,14 @@ function farmMapActions(s:GameState):ActionDefinition[]{
  const farm=s.economy?.farm;if(!farm)return [];const r=farm.rules,out:ActionDefinition[]=[];
  const event=(d:GameState,ev:import('../model/events.js').GameEvent[],detail:string)=>ev.push({type:'life',personId:d.household.activePersonId,operation:'farm-map',detail});
  for(const p of Object.values(farm.plots)){
-  if(p.kind==='unknown'&&farmNeighbors(p).some(n=>farm.plots[n.id]&&farm.plots[n.id].kind!=='unknown'))out.push(defineAction(s,'economy:farmexplore:'+p.id,'探索 '+p.id,'农业',{time:branchHas(s,'A11')?Math.max(3,r.surveyDays-2):r.surveyDays,energy:r.exploreEnergy},[],'揭开相邻地块；探索结果永久保留，不提前显示资源。',(d,ev)=>{
+  if(p.kind==='unknown'&&explorationStatus(farm.plots,p).reachable)out.push(defineAction(s,'economy:farmexplore:'+p.id,'探索 '+p.id,'农业',{time:branchHas(s,'A11')?Math.max(3,r.surveyDays-2):r.surveyDays,energy:r.exploreEnergy},[],'揭开相邻地块；探索结果永久保留，不提前显示资源。',(d,ev)=>{
    exploreFarm(d,p.id,ev);
   }));
   if(p.kind==='wild'&&!p.project)out.push(defineAction(s,'economy:farmreclaim:'+p.id,'开垦 '+p.id,'农业',{time:r.reclaimDays,energy:r.reclaimEnergy,money:r.reclaimMoney},[],'开垦为独立田块，永久清除本格野生资源。新田手动管理；起始田的公共供水、井泵不自动覆盖新田。',(d,ev)=>{const plot=d.economy!.farm!.plots[p.id];delete plot.wild;plot.kind='field';plot.purpose='sowing';plot.field={...blankField(),fertility:plot.fertility??2};event(d,ev,p.id+' 已开垦');}));
-  if(p.improvement==='canal'&&waterConnected(s,p))out.push(defineAction(s,'economy:floodgate:'+p.id,'开闸放水 '+p.id,'农业',{time:r.gateTime,energy:r.gateEnergy},[],'沿渠链放水：渠链正交相邻的田块灌到各自作物所需水分，不耗公共水。',(d,ev)=>{
-   const plots=d.economy!.farm!.plots,seen=new Set<string>([p.id]),queue=[p.id],targets=new Set<string>();
-   while(queue.length){const at=plots[queue.shift()!];for(const n of farmNeighbors(at)){const next=plots[n.id];if(!next)continue;
-    if(next.kind==='field'&&next.land&&at.land&&next.land.elevation<=at.land.elevation)targets.add(next.id);
-    else if(!seen.has(next.id)&&waterConnected(d,next)){seen.add(next.id);queue.push(next.id);}}}
+  if(p.improvement==='canal'&&waterConnected(s,p))out.push(defineAction(s,'economy:floodgate:'+p.id,'开闸放水 '+p.id,'农业',{time:r.gateTime,energy:r.gateEnergy},[],'沿渠链放水：渠链场景相邻的田块灌到各自作物所需水分，不耗公共水。',(d,ev)=>{
+   const targets=irrigationTargets(d,d.economy!.farm!.plots[p.id]);
    for(const id of targets){const f=plotField(d,id);if(f)irrigateField(d,f);}
-   event(d,ev,`${p.id} 开闸放水：渠链正交相邻${targets.size}块田灌到所需水分，未耗公共水`);
+   event(d,ev,`${p.id} 开闸放水：渠链场景相邻${targets.size}块田灌到所需水分，未耗公共水`);
   }));
   if(p.improvement==='pit'&&s.life?.calendar)out.push(defineAction(s,'economy:pit:'+p.id,'给 '+p.id+' 堆肥坑投料','农业',{time:r.interactionTime,energy:1},[...missingGoods(s,{straw:3}),...(p.pit?['堆肥坑正在转化中']:[])],`投入3秸秆，${r.pitConvertDays}天后自动转成2堆肥；转化期间不能再投料，到期按日历自动结算。`,(d,ev)=>{
    const plot=d.economy!.farm!.plots[p.id];if(plot.pit)return;
@@ -171,10 +169,10 @@ function farmMapActions(s:GameState):ActionDefinition[]{
     for(const days of options){
      const woodNeed=['canal','paddy','drain','yard','cellar','retting'].includes(kind)?r.projectWood:kind==='shed'?1:0;
      const materials=woodNeed>0&&!pending?missingGoods(s,{wood:woodNeed}):[];
-     const effect=kind==='canal'?`首段耗${r.projectWood}木材；引水链：与水源或通水渠相邻才能开工；完工后可用开闸放水`:kind==='paddy'?`首段耗${r.projectWood}木材；完工后此田变为水田，水分恒为过湿，可种水稻`:kind==='drain'?`首段耗${r.projectWood}木材；有低位出口时，正交相邻田过湿／积水自然退档所需天数-1（下限1天）`:kind==='restore'?'完成后直接建成肥力3的田':kind==='timber'?`完成后获得${r.timberYield}木材，留下普通荒地`:kind==='clearwood'?'完成后直接建成肥力2的田，不额外获得木材':kind==='yard'?`首段耗${r.projectWood}木材；完工后相邻田正常收获期延长7天，宽限后仍绝收`:kind==='cellar'?`首段耗${r.projectWood}木材；完工后相邻田留种+1`:kind==='pit'?`不耗木材；完工后投3秸秆，${r.pitConvertDays}天后自转2堆肥`:kind==='shed'?`首段耗1木材；完工后附近田的农活时间减半`:kind==='retting'?`首段耗${r.projectWood}木材；完工后可在农场沤麻：2亚麻茎→1纤维，跨季`:`完成后正交四格失水间隔延长${r.shelterDays}天，不叠加`;
+     const effect=kind==='canal'?`首段耗${r.projectWood}木材；引水链：与水源或通水渠相邻才能开工；完工后可用开闸放水`:kind==='paddy'?`首段耗${r.projectWood}木材；完工后此田变为水田，水分恒为过湿，可种水稻`:kind==='drain'?`首段耗${r.projectWood}木材；有低位出口时，场景相邻田过湿／积水自然退档所需天数-1（下限1天）`:kind==='restore'?'完成后直接建成肥力3的田':kind==='timber'?`完成后获得${r.timberYield}木材，留下普通荒地`:kind==='clearwood'?'完成后直接建成肥力2的田，不额外获得木材':kind==='yard'?`首段耗${r.projectWood}木材；完工后相邻田正常收获期延长7天，宽限后仍绝收`:kind==='cellar'?`首段耗${r.projectWood}木材；完工后相邻田留种+1`:kind==='pit'?`不耗木材；完工后投3秸秆，${r.pitConvertDays}天后自转2堆肥`:kind==='shed'?`首段耗1木材；完工后附近田的农活时间减半`:kind==='retting'?`首段耗${r.projectWood}木材；完工后可在农场沤麻：2亚麻茎→1纤维，跨季`:`完成后场景相邻田块失水间隔延长${r.shelterDays}天，不叠加`;
      const facility=[...(technology?branchNeeds(s,[technology]):[]),...(p.kind==='field'&&plotField(s,p.id)?.crop?['需先收获，空田才能建设附加功能']:[])];
-     const source=kind==='canal'&&!waterAccess(s,p)?['新渠需与水源格或通水渠正交相邻']:kind==='paddy'?[...branchNeeds(s,['A1']),...(plotField(s,p.id)?.crop?['需先收获，空田才能改造']:[]),...(!waterAccess(s,p)?['需与水源格或通水渠正交相邻']:[]),...(p.land?.paddy?['此田已是水田']:[])]:[];
-     const outlet=kind==='drain'&&!drainOutlet(s,p)?['需正交相邻低地、连通有出口的沟，或位于北/西地图边界']:[];
+     const source=kind==='canal'&&!waterAccess(s,p)?['新渠需与河流、泉眼或通水渠相邻且水位不低于本田']:kind==='paddy'?[...branchNeeds(s,['A1']),...(plotField(s,p.id)?.crop?['需先收获，空田才能改造']:[]),...(!waterAccess(s,p)?['需与河流、泉眼或通水渠相邻且水位不低于本田']:[]),...(p.land?.paddy?['此田已是水田']:[])]:[];
+     const outlet=kind==='drain'&&!drainOutlet(s,p)?['需相邻低地、连通有出口的沟，或水位更低的河流']:[];
      const date=s.life?.calendar?lunarDateAt(s.life.calendar.rules.referenceYear,s.life.calendar.absoluteDay+pressureTime(s,days)).date:'';
      const definition=defineAction(s,`economy:farmproject:${p.id}-${kind}-${days*2}`,`${FARM_PROJECT_NAMES[kind]} · ${days?`完成${days}工日`:'暂缓'}`,'地块工程',{time:days,energy:days?Math.min(6,Math.ceil(days/3)):0},[...materials,...source,...outlet,...facility,...(days<=0?['先收获成熟作物或补给，再继续工程']:[])],`总工期${total}天，已完成${done}天；${done<total/2?'整备':'施工'}阶段。本次至${date}，按当前饮食约需${Number((pressureTime(s,days)*(dietView(s)?.dailyGrain??0)).toFixed(3))}批食材。${effect}。${['canal','shelter','drain'].includes(kind)?`覆盖格：${farmCoverage(p,4).map(n=>n.id).join('、')}`:'仅改造本格'}。播种用途只作水田改造；其他用途地用于设施，不再种植；野外整治清除本格野生资源。进度跨季、换代保留。`,(d,ev)=>workFarmProject(d,p.id,kind,days,total,ev));
      definition.prepare=(d,ev)=>startFarmProject(d,p.id,kind,total,ev);out.push(definition);
@@ -188,7 +186,7 @@ function farmMapActions(s:GameState):ActionDefinition[]{
 
    if(key==='traveler')choice('share','分一份口粮，听旅人讲述',r.interactionTime,0,[],`付${r.storyFood}份即食口粮，回赠${r.discoverySeeds}麦种；不会扣种子当口粮。`,r.storyFood);
    if(key==='shrine')choice('preserve','描下旧界，保留地标',r.interactionTime,0,[],'永久保留此格，不能开垦；周边仍可探索。');
-   if(key==='spring')choice('dredge','疏浚溪涧，留出水源',r.clearTime,r.clearEnergy,[],'清理淤塞，此格成为永久水源，不能再开垦；水渠需与水源格或通水渠正交相邻才能修建，沿链高程不升。');
+   if(key==='spring')choice('dredge','疏浚溪涧，留出水源',r.clearTime,r.clearEnergy,[],'清理淤塞，此格成为永久水源，不能再开垦；水渠需与河流、泉眼或通水渠相邻且水位不低于本田才能修建，沿链高程不升。');
    if(key==='spring')choice('fill','填平溪涧，整为荒地',r.interactionTime,0,[],'填平此处，整成普通荒地；不获得水源。');
    if(p.kind==='story'&&!p.project&&!['woodland','spring'].includes(key??''))choice('leave',key==='traveler'?'指路告别':'整理为普通荒地',r.interactionTime,0,[],'结束这次事件，放弃奖励，此格可按普通荒地开垦。');
   }
@@ -236,7 +234,7 @@ function farmMapActions(s:GameState):ActionDefinition[]{
 
   if(s.life?.calendar&&field.crop&&field.growth<field.duration)out.push(defineAction(s,'economy:wait:'+p.id,'等到 '+p.id+' 收获','日历',{ap:0,time:Math.min(field.duration-field.growth,availableDays(s)),energy:0},[],'最多等到此田成熟；其他田成熟、缺粮、节气或节日也会提前停下。',()=>{}));
   for(const crop of Object.keys(CROPS) as Crop[]){
-   out.push(defineAction(s,`economy:farmplot:${p.id}-${crop}`,`${p.id} ${!field.crop?'播种':field.growth>=field.duration?'收获':'灌溉'}${CROPS[crop].name}`,'农业',{ap:s.economy!.shop&&!field.crop&&equipped(s,'U02')&&s.economy!.shop.seededTurn!==s.clock.absoluteTurn?0:1},[...(field.crop&&field.crop!==crop?['田里是另一种作物']:[]),...(!farm.discovered.includes(crop)?['尚未发现此种子']:[]),...farmBlocker(s,crop,undefined,field)],'只处理指定田块，实际扣种子、水、时间、压力和工具耐用；生长、肥力与留种沿用农业规则。',(d,ev)=>{const start=ev.length;farmWork(d,crop,ev,undefined,plotField(d,p.id)!);for(const e of ev.slice(start))if(e.type==='economy-farm'){e.plotId=p.id;} }));
+   out.push(defineAction(s,`economy:farmplot:${p.id}-${crop}`,`${p.id} ${!field.crop?'播种':field.growth>=field.duration?'收获':'灌溉'}${CROPS[crop].name}`,'农业',{ap:s.economy!.shop&&!field.crop&&equipped(s,'U02')&&s.economy!.shop.seededTurn!==s.clock.absoluteTurn?0:1},[...(field.crop&&field.crop!==crop?['田里是另一种作物']:[]),...(!farm.discovered.includes(crop)?['尚未发现此种子']:[]),...farmBlocker(s,crop,undefined,field)],'只处理指定田块；灌溉优先使用已接通的河流、泉眼或水渠，否则消耗公共水。实际扣种子、水、时间、压力和工具耐用；生长、肥力与留种沿用农业规则。',(d,ev)=>{const start=ev.length;farmWork(d,crop,ev,undefined,plotField(d,p.id)!);for(const e of ev.slice(start))if(e.type==='economy-farm'){e.plotId=p.id;} }));
   }
   if(farm.rareSeeds>0||field.variety==='heritage')out.push(defineAction(s,'economy:farmrare:'+p.id,p.id+' 播种异穗麦','农业',{ap:s.economy!.shop&&!field.crop&&equipped(s,'U02')&&s.economy!.shop.seededTurn!==s.clock.absoluteTurn?0:1},[...branchNeeds(s,['A0']),...(field.crop?['田里已有作物']:[]),...farmBlocker(s,'wheat',undefined,field,true)],`消耗1份异穗麦种；成熟收成增加${r.rareBonus}，收获返还1份异穗麦种；不消耗普通麦种，仍受灾害影响。`,(d,ev)=>{const start=ev.length;farmWork(d,'wheat',ev,undefined,plotField(d,p.id)!,true);for(const e of ev.slice(start))if(e.type==='economy-farm')e.plotId=p.id;}));
   out.push(defineAction(s,'economy:farmfertilize:'+p.id,'给 '+p.id+' 施堆肥','农业',{},[...branchNeeds(s,['A3']),...missingGoods(s,{compost:1}),...(field.composted||field.fertility>=3?['本茬已施肥或肥力充足']:[])],'仅本地块肥力+1，上限3。',(d,ev)=>{changeGoods(d,{compost:1},-1,ev,'地块施肥');const f=plotField(d,p.id)!;f.fertility++;f.composted=true;const plan=planForField(d.economy!.farm!.plots[p.id],f);if(plan)plan.fertilized=true;event(d,ev,p.id+' 肥力提升');}));

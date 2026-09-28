@@ -1,14 +1,16 @@
+import {sceneHitTest} from '../../../FarmCore';
+import type {SceneRegion,SceneSnapshot} from '../FarmWorldViewContract';
+import {plotTitle} from '../../../presentation/FarmViewModel';
 import { Graphics, Label, Node, Sprite, Tween, UITransform, tween, Vec3 } from 'cc';
 import { tint, visualNode } from '../../../art/ArtRenderer';
-import { coordinatesOf } from '../../FarmDistrict';
 import { plotName } from '../../FarmPresentation';
 import type { DistrictId, FarmWorldViewContract, PlotRenderModel, WorldCamera, WorldPoint, WorldRenderModel, WorldViewport } from '../FarmWorldViewContract';
 import type { WorldViewRegistry } from '../WorldViewRegistry';
 import type { WorldViewHost } from '../current/CurrentWorldView';
 import { QUAD_HALF_HEIGHT, QUAD_HALF_WIDTH, ScenicWorldPoint, logicalToWorld } from './ScenicProjection';
 import * as layout from './ScenicLayout';
-import { isEnvironmentReservedCell } from './ScenicRegionLayout';
-import { hitTestPlot } from './ScenicHitTest';
+
+
 import { ScenicArtPack } from './ScenicArtPack';
 import { CHUNK_SIZE, ScenicChunkStore, chunkContent, chunkKey, visibleChunkKeys } from './ScenicChunkStore';
 
@@ -19,7 +21,7 @@ export function registerScenicWorldView(registry: WorldViewRegistry<WorldViewHos
   });
 }
 
-interface PlotEntry { node: Node; key: string; x: number; y: number; interactive: boolean }
+interface PlotEntry { node: Node; key: string; x: number; y: number; interactive: boolean; region:SceneRegion; standing:Node[] }
 type LayerName = 'ground' | 'fog' | 'river' | 'plot' | 'path' | 'env' | 'overlay';
 
 /** Graybox fallback colors; the scenic manifest palette overrides where a key exists. */
@@ -40,7 +42,7 @@ function cellHash(x: number, y: number): number {
 }
 
 /** Scenic (田园场景) world view, revision 2: region-driven layered rendering.
- * Plot quads, the decorative river chain, belt streets, courtyard environment
+ * Plot regions, the water-source river chain, streets, courtyard environment
  * and merged unknown-area fog all come from the shared layout geometry
  * (plan §4/§7). Rendering only — no rules commands, no save access. */
 export class ScenicWorldView implements FarmWorldViewContract {
@@ -49,6 +51,12 @@ export class ScenicWorldView implements FarmWorldViewContract {
   private layers: Record<LayerName, Node> | null = null;
   private plots = new Map<string, PlotEntry>();
   private fogSignature = '';
+  private scene:SceneSnapshot|null=null;
+  private regions=new Map<string,SceneRegion>();
+  private depth=new Map<Node,number>();
+  private chunkStanding=new Map<string,Node[]>();
+  private drawing:PlotEntry|null=null;
+  private environmentNode:Node|null=null;
   private chunkStore = new ScenicChunkStore();
   private chunks = new Map<string, { ground: Node; river: Node; path: Node; env: Node }>();
   private chunkOccupiedSig = '';
@@ -57,39 +65,43 @@ export class ScenicWorldView implements FarmWorldViewContract {
   private get palette() { return this.pack.palette; }
 
   render(model: WorldRenderModel) {
+    if(model.scene){this.scene=model.scene;this.regions=new Map(model.scene.regions.filter(r=>r.plotId).map(r=>[r.plotId!,r]));}
+    if(!this.scene)return;
     if (model.camera) this.camera = { ...model.camera };
     this.applyCamera();
     this.ensureWorld();
     const sorted = [...model.plots].sort((a, b) => (a.x + a.y) - (b.x + b.y));
     const ids = new Set(sorted.map(p => p.id));
     for (const [id, e] of Array.from(this.plots))
-      if (!ids.has(id)) { Tween.stopAllByTarget(e.node); e.node.destroy(); this.plots.delete(id); }
+      if (!ids.has(id)) { Tween.stopAllByTarget(e.node); this.clearStanding(e);e.node.destroy(); this.plots.delete(id); }
     sorted.forEach((p, index) => {
-      const w = logicalToWorld(p);
+      const region=this.regions.get(p.id);if(!region)return;
+      const w = region.center;
       const interactive = p.kind !== 'unknown' || p.reachable === true;
-      const key = JSON.stringify([p.kind, p.field, p.land?.water, p.discovery?.id, (p.maturity?.days ?? 1) <= 0, interactive]);
+      const key = JSON.stringify([p,region.boundary]);
       let e = this.plots.get(p.id);
-      if (!e) { e = { node: visualNode('Scenic plot ' + p.id, this.layers!.plot, 0, 0, 228, 142), key: '', x: p.x, y: p.y, interactive }; this.plots.set(p.id, e); }
-      e.x = p.x; e.y = p.y; e.interactive = interactive;
+      if (!e) { e = { node: visualNode('Scenic plot ' + p.id, this.layers!.plot, 0, 0, 228, 142), key: '', x: p.x, y: p.y, interactive:true,region,standing:[] }; this.plots.set(p.id, e); }
+      e.x = p.x; e.y = p.y; e.interactive = true;e.region=region;
       e.node.setPosition(w.x, -w.y); e.node.setSiblingIndex(index);
       if (e.key === key) return;
-      e.key = key; this.clear(e.node); this.drawPlot(e.node, p, interactive);
+      e.key = key; this.clearStanding(e);this.clear(e.node);this.drawing=e; this.drawPlot(e.node, p, interactive);this.drawing=null;
     });
     this.syncFog(sorted);
     this.drawSelection(model.selected);
     this.syncChunks();
+    this.syncEnvironment();
+    Array.from(this.depth.entries()).sort((a,b)=>a[1]-b[1]).forEach(([node],i)=>node.setSiblingIndex(i));
   }
   hitTest(point: WorldPoint): string | null {
-    return hitTestPlot(point, Array.from(this.plots.entries(), ([id, e]) => ({ id, x: e.x, y: e.y, interactive: e.interactive })));
+    return this.scene?sceneHitTest(point,this.scene,new Set(this.plots.keys())):null;
   }
   focusPlot(id: string): WorldCamera | null {
-    const c = coordinatesOf(id); if (!c) return null;
-    const w = logicalToWorld(c);
-    return { x: w.x, y: w.y + layout.CAMERA_LIFT, zoom: this.camera.zoom };
+    const r=this.regions.get(id);return r?{x:r.center.x,y:r.center.y+layout.CAMERA_LIFT,zoom:this.camera.zoom}:null;
   }
   focusDistrict(id: DistrictId): WorldCamera {
-    const w = layout.districtCenter(id);
-    return { x: w.x, y: w.y + layout.CAMERA_LIFT, zoom: this.camera.zoom };
+    const plots=Array.from(this.regions.values()).filter(r=>r.district.x===id.x&&r.district.y===id.y);
+    if(!plots.length)return this.getCamera();
+    return {x:plots.reduce((s,r)=>s+r.center.x,0)/plots.length,y:plots.reduce((s,r)=>s+r.center.y,0)/plots.length+layout.CAMERA_LIFT,zoom:this.camera.zoom};
   }
   getCamera(): WorldCamera { return { ...this.camera }; }
   setCamera(camera: WorldCamera) { this.camera = { ...camera }; this.applyCamera(); }
@@ -101,11 +113,12 @@ export class ScenicWorldView implements FarmWorldViewContract {
   }
   dispose() {
     for (const e of Array.from(this.plots.values())) Tween.stopAllByTarget(e.node);
+    for(const e of Array.from(this.plots.values()))this.clearStanding(e);
     this.plots.clear();
     for (const key of Array.from(this.chunks.keys())) this.destroyChunk(key);
     this.chunkStore.clear();
     if (this.layers) { for (const n of Object.values(this.layers)) n.destroy(); this.layers = null; }
-    this.pack.dispose();
+    this.depth.clear();this.environmentNode=null;this.pack.dispose();
   }
 
   private applyCamera() {
@@ -129,14 +142,14 @@ export class ScenicWorldView implements FarmWorldViewContract {
   private quad(parent: Node, fill: string, alpha = 255): Node {
     const n = visualNode('Plot quad', parent, 0, 0, 0, 0), g = n.addComponent(Graphics);
     g.fillColor = tint(fill, alpha);
-    g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.fill();
+    this.trace(g,this.drawing!.region.boundary,this.drawing!.region.center);g.fill();
     return n;
   }
-  /** Explicit quad outline for interactive (frontier/reachable/reserved) unknowns. */
+  /** Trace the observed region boundary for reachable unknown plots. */
   private quadOutline(parent: Node, color: string, alpha: number) {
     const n = visualNode('Quad outline', parent, 0, 0, 0, 0), g = n.addComponent(Graphics);
     g.strokeColor = tint(color, alpha); g.lineWidth = 4;
-    g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.stroke();
+    this.trace(g,this.drawing!.region.boundary,this.drawing!.region.center);g.stroke();
   }
 
   /** Grass-covered plot ground with a deterministic decoration overlay. */
@@ -147,8 +160,8 @@ export class ScenicWorldView implements FarmWorldViewContract {
     if (overlay) overlay.setScale((h & 1) ? -1 : 1, (h & 2) ? -1 : 1, 1);
   }
 
-  /** Real water-source plots stay identifiable (plan §3.1): a recognizable
-   * water quad with a bank post, never confused with the decorative river. */
+  /** Discovered spring plots stay identifiable: a recognizable
+   * water quad with a bank post. The fixed river is also a source. */
   private drawWaterPlot(node: Node) {
     const P = this.palette;
     this.quad(node, FALLBACK_COLORS.water);
@@ -164,18 +177,21 @@ export class ScenicWorldView implements FarmWorldViewContract {
 
   private drawPlot(node: Node, p: PlotRenderModel, interactive: boolean) {
     const P = this.palette;
-    // Homestead/river reserved cells render as environment, never as field
-    // quads; an interactive frontier there still gets an explicit outline.
-    if (isEnvironmentReservedCell(p.x, p.y)) {
-      if (interactive) this.quadOutline(node, P.paper, 150);
-      return;
-    }
     if (p.kind === 'unknown') {
       // Distant unknowns merge into the fog cluster layer (drawn in syncFog);
       // only frontier/reachable unknowns get their own quad + outline (plan §4.4).
       if (!interactive) return;
       if (!this.placeImage('field.unknown', node, 0, 0)) this.quad(node, P.disabled, 150);
       this.quadOutline(node, P.paper, 170);
+      return;
+    }
+    if(p.landscape||p.improvement||(p.project&&(p.project.done??0)<(p.project.total??0))||p.purpose==='other'){
+      this.quad(node,p.improvement==='canal'||p.improvement==='retting'?'#5b8fa8':'#a98b60');
+      const badge=visualNode('Facility '+p.id,this.layers!.env,this.drawing!.region.center.x,-this.drawing!.region.center.y,156,62);
+      const g=badge.addComponent(Graphics);g.fillColor=tint(P.paper,235);g.roundRect(-78,-24,156,48,10);g.fill();
+      const text=visualNode('Facility name',badge,0,0,150,60).addComponent(Label);
+      text.string=p.project&&p.project.done!==p.project.total?(p.project.name||plotTitle(p))+' · '+(p.project.stage||'建设中'):plotTitle(p);text.fontSize=20;text.lineHeight=24;text.color=tint(P.ink);
+      this.drawing!.standing.push(badge);this.depth.set(badge,this.drawing!.region.center.y);
       return;
     }
     if (p.kind === 'field') {
@@ -200,8 +216,11 @@ export class ScenicWorldView implements FarmWorldViewContract {
     if (p.kind === 'water') { this.drawWaterPlot(node); return; }
     if (p.kind === 'tree' || p.discovery?.id === 'woodland') {
       this.drawWildGround(node, p, GRASS_VARIANTS[cellHash(p.x, p.y) % GRASS_VARIANTS.length]);
-      if (!this.placeImage('env.tree.canopy', node, 0, 8)) {
-        const n = visualNode('Tree', node, 0, 10, 0, 0), g = n.addComponent(Graphics);
+      const tree=this.placeImage('env.tree.canopy', this.layers!.env, this.drawing!.region.center.x, this.drawing!.region.center.y+8);
+      if(tree){this.drawing!.standing.push(tree);this.depth.set(tree,this.drawing!.region.center.y);}
+      if (!tree) {
+        const n = visualNode('Tree', this.layers!.env, this.drawing!.region.center.x, -this.drawing!.region.center.y+10, 0, 0), g = n.addComponent(Graphics);
+        this.drawing!.standing.push(n);this.depth.set(n,this.drawing!.region.center.y);
         g.fillColor = tint(P.shade); g.circle(0, 14, 26); g.fill();
       }
       return;
@@ -220,62 +239,24 @@ export class ScenicWorldView implements FarmWorldViewContract {
     this.drawWildGround(node, p, p.kind === 'brush' ? BRUSH_GRASS : GRASS_VARIANTS[h % GRASS_VARIANTS.length]);
   }
 
-  /** Merged unknown-area fog (plan §4.4): distant unknown plots no longer draw
-   * one mist tile each — each connected cluster of unreachable unknowns gets a
-   * single soft fog blob on the fog layer (below rivers/paths/plots), while
-   * frontier and selected unknowns keep explicit quads on the plot layer.
-   * Merging is visual only: hit tests still resolve the underlying plotIds. */
+  /** Unknown terrain mask uses actual region polygons and never reveals resource state. */
   private syncFog(sorted: PlotRenderModel[]) {
-    const distant = new Map<string, { x: number; y: number }>();
-    for (const p of sorted)
-      if (p.kind === 'unknown' && p.reachable !== true && !isEnvironmentReservedCell(p.x, p.y)) distant.set(p.x + ',' + p.y, { x: p.x, y: p.y });
-    const sig = Array.from(distant.keys()).sort().join('|');
-    if (sig === this.fogSignature) return;
-    this.fogSignature = sig;
-    const fog = this.layers!.fog;
-    this.clear(fog);
-    const seen = new Set<string>();
-    for (const key of distant.keys()) {
-      if (seen.has(key)) continue;
-      // Flood-fill one 4-adjacent cluster.
-      const cluster: { x: number; y: number }[] = [], queue = [key];
-      seen.add(key);
-      while (queue.length) {
-        const k = queue.pop()!, cell = distant.get(k)!;
-        cluster.push(cell);
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-          const nk = (cell.x + dx) + ',' + (cell.y + dy);
-          if (distant.has(nk) && !seen.has(nk)) { seen.add(nk); queue.push(nk); }
-        }
-      }
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (const cell of cluster) {
-        const w = logicalToWorld(cell);
-        minX = Math.min(minX, w.x); maxX = Math.max(maxX, w.x);
-        minY = Math.min(minY, w.y); maxY = Math.max(maxY, w.y);
-      }
-      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-      const scale = Math.min(6, Math.max(1.5, (maxX - minX + 228) / 228, (maxY - minY + 142) / 142));
-      const art = this.placeImage('field.unknown', fog, cx, cy);
-      if (art) { art.setScale(scale, scale, 1); continue; }
-      const n = visualNode('Fog cluster', fog, cx, -cy, 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint(FALLBACK_COLORS.fog, 120);
-      const hw = (maxX - minX) / 2 + QUAD_HALF_WIDTH, hh = (maxY - minY) / 2 + QUAD_HALF_HEIGHT;
-      g.moveTo(0, -hh); g.lineTo(hw, 0); g.lineTo(0, hh); g.lineTo(-hw, 0); g.close(); g.fill();
-    }
+    const unknown=sorted.filter(p=>p.kind==='unknown');
+    const sig=JSON.stringify(unknown.map(p=>[p.id,p.reachable,this.regions.get(p.id)?.boundary]));
+    if(sig===this.fogSignature)return;this.fogSignature=sig;
+    this.clear(this.layers!.fog);
+    const n=visualNode('Unknown region mask',this.layers!.fog),g=n.addComponent(Graphics);
+    g.fillColor=tint(FALLBACK_COLORS.fog,200);
+    for(const p of unknown){const r=this.regions.get(p.id);if(r){this.trace(g,r.boundary);g.fill();}}
   }
 
   private drawSelection(selected: string) {
     const overlay = this.layers!.overlay;
     this.clear(overlay);
-    const e = this.plots.get(selected);
-    const c = e ? { x: e.x, y: e.y } : coordinatesOf(selected);
-    if (!c) return;
-    const w = logicalToWorld(c);
-    const n = visualNode('Selection outline', overlay, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
-    const trace = () => {
-      g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.stroke();
-    };
+    const r=this.regions.get(selected);if(!r)return;
+    const w=r.center;
+    const n=visualNode('Selection outline',overlay,w.x,-w.y,0,0),g=n.addComponent(Graphics);
+    const trace=()=>{this.trace(g,r.boundary,w);g.stroke();};
     g.strokeColor = tint(this.palette.gold, 240); g.lineWidth = 9; trace();
     g.strokeColor = tint(this.palette.paper); g.lineWidth = 3; trace();
     const marker = visualNode('Selected field name', n, 0, -(QUAD_HALF_HEIGHT + 34), 168, 44), mg = marker.addComponent(Graphics);
@@ -329,6 +310,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
     }
   }
   private destroyChunk(key: string) {
+    for(const n of this.chunkStanding.get(key)??[]){this.depth.delete(n);n.active=false;n.destroy();}this.chunkStanding.delete(key);
     const entry = this.chunks.get(key);
     if (!entry) return;
     for (const n of Object.values(entry)) { n.active = false; n.destroy(); }
@@ -368,19 +350,9 @@ export class ScenicWorldView implements FarmWorldViewContract {
     }
     // Packed-earth streets in the belts: darker wide under-stroke + warm sand core, round caps.
     const path = visualNode('Chunk streets ' + key, L.path);
-    for (const seg of content.streets) {
-      const n = visualNode('Scenic street', path, 0, 0, 0, 0), g = n.addComponent(Graphics);
-      const stroke = (color: string, width: number, alpha: number) => {
-        g.strokeColor = tint(color, alpha); g.lineWidth = width;
-        g.lineCap = Graphics.LineCap.ROUND; g.lineJoin = Graphics.LineJoin.ROUND;
-        g.moveTo(seg.a.x, -seg.a.y); g.lineTo(seg.b.x, -seg.b.y); g.stroke();
-      };
-      stroke(PATH_EDGE, seg.width + 6, 210);
-      stroke(PATH_FILL, seg.width, 255);
-    }
     const env = visualNode('Chunk env ' + key, L.env);
-    const envDepth: { node: Node; y: number }[] = [];
-    const track = (node: Node | null, y: number) => { if (node) envDepth.push({ node, y }); };
+    const owned:Node[]=[];this.chunkStanding.set(key,owned);
+    const track = (node: Node | null, y: number) => { if (node){node.setParent(L.env);this.depth.set(node,y);owned.push(node);} };
     for (const b of content.bridges) {
       const placed = this.placeImage('env.bridge', env, b.world.x, b.world.y);
       if (placed) { track(placed, b.world.y); continue; }
@@ -428,8 +400,22 @@ export class ScenicWorldView implements FarmWorldViewContract {
       g.fillColor = tint(P.shade); g.circle(0, 40, 58); g.fill();
       track(n, t.y);
     }
-    // Depth: foreground decor sorts by ground contact point within the chunk (plan §5.2).
-    envDepth.sort((a, b) => a.y - b.y).forEach((e, i) => e.node.setSiblingIndex(i));
+
     this.chunks.set(key, { ground, river, path, env });
   }
+  private trace(g:Graphics,boundary:WorldPoint[],origin:WorldPoint={x:0,y:0}){
+    if(!boundary.length)return;g.moveTo(boundary[0].x-origin.x,-(boundary[0].y-origin.y));
+    for(const p of boundary.slice(1))g.lineTo(p.x-origin.x,-(p.y-origin.y));g.close();
+  }
+  private clearStanding(e:PlotEntry){for(const n of e.standing){this.depth.delete(n);n.active=false;n.destroy();}e.standing=[];}
+  private syncEnvironment(){
+    if(this.environmentNode||!this.scene)return;
+    this.environmentNode=visualNode('Scene road regions',this.layers!.path);
+    const g=this.environmentNode.addComponent(Graphics);
+    for(const r of this.scene.regions.filter(r=>r.type==='path')){
+      g.fillColor=tint(PATH_EDGE);this.trace(g,r.boundary);g.fill();
+      if(r.innerBoundary){g.fillColor=tint(PATH_FILL);this.trace(g,r.innerBoundary);g.fill();}
+    }
+  }
+
 }
