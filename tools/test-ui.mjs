@@ -11,6 +11,9 @@ const {buildHudViewModel,nextTaskText,plotTitle:viewTitle}=await moduleAt('asset
 const {WorldViewPreferences,WORLD_VIEW_PREFERENCES_KEY}=await moduleAt('assets/scripts/view/world/WorldViewPreferences.ts');
 const {WorldViewRegistry,WORLD_VIEW_VERSIONS}=await moduleAt('assets/scripts/view/world/WorldViewRegistry.ts');
 const {MAP_LAYOUT,boardTileSlot}=await moduleAt('assets/scripts/view/world/current/CurrentMapLayout.ts');
+const scenicProj=await moduleAt('assets/scripts/view/world/scenic/ScenicProjection.ts');
+const scenicLayout=await moduleAt('assets/scripts/view/world/scenic/ScenicLayout.ts');
+const {hitTestPlot}=await moduleAt('assets/scripts/view/world/scenic/ScenicHitTest.ts');
 assert.equal(HOME_PLOT_ID,'p2q2');
 assert.equal(plotName('p1q1'),'田地 1·1');
 assert.equal(plotName('p0q2'),'田地 0·2');
@@ -115,4 +118,46 @@ store.set(WORLD_VIEW_PREFERENCES_KEY,JSON.stringify({version:42,cameras:{current
 assert.equal(prefs.preferredVersion(),'current','a non-string version must fall back');
 assert.equal(prefs.cameraFor('current'),undefined,'non-numeric camera entries must be discarded');
 assert.deepEqual(prefs.cameraFor('scenic'),{x:1,y:2,zoom:3});
-console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation.');
+// --- P2: scenic projection, layout, hit test, registry, default camera ---
+for(const p of [{x:2,y:2},{x:1,y:1},{x:3,y:3},{x:-4,y:7},{x:0,y:-3},{x:-9,y:-11},{x:5,y:-2},{x:100,y:-80}]){
+  const w=scenicProj.logicalToWorld(p);
+  assert.deepEqual(scenicProj.worldToLogical(w),p,'scenic projection roundtrip '+JSON.stringify(p));
+  const s=scenicProj.worldToScreen(w,scenicLayout.DEFAULT_CAMERA);
+  assert.deepEqual(scenicProj.screenToWorld(s,scenicLayout.DEFAULT_CAMERA),w,'scenic camera transform roundtrip '+JSON.stringify(p));
+}
+assert.deepEqual(scenicProj.logicalToWorld({x:2,y:2}),{x:0,y:0},'p2q2 must anchor the scenic world origin');
+const homePlots=[];for(let x=1;x<=3;x++)for(let y=1;y<=3;y++)homePlots.push({id:`p${x}q${y}`,x,y});
+assert.equal(hitTestPlot({x:0,y:0},homePlots),'p2q2');
+assert.equal(hitTestPlot({x:0,y:-65},homePlots),'p2q2','the top corner is boundary-inclusive');
+assert.equal(hitTestPlot({x:130,y:0},homePlots)===null,false,'the right corner must hit a plot');
+assert.equal(hitTestPlot({x:131,y:0},homePlots),'p3q1','just past the corner belongs to the next diamond');
+assert.equal(hitTestPlot({x:65,y:32.5},homePlots),'p3q2','a shared edge resolves to the front (deeper) plot');
+assert.equal(hitTestPlot({x:0,y:200},homePlots),null,'empty world space must not hit');
+assert.equal(hitTestPlot({x:-130,y:-325},[{id:'p-1q0',x:-1,y:0}]),'p-1q0','negative coordinates must hit');
+assert.equal(hitTestPlot({x:0,y:0},[{id:'p2q2',x:2,y:2,interactive:false}]),null,'non-interactive plots must not hit');
+// Homestead footprint must not overlap any home-district plot diamond.
+const footprint=scenicLayout.homesteadFootprint();
+const rectEdges=r=>[[{x:r.left,y:r.top},{x:r.right,y:r.top}],[{x:r.right,y:r.top},{x:r.right,y:r.bottom}],[{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}],[{x:r.left,y:r.bottom},{x:r.left,y:r.top}]];
+const diamondEdges=d=>d.map((p,i)=>[p,d[(i+1)%d.length]]);
+const crosses=(a,b,c,d)=>{const o=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
+for(let x=1;x<=3;x++)for(let y=1;y<=3;y++){
+  const center=scenicProj.logicalToWorld({x,y}),diamond=scenicProj.plotDiamond(center);
+  const diamondInside=rectEdges(footprint).some(([,b])=>scenicProj.pointInDiamond(b,center));
+  const cornerInside=diamond.some(p=>p.x>=footprint.left&&p.x<=footprint.right&&p.y>=footprint.top&&p.y<=footprint.bottom);
+  const edgeHit=rectEdges(footprint).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
+  assert.ok(!diamondInside&&!cornerInside&&!edgeHit,`homestead must not cover plot p${x}q${y}`);
+}
+assert.ok(WORLD_VIEW_VERSIONS.some(v=>v.id==='scenic'&&v.name==='田园场景'),'the registry catalog must list the scenic map version');
+{
+  const cam=scenicLayout.DEFAULT_CAMERA;let shown=0;
+  for(let x=1;x<=3;x++)for(let y=1;y<=3;y++){
+    const w=scenicProj.logicalToWorld({x,y});
+    if(Math.abs(w.x-cam.x)*cam.zoom<=360&&Math.abs(w.y-cam.y)*cam.zoom<=640)shown++;
+  }
+  assert.ok(shown>=4&&shown<=6,`the scenic default camera must show 4-6 home plots in 720x1280, got ${shown}`);
+}
+prefs.rememberCamera('scenic',{x:-100,y:40,zoom:1.6});
+prefs.rememberCamera('current',{x:12,y:-34,zoom:1.2});
+assert.deepEqual(prefs.cameraFor('scenic'),{x:-100,y:40,zoom:1.6},'scenic camera must roundtrip');
+assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version cameras must stay separate');
+console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test.');

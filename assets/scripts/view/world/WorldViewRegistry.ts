@@ -4,7 +4,7 @@ export interface WorldViewInfo {id:string;name:string}
 export interface WorldViewFactory<H> extends WorldViewInfo {create(host:H):Promise<FarmWorldViewContract>}
 
 /** Map versions known to the build. Factories are registered per host type by each implementation. */
-export const WORLD_VIEW_VERSIONS:WorldViewInfo[]=[{id:'current',name:'田格手账'}];
+export const WORLD_VIEW_VERSIONS:WorldViewInfo[]=[{id:'current',name:'田格手账'},{id:'scenic',name:'田园场景'}];
 
 export class WorldViewRegistry<H> {
   private factories=new Map<string,WorldViewFactory<H>>();

@@ -2,7 +2,7 @@ import { cropNames, num, plotName, playerText, taskView } from '../view/FarmPres
 import { boardTileSlot } from '../view/world/current/CurrentMapLayout';
 
 /** Pure mapping from observation data to HUD strings. Matches FarmHud's HudModel. */
-export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string}
+export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string;water:string;todoCount:number}
 
 export function plotTitle(p:any):string{
   if(!p)return '田院';
@@ -29,6 +29,7 @@ export function buildHudViewModel(obs:any,selected:string,board:boolean):HudView
     money:'钱 '+num(g.family.money),food:'口粮 '+num(g.economy.foodTotal),pressure:'压力 '+num(g.life.person.pressure),
     field:p?plotName(selected):'地块单元',
     detail:board?(!p||p.kind==='unknown'?'未探索':p.kind==='field'&&p.purpose!=='other'?detail:plotTitle(p)):detail,
-    next:nextTaskText(board,g.economy.farm.schedule.tasks,obs),thumbnail:boardTileSlot(p)
+    next:nextTaskText(board,g.economy.farm.schedule.tasks,obs),thumbnail:boardTileSlot(p),
+    water:p?.land?.waterName?'水分 '+p.land.waterName:'',todoCount:g.economy.farm.schedule.tasks.length
   };
 }
