@@ -9,6 +9,7 @@ import { DIAMOND_HALF_HEIGHT, DIAMOND_HALF_WIDTH, ScenicWorldPoint, logicalToWor
 import * as layout from './ScenicLayout';
 import { hitTestPlot } from './ScenicHitTest';
 import { ScenicArtPack } from './ScenicArtPack';
+import { CHUNK_SIZE, ScenicChunkStore, chunkContent, chunkKey, visibleChunkKeys } from './ScenicChunkStore';
 
 export function registerScenicWorldView(registry: WorldViewRegistry<WorldViewHost>) {
   registry.register({
@@ -45,6 +46,9 @@ export class ScenicWorldView implements FarmWorldViewContract {
   private viewport: WorldViewport = { width: 720, height: 1280 };
   private layers: Record<LayerName, Node> | null = null;
   private plots = new Map<string, PlotEntry>();
+  private chunkStore = new ScenicChunkStore();
+  private chunks = new Map<string, { ground: Node; river: Node; path: Node; env: Node }>();
+  private chunkOccupiedSig = '';
   constructor(private base: Node, private map: Node, private pack: ScenicArtPack) {}
   get images(): ScenicArtPack { return this.pack; }
   private get palette() { return this.pack.palette; }
@@ -69,6 +73,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
       e.key = key; this.clear(e.node); this.drawPlot(e.node, p, interactive);
     });
     this.drawSelection(model.selected);
+    this.syncChunks();
   }
   hitTest(point: WorldPoint): string | null {
     return hitTestPlot(point, Array.from(this.plots.entries(), ([id, e]) => ({ id, x: e.x, y: e.y, interactive: e.interactive })));
@@ -93,6 +98,8 @@ export class ScenicWorldView implements FarmWorldViewContract {
   dispose() {
     for (const e of Array.from(this.plots.values())) Tween.stopAllByTarget(e.node);
     this.plots.clear();
+    for (const key of Array.from(this.chunks.keys())) this.destroyChunk(key);
+    this.chunkStore.clear();
     if (this.layers) { for (const n of Object.values(this.layers)) n.destroy(); this.layers = null; }
     this.pack.dispose();
   }
@@ -219,10 +226,10 @@ export class ScenicWorldView implements FarmWorldViewContract {
     return n;
   }
 
-  /** Static environment, built once: ground → river → plots → streets → decor. */
+  /** Layers only; all environment content is chunk-driven (plan §5.3). */
   private ensureWorld() {
     if (this.layers) return;
-    const L = this.layers = {
+    this.layers = {
       ground: visualNode('Scenic ground', this.map),
       river: visualNode('Scenic river', this.map),
       plot: visualNode('Scenic plots', this.map),
@@ -230,62 +237,103 @@ export class ScenicWorldView implements FarmWorldViewContract {
       env: visualNode('Scenic environment', this.map),
       overlay: visualNode('Scenic overlay', this.map)
     };
-    const P = this.palette;
-    const ground = visualNode('Ground base', L.ground, 0, 0, 0, 0), gg = ground.addComponent(Graphics);
-    gg.fillColor = tint(P.base); gg.rect(-2100, -2100, 4200, 4200); gg.fill();
-    if (this.pack.frames.has('ground.base')) for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) this.placeImage('ground.base', L.ground, i * 512, j * 512);
-    for (const seg of layout.RIVER_SEGMENTS) {
+  }
+
+  /** Instantiate visible chunks + one buffer ring, release the rest.
+   * Release policy: chunk nodes are destroyed; textures stay owned by the art
+   * pack (chunks never addRef), so node destruction drops the only references. */
+  private syncChunks() {
+    if (!this.layers) return;
+    const needed = visibleChunkKeys(this.camera, this.viewport);
+    const occupied = new Set<string>();
+    for (const e of this.plots.values()) occupied.add(e.x + ',' + e.y);
+    const sig = Array.from(occupied).sort().join('|');
+    const rebuildAll = sig !== this.chunkOccupiedSig;
+    this.chunkOccupiedSig = sig;
+    for (const key of this.chunkStore.sync(needed).removed) this.destroyChunk(key);
+    if (rebuildAll) for (const key of Array.from(this.chunks.keys())) this.destroyChunk(key);
+    for (const k of needed) {
+      const key = chunkKey(k.cx, k.cy);
+      if (!this.chunks.has(key)) this.buildChunk(k.cx, k.cy, occupied);
+    }
+  }
+  private destroyChunk(key: string) {
+    const entry = this.chunks.get(key);
+    if (!entry) return;
+    for (const n of Object.values(entry)) { n.active = false; n.destroy(); }
+    this.chunks.delete(key);
+  }
+
+  private buildChunk(cx: number, cy: number, occupied: ReadonlySet<string>) {
+    const content = chunkContent(cx, cy, occupied), L = this.layers!, P = this.palette;
+    const key = content.key;
+    const ground = visualNode('Chunk ground ' + key, L.ground);
+    const gg = ground.addComponent(Graphics);
+    gg.fillColor = tint(P.base);
+    gg.rect(cx * CHUNK_SIZE, -(cy * CHUNK_SIZE + CHUNK_SIZE), CHUNK_SIZE, CHUNK_SIZE); gg.fill();
+    if (this.pack.frames.has('ground.base')) for (const t of content.groundTiles) this.placeImage('ground.base', ground, t.x, t.y);
+    const river = visualNode('Chunk river ' + key, L.river);
+    for (const seg of content.rivers) {
       const w = logicalToWorld(seg.cell);
-      const art = this.placeRiverArt(L.river, seg.kind);
+      const art = this.placeRiverArt(river, seg.kind);
       if (art) { art.setPosition(w.x, -w.y); continue; }
-      const n = visualNode('River ' + seg.cell.x + ',' + seg.cell.y, L.river, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
+      const n = visualNode('River ' + seg.cell.x + ',' + seg.cell.y, river, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
       g.strokeColor = tint(FALLBACK_COLORS.water); g.lineWidth = 60;
       if (seg.kind === 'straight-y') { g.moveTo(0, 65); g.lineTo(0, -65); }
       else if (seg.kind.startsWith('corner')) { g.moveTo(-130, 0); g.lineTo(0, 0); g.lineTo(0, seg.kind === 'corner-fy' || seg.kind === 'corner-fxy' ? -65 : 65); }
       else { g.moveTo(-130, 0); g.lineTo(130, 0); }
       g.stroke();
     }
-    // Flower overlays sit on the ground below the plot layer (plots may cover them later).
-    for (const cell of layout.FLOWER_CELLS) {
-      const w = logicalToWorld(cell);
-      this.placeImage('env.flowers', L.river, w.x, w.y);
+    if (content.spring) {
+      const s = layout.RIVER_SPRING;
+      const n = visualNode('River spring', river, s.x, -s.y, 0, 0), g = n.addComponent(Graphics);
+      g.fillColor = tint(FALLBACK_COLORS.water); g.ellipse(0, 0, 110, 60); g.fill();
+      g.strokeColor = tint(P.status, 180); g.lineWidth = 10; g.ellipse(0, 0, 118, 68); g.stroke();
     }
-    // Packed-earth streets: darker wide under-stroke + warm sand core, round joins.
-    for (const path of layout.PATHS) {
-      const n = visualNode('Scenic street', L.path, 0, 0, 0, 0), g = n.addComponent(Graphics);
+    // Flower overlays sit on the ground below the plot layer (plots may cover them later).
+    for (const cell of content.flowerCells) {
+      const w = logicalToWorld(cell);
+      const placed = this.placeImage('env.flowers', river, w.x, w.y);
+      if (placed) { const h = cellHash(cell.x, cell.y); placed.setScale((h & 1) ? -1 : 1, (h & 2) ? -1 : 1, 1); }
+    }
+    // Packed-earth streets: darker wide under-stroke + warm sand core, round caps.
+    const path = visualNode('Chunk streets ' + key, L.path);
+    for (const seg of content.streets) {
+      const n = visualNode('Scenic street', path, 0, 0, 0, 0), g = n.addComponent(Graphics);
       const stroke = (color: string, width: number, alpha: number) => {
         g.strokeColor = tint(color, alpha); g.lineWidth = width;
         g.lineCap = Graphics.LineCap.ROUND; g.lineJoin = Graphics.LineJoin.ROUND;
-        g.moveTo(path.points[0].x, -path.points[0].y);
-        for (const pt of path.points.slice(1)) g.lineTo(pt.x, -pt.y);
-        g.stroke();
+        g.moveTo(seg.a.x, -seg.a.y); g.lineTo(seg.b.x, -seg.b.y); g.stroke();
       };
-      stroke(PATH_EDGE, path.width + 6, 210);
-      stroke(PATH_FILL, path.width, 255);
+      stroke(PATH_EDGE, seg.width + 6, 210);
+      stroke(PATH_FILL, seg.width, 255);
     }
+    const env = visualNode('Chunk env ' + key, L.env);
     const envDepth: { node: Node; y: number }[] = [];
     const track = (node: Node | null, y: number) => { if (node) envDepth.push({ node, y }); };
-    for (const b of layout.BRIDGES) {
-      const placed = this.placeImage('env.bridge', L.env, b.world.x, b.world.y);
+    for (const b of content.bridges) {
+      const placed = this.placeImage('env.bridge', env, b.world.x, b.world.y);
       if (placed) { track(placed, b.world.y); continue; }
-      const n = visualNode('Bridge', L.env, b.world.x, -b.world.y, 0, 0), g = n.addComponent(Graphics);
+      const n = visualNode('Bridge', env, b.world.x, -b.world.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#8a6a44'); g.roundRect(-75, -16, 150, 32, 6); g.fill();
       track(n, b.world.y);
     }
-    const h = layout.HOMESTEAD;
-    const homestead = this.placeImage('env.homestead', L.env, h.world.x, h.world.y);
-    if (homestead) track(homestead, h.world.y);
-    else {
-      const n = visualNode('Homestead placeholder', L.env, h.world.x, -h.world.y + h.height * (h.anchor[1] - 0.5), 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint(P.cream); g.roundRect(-190, -160, 380, 110, 12); g.fill();
-      g.fillColor = tint(P.paper); g.roundRect(-130, -60, 190, 130, 8); g.fill();
-      g.fillColor = tint('#7a4f35'); g.moveTo(-160, 70); g.lineTo(-35, 150); g.lineTo(90, 70); g.close(); g.fill();
-      g.strokeColor = tint(P.line); g.lineWidth = 3; g.roundRect(-190, -160, 380, 110, 12); g.stroke();
-      track(n, h.world.y);
+    if (content.homestead) {
+      const h = content.homestead;
+      const homestead = this.placeImage('env.homestead', env, h.world.x, h.world.y);
+      if (homestead) track(homestead, h.world.y);
+      else {
+        const n = visualNode('Homestead placeholder', env, h.world.x, -h.world.y + h.height * (h.anchor[1] - 0.5), 0, 0), g = n.addComponent(Graphics);
+        g.fillColor = tint(P.cream); g.roundRect(-190, -160, 380, 110, 12); g.fill();
+        g.fillColor = tint(P.paper); g.roundRect(-130, -60, 190, 130, 8); g.fill();
+        g.fillColor = tint('#7a4f35'); g.moveTo(-160, 70); g.lineTo(-35, 150); g.lineTo(90, 70); g.close(); g.fill();
+        g.strokeColor = tint(P.line); g.lineWidth = 3; g.roundRect(-190, -160, 380, 110, 12); g.stroke();
+        track(n, h.world.y);
+      }
     }
-    for (const s of layout.SIGNPOSTS) {
-      const placed = this.placeImage('env.signpost', L.env, s.world.x, s.world.y);
-      const n = placed ?? visualNode('Signpost ' + s.name, L.env, s.world.x, -s.world.y, 0, 0);
+    for (const s of content.signposts) {
+      const placed = this.placeImage('env.signpost', env, s.world.x, s.world.y);
+      const n = placed ?? visualNode('Signpost ' + s.name, env, s.world.x, -s.world.y, 0, 0);
       if (!placed) {
         const g = n.addComponent(Graphics);
         g.fillColor = tint('#8a6a44'); g.rect(-4, -60, 8, 60); g.fill();
@@ -295,22 +343,23 @@ export class ScenicWorldView implements FarmWorldViewContract {
       text.string = s.name; text.fontSize = 20; text.lineHeight = 26; text.color = tint(P.ink);
       track(n, s.world.y);
     }
-    for (const f of layout.FENCES) {
-      const placed = this.placeImage('env.fence', L.env, f.x, f.y);
+    for (const f of content.fences) {
+      const placed = this.placeImage('env.fence', env, f.x, f.y);
       if (placed) { track(placed, f.y); continue; }
-      const n = visualNode('Fence', L.env, f.x, -f.y, 0, 0), g = n.addComponent(Graphics);
+      const n = visualNode('Fence', env, f.x, -f.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#8a6a44'); g.rect(-60, -8, 120, 8); g.fill(); g.rect(-60, 6, 120, 8); g.fill();
       track(n, f.y);
     }
-    for (const t of layout.TREES) {
-      const placed = this.placeImage('env.tree.canopy', L.env, t.x, t.y);
+    for (const t of content.trees) {
+      const placed = this.placeImage('env.tree.canopy', env, t.x, t.y);
       if (placed) { track(placed, t.y); continue; }
-      const n = visualNode('Tree canopy', L.env, t.x, -t.y, 0, 0), g = n.addComponent(Graphics);
+      const n = visualNode('Tree canopy', env, t.x, -t.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#6b4a30'); g.rect(-6, -20, 12, 30); g.fill();
       g.fillColor = tint(P.shade); g.circle(0, 40, 58); g.fill();
       track(n, t.y);
     }
-    // Depth: foreground decor sorts by ground contact point (plan §5.2).
+    // Depth: foreground decor sorts by ground contact point within the chunk (plan §5.2).
     envDepth.sort((a, b) => a.y - b.y).forEach((e, i) => e.node.setSiblingIndex(i));
+    this.chunks.set(key, { ground, river, path, env });
   }
 }

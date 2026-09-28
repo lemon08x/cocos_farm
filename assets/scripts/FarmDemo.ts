@@ -8,9 +8,10 @@ import { WorldViewPreferences } from './view/world/WorldViewPreferences';
 import { WorldViewRegistry } from './view/world/WorldViewRegistry';
 import { registerCurrentWorldView, type WorldViewHost } from './view/world/current/CurrentWorldView';
 import { registerScenicWorldView, ScenicWorldView } from './view/world/scenic/ScenicWorldView';
-import { clampScenicCamera } from './view/world/scenic/ScenicLayout';
+import { clampScenicCamera, zoomCameraAboutPoint } from './view/world/scenic/ScenicLayout';
 import { ScenicHud } from './view/hud/ScenicHud';
 import { DistrictNavigator } from './view/hud/DistrictNavigator';
+import type { FarmWorldViewContract } from './view/world/FarmWorldViewContract';
 import { UiKit } from './view/UiKit';
 import { PanelStack } from './view/PanelStack';
 import { FarmHud } from './view/FarmHud';
@@ -63,6 +64,7 @@ export class FarmDemo extends Component {
     try{this.obs=await this.core.start(sys.localStorage.getItem(SAVE)||undefined);}
     catch(error){this.saveBlocked=true;this.obs=await this.core.start(undefined);this.toast('原存档读取失败，已保留；当前为临时新局。');console.warn(error);}
     this.refresh();if(!this.saveBlocked)this.persist();
+    (globalThis as any).__farmDemo=this;  // headless verification handle (tools/verify-scenic-p4.mjs)
   }
   private text(parent:Node,s:string,x:number,y:number,size=28,fill=this.C.ink,w=560,h=50,align=Label.HorizontalAlign.CENTER){return this.ui.text(parent,s,x,y,size,fill,w,h,align);}
   private box(n:Node,w:number,h:number){this.art.surface(n,w,h,this.C.cream,20,this.C.line);}
@@ -85,9 +87,18 @@ export class FarmDemo extends Component {
         }
         this.panX+=dx;this.panY+=dy;this.clampCamera();this.renderPlots();
       },
-      pinch:ratio=>{
+      pinch:(ratio,center)=>{
         if(this.worldVersion==='scenic'&&this.scenicView){
-          if(ratio!==null){const c=this.scenicView.getCamera();c.zoom=Math.max(.9,Math.min(2.4,c.zoom*ratio));this.scenicView.setCamera(clampScenicCamera(c));}
+          if(ratio!==null){
+            const c=this.scenicView.getCamera(),zoom=c.zoom*ratio;
+            if(center){
+              // Zoom about the pinch centroid: keep the world point under the
+              // centroid fixed while zooming (plan §7); clamps stay in ScenicLayout.
+              const q=this.map.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(center.x,center.y,0));
+              const m=this.map.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(center.x,center.y,0));
+              this.scenicView.setCamera(clampScenicCamera(zoomCameraAboutPoint(c,{x:m.x,y:m.y},{x:q.x,y:q.y},zoom)));
+            }else this.scenicView.setCamera(clampScenicCamera({...c,zoom}));
+          }
           this.renderPlots();return true;
         }
         if(!this.boardMode())return false;
@@ -137,18 +148,26 @@ export class FarmDemo extends Component {
     this.worldPrefs.rememberCamera('current',{x:this.panX,y:this.panY,zoom:this.zoom});
   }
   private renderPlots(){
-    if(this.worldVersion==='scenic'){this.scenicView?.render({plots:this.obs.game.economy.farm.plots,selected:this.selected});return;}
+    if(!this.obs)return;
+    if(this.worldVersion==='scenic'){
+      this.scenicView?.render({plots:this.obs.game.economy.farm.plots,selected:this.selected});
+      this.navigator?.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height);
+      return;
+    }
     if(this.boardMode())this.district=districtAtCamera(this.panX,this.panY,this.zoom);
     this.world?.render(this.obs.game.economy.farm.plots,this.selected,this.panX,this.panY,this.zoom);
   }
   private async mountWorldVersion(id:string){
     const seq=++this.worldSwitchSeq;
-    const view=await this.worldViews.create(id,{base:this.base,map:this.map,art:this.art});
-    if(seq!==this.worldSwitchSeq){view.dispose();return false;}
+    let view:FarmWorldViewContract;
+    try{view=await this.worldViews.create(id,{base:this.base,map:this.map,art:this.art});}
+    catch(error){console.warn(error);throw error;}  // old world stays untouched; caller may retry
+    if(seq!==this.worldSwitchSeq){view.dispose();return false;}  // superseded while loading: discard the half-built world and its textures
     this.world?.destroy();this.world=null;
     if(this.scenicView){this.scenicView.dispose();this.scenicView=null;}
     this.clearChildren(this.base);this.clearChildren(this.map);
     this.clearChildren(this.hud);this.hudView=null;this.scenicHudView=null;this.navigator=null;
+    view.resize({width:W,height:this.height});
     if(view instanceof ScenicWorldView){
       this.scenicView=view;this.worldVersion='scenic';
       const saved=this.worldPrefs.cameraFor('scenic');if(saved)view.setCamera(clampScenicCamera(saved));
@@ -185,6 +204,7 @@ export class FarmDemo extends Component {
         const camera=this.scenicView?.focusDistrict(district);if(!camera)return;
         this.scenicView?.setCamera(clampScenicCamera(camera));this.renderPlots();this.persistCamera();
       });
+      this.navigator.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height);
       return;
     }
     if(!this.hudView)this.hudView=new FarmHud(this.hud,this.art,this.ui,this.height,this.safeTop,this.safeBottom,this.hudActions());
@@ -411,5 +431,5 @@ export class FarmDemo extends Component {
   private confirmReset(){const body=this.panel('重新开始','旧存档会先保留为备份',660);this.text(body,'是否新开一局？\n日期将回到第一年正月初一。',0,-10,28,this.C.ink,560,170);this.button(body,'返回',-151,-236,282,80,()=>this.panels.back());this.button(body,'备份并新开',151,-236,282,80,()=>void this.reset(),true);}
   private async reset(){if(this.busy)return;this.busy=true;try{const old=sys.localStorage.getItem(SAVE);if(old)sys.localStorage.setItem(SAVE+'.backup.'+Date.now(),old);this.obs=await this.core.start(undefined);this.saveBlocked=false;this.selected=HOME_PLOT_ID;this.district={x:0,y:0};this.panX=this.panY=0;this.zoom=.82;this.persistCamera();const saved=this.persist();this.close();this.refresh();this.toast(saved?'新局已开始，原档已备份。':'新局已开始，但保存失败，请重试。');}catch(e){this.toast(String(e));}finally{this.busy=false;}}
   private clearChildren(parent:Node){for(const n of [...parent.children]){n.active=false;n.destroy();}}
-  onDestroy(){this.input?.detach();this.panels.clear();this.world?.destroy();this.scenicView?.dispose();this.art?.pack.dispose();}
+  onDestroy(){this.input?.detach();this.panels.clear();this.world?.destroy();this.scenicView?.dispose();this.art?.pack.dispose();if((globalThis as any).__farmDemo===this)delete (globalThis as any).__farmDemo;}
 }

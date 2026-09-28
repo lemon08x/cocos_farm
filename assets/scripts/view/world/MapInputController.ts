@@ -6,8 +6,9 @@ export interface UiPoint {x:number;y:number}
 export interface MapGestureHandler {
   blocked():boolean;
   pan(dx:number,dy:number):void;
-  /** Span ratio vs the previous frame, null on the first pinch frame. Return true when consumed. */
-  pinch(ratio:number|null):boolean;
+  /** Span ratio vs the previous frame, null on the first pinch frame. Return true when consumed.
+   * `center` is the pinch centroid in UI coordinates (for zoom-about-centroid). */
+  pinch(ratio:number|null,center?:UiPoint):boolean;
   tap(point:UiPoint,target:Node|null):void;
   dragEnd():void;
 }
@@ -29,12 +30,14 @@ export class MapInputController {
   }
   private span(e:EventTouch){const touches=e.getTouches();if(touches.length<2)return 0;
     const a=touches[0].getUILocation(),b=touches[1].getUILocation();return Math.hypot(a.x-b.x,a.y-b.y);}
+  private centroid(e:EventTouch){const touches=e.getTouches();if(touches.length<2)return undefined;
+    const a=touches[0].getUILocation(),b=touches[1].getUILocation();return {x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
   private onStart(e:EventTouch){this.drag=e.getTouches().length>1?999:0;this.pinchDistance=this.span(e);}
   private onMove(e:EventTouch){
     if(this.handler.blocked())return;
     const distance=this.span(e);
     if(distance){
-      if(this.handler.pinch(this.pinchDistance?distance/this.pinchDistance:null)){this.pinchDistance=distance;this.drag=999;return;}
+      if(this.handler.pinch(this.pinchDistance?distance/this.pinchDistance:null,this.centroid(e))){this.pinchDistance=distance;this.drag=999;return;}
       if(this.pinchDistance){this.pinchDistance=0;this.drag=999;return;}
     }else if(this.pinchDistance){this.pinchDistance=0;this.drag=999;return;}
     const d=e.getUIDelta();this.drag+=Math.abs(d.x)+Math.abs(d.y);

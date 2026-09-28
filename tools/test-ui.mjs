@@ -14,6 +14,8 @@ const {MAP_LAYOUT,boardTileSlot}=await moduleAt('assets/scripts/view/world/curre
 const scenicProj=await moduleAt('assets/scripts/view/world/scenic/ScenicProjection.ts');
 const scenicLayout=await moduleAt('assets/scripts/view/world/scenic/ScenicLayout.ts');
 const {hitTestPlot}=await moduleAt('assets/scripts/view/world/scenic/ScenicHitTest.ts');
+const chunkStore=await moduleAt('assets/scripts/view/world/scenic/ScenicChunkStore.ts');
+const scenicMinimap=await moduleAt('assets/scripts/view/world/scenic/ScenicMinimap.ts');
 assert.equal(HOME_PLOT_ID,'p2q2');
 assert.equal(plotName('p1q1'),'田地 1·1');
 assert.equal(plotName('p0q2'),'田地 0·2');
@@ -205,4 +207,124 @@ prefs.rememberCamera('scenic',{x:-100,y:40,zoom:1.6});
 prefs.rememberCamera('current',{x:12,y:-34,zoom:1.2});
 assert.deepEqual(prefs.cameraFor('scenic'),{x:-100,y:40,zoom:1.6},'scenic camera must roundtrip');
 assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version cameras must stay separate');
-console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test, P3 scenic layout (homestead/river/bridges/canopy) and thumbnail mapping.');
+// --- P4: connected districts, chunks, minimap, centroid zoom ---
+// The river is one connected chain: every port either meets another segment's
+// port, is the spring source, or exits the pannable bounds (no dead-ends).
+{
+  const L=scenicLayout.CAMERA_LIMITS,margin={x:720/2/L.minZoom,y:1280/2/L.minZoom};
+  const bounds={minX:L.minX-margin.x,maxX:L.maxX+margin.x,minY:L.minY-margin.y,maxY:L.maxY+margin.y};
+  const outside=p=>p.x<bounds.minX||p.x>bounds.maxX||p.y<bounds.minY||p.y>bounds.maxY;
+  const keyOf=p=>Math.round(p.x)+','+Math.round(p.y);
+  const byVertex=new Map();
+  scenicLayout.RIVER_SEGMENTS.forEach((seg,i)=>{
+    for(const p of scenicLayout.riverPorts(seg)){
+      const k=keyOf(p);if(!byVertex.has(k))byVertex.set(k,[]);byVertex.get(k).push(i);
+    }
+  });
+  scenicLayout.RIVER_SEGMENTS.forEach((seg,i)=>{
+    for(const p of scenicLayout.riverPorts(seg)){
+      const partners=byVertex.get(keyOf(p))||[];
+      const spring=Math.hypot(p.x-scenicLayout.RIVER_SPRING.x,p.y-scenicLayout.RIVER_SPRING.y)<2;
+      assert.ok(partners.length>=2||outside(p)||spring,`river port of cell ${seg.cell.x},${seg.cell.y} must connect, exit or be the spring`);
+    }
+  });
+  // Single connected component via shared vertices.
+  const parent=scenicLayout.RIVER_SEGMENTS.map((_,i)=>i);
+  const find=i=>parent[i]===i?i:(parent[i]=find(parent[i]));
+  for(const list of byVertex.values())for(let i=1;i<list.length;i++)parent[find(list[0])]=find(list[i]);
+  assert.equal(new Set(scenicLayout.RIVER_SEGMENTS.map((_,i)=>find(i))).size,1,'the river must be one continuous waterway');
+}
+// East/south streets continue across district borders and cross the river at the south bridge.
+{
+  const pts=scenicLayout.PATHS.flatMap(p=>p.points);
+  assert.ok(pts.some(p=>p.x>650),'a street must continue east across the district border');
+  assert.ok(pts.some(p=>p.y>260),'a street must continue south across the district border');
+  const southBridge=scenicLayout.BRIDGES[1];
+  assert.ok(southBridge,'the south river run must have a bridge');
+  assert.ok(pts.some(p=>Math.hypot(p.x-southBridge.world.x,p.y-southBridge.world.y)<=130),'the south street must cross the river at the south bridge');
+  for(const d of scenicLayout.SCENIC_DISTRICTS){
+    const c=scenicLayout.districtCenter(d.district),L=scenicLayout.CAMERA_LIMITS;
+    assert.ok(c.x>=L.minX&&c.x<=L.maxX&&c.y+scenicLayout.CAMERA_LIFT>=L.minY&&c.y+scenicLayout.CAMERA_LIFT<=L.maxY,`${d.name} must stay pannable`);
+  }
+}
+// Chunks: deterministic content, single homestead, neighbor port agreement, visible+ring coverage.
+{
+  const occupied=new Set(obs.game.economy.farm.plots.map(p=>p.x+','+p.y));
+  const a=chunkStore.chunkContent(0,0,occupied),b=chunkStore.chunkContent(0,0,occupied);
+  assert.deepEqual(a,b,'chunk content must be deterministic (coordinate hash, never core RNG)');
+  const c=chunkStore.chunkContent(-2,1,occupied);
+  assert.deepEqual(c,chunkStore.chunkContent(-2,1,occupied),'filler variants must be deterministic');
+  let homesteads=0;
+  for(let cx=-3;cx<=3;cx++)for(let cy=-3;cy<=3;cy++)if(chunkStore.chunkContent(cx,cy,occupied).homestead)homesteads++;
+  assert.equal(homesteads,1,'the homestead must appear exactly once across the whole map');
+  const portShape=ports=>ports.map(p=>({kind:p.kind,world:p.world}));
+  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++){
+    assert.deepEqual(portShape(chunkStore.edgePorts(cx,cy,'e')),portShape(chunkStore.edgePorts(cx+1,cy,'w')),`east/west ports must agree at chunk ${cx},${cy}`);
+    assert.deepEqual(portShape(chunkStore.edgePorts(cx,cy,'s')),portShape(chunkStore.edgePorts(cx,cy+1,'n')),`south/north ports must agree at chunk ${cx},${cy}`);
+  }
+  const edgePortKeys=new Set();
+  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++)
+    for(const p of chunkStore.chunkContent(cx,cy,occupied).ports)edgePortKeys.add(p.kind+Math.round(p.world.x)+','+Math.round(p.world.y));
+  assert.ok([...edgePortKeys].some(k=>k.startsWith('river')),'river boundary connection points must be declared');
+  // Filler decor never lands on observed cells (no mist cover-up, no state leak).
+  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++){
+    const content=chunkStore.chunkContent(cx,cy,occupied);
+    for(const cell of content.flowerCells)assert.ok(!occupied.has(cell.x+','+cell.y),'flowers must not sit on an observed cell');
+    for(const t of content.trees){
+      const approx=scenicProj.worldToLogical(t);
+      for(const key of occupied){
+        const [px,py]=key.split(',').map(Number);
+        if(Math.abs(px-approx.x)>1.6||Math.abs(py-approx.y)>1.6)continue;
+        assert.ok(!scenicProj.pointInDiamond(t,scenicProj.logicalToWorld({x:px,y:py})),'trees must not cover an observed cell');
+      }
+    }
+    assert.equal(content.groundTiles.length,4,'each chunk owns a 2x2 ground tile set (no blank voids)');
+  }
+  const viewport={width:720,height:1280};
+  for(const cam of [scenicLayout.DEFAULT_CAMERA,{x:390,y:195,zoom:.8},{x:-390,y:495,zoom:.8},{x:scenicLayout.CAMERA_LIMITS.maxX,y:scenicLayout.CAMERA_LIMITS.maxY,zoom:.8}]){
+    const keys=chunkStore.visibleChunkKeys(cam,viewport);
+    assert.ok(keys.length<=24,'visible + one buffer ring must stay bounded');
+    const hw=viewport.width/2/cam.zoom,hh=viewport.height/2/cam.zoom;
+    for(const corner of [{x:cam.x-hw,y:cam.y-hh},{x:cam.x+hw,y:cam.y-hh},{x:cam.x-hw,y:cam.y+hh},{x:cam.x+hw,y:cam.y+hh}])
+      assert.ok(keys.some(k=>{const r=chunkStore.chunkRect(k.cx,k.cy);return corner.x>=r.left&&corner.x<=r.right&&corner.y>=r.top&&corner.y<=r.bottom;}),'visible chunks must cover the viewport (no blank voids)');
+  }
+  const store=new chunkStore.ScenicChunkStore();
+  const needed=chunkStore.visibleChunkKeys(scenicLayout.DEFAULT_CAMERA,viewport);
+  const first=store.sync(needed);
+  assert.equal(first.added.length,needed.length,'first sync builds every needed chunk');
+  assert.equal(first.removed.length,0);
+  const again=store.sync(needed);
+  assert.equal(again.added.length,0,'a stable camera must not rebuild chunks');
+  assert.equal(again.removed.length,0,'a stable camera must not unload chunks');
+  const moved=store.sync(chunkStore.visibleChunkKeys({x:390,y:195,zoom:1},viewport));
+  assert.ok(moved.removed.length>0,'leaving chunks must be released');
+}
+// Minimap model: real observation data only, mist never leaks terrain, viewport tracks the camera.
+{
+  assert.equal(scenicMinimap.minimapTone({kind:'unknown',field:{crop:'wheat'}}),'mist','unexplored plots must stay mist even with hidden state');
+  assert.equal(scenicMinimap.minimapTone({kind:'water'}),'water');
+  assert.equal(scenicMinimap.minimapTone({kind:'story',discovery:{id:'spring'}}),'water');
+  assert.equal(scenicMinimap.minimapTone({kind:'field'}),'field');
+  const plots=obs.game.economy.farm.plots;
+  const cam={x:-220,y:-135,zoom:1.05},viewport={width:720,height:1280};
+  const model=scenicMinimap.buildMinimapModel(plots,cam,viewport,138);
+  const known=plots.filter(p=>p.kind!=='unknown'||p.reachable);
+  assert.equal(model.cells.length,known.length,'the minimap renders every known plot, not a fixed screenshot');
+  assert.ok(model.cells.some(c=>c.tone==='home'),'the minimap marks the homestead');
+  assert.ok(model.cells.some(c=>c.tone==='mist'),'the minimap keeps frontier mist');
+  assert.ok(Math.abs(model.view.w-viewport.width/cam.zoom*model.scale)<1e-6,'the viewport rect width must track camera and zoom');
+  const shifted=scenicMinimap.buildMinimapModel(plots,{...cam,x:cam.x+130},viewport,138);
+  assert.ok(Math.abs(shifted.view.x-model.view.x-130*model.scale)<1e-6,'the viewport rect must follow camera pans');
+}
+// Pinch zoom about the centroid: the world point under the centroid stays fixed.
+{
+  const cam={x:-220,y:-135,zoom:1.05},viewportPoint={x:120,y:-260},zoom=1.6;
+  // Map-space point currently rendered at viewportPoint (mapPos = (-cx*z, cy*z)).
+  const mapPoint={x:(viewportPoint.x+cam.x*cam.zoom)/cam.zoom,y:(viewportPoint.y-cam.y*cam.zoom)/cam.zoom};
+  const next=scenicLayout.zoomCameraAboutPoint(cam,mapPoint,viewportPoint,zoom);
+  const after={x:-next.x*next.zoom+mapPoint.x*next.zoom,y:next.y*next.zoom+mapPoint.y*next.zoom};
+  assert.ok(Math.abs(after.x-viewportPoint.x)<1e-9&&Math.abs(after.y-viewportPoint.y)<1e-9,'the centroid point must not move while zooming');
+  const centered=scenicLayout.zoomCameraAboutPoint(cam,{x:cam.x,y:-cam.y},{x:0,y:0},zoom);
+  assert.ok(Math.abs(centered.x-cam.x)<1e-9&&Math.abs(centered.y-cam.y)<1e-9,'viewport-center zoom is the degenerate case');
+}
+console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test, P3 scenic layout (homestead/river/bridges/canopy) and thumbnail mapping, P4 river continuity/ports, chunk determinism/release, minimap model and centroid zoom.');
