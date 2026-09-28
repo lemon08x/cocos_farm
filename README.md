@@ -39,6 +39,8 @@ npm start
 
 当前美术规范见 `art/scenic/tiles-v1/SPEC.md`，独立风格制作见 `docs/scenic-style-packs.md`。`npm run tiles:publish` 发布完整风格包；旧 revision-2 原稿只保留用于追溯当前复用素材，不再导出旧 scenic 运行时包。
 
+针对草地纹理过密、拼块重复和场景占位感的下一轮重制，见 [具体修改方案与素材 agent 交接](docs/scenic-art-refresh-plan.md)。方案包含独立柔绘风格的 50 项素材清单、分批生成与拼接检查、发布步骤，以及需另行实施的呈现修正；目前是待执行方案。
+
 ## 在 Cocos 中打开
 
 1. 在 Cocos Dashboard 中导入本文件夹，选择 Creator 3.8.8。
