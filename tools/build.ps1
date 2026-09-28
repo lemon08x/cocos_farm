@@ -4,6 +4,8 @@ $projectRoot = Split-Path $PSScriptRoot -Parent
 if (!(Test-Path -LiteralPath $Editor)) { throw 'Cocos Creator executable not found. Pass -Editor with the installed path.' }
 Push-Location $projectRoot
 try {
+  & node tools/publish-tile-art.mjs
+  if ($LASTEXITCODE -ne 0) { throw 'Tile art compilation failed. The existing runtime pack was not selected as a fallback.' }
   & node tools/build-core.mjs
   if ($LASTEXITCODE -ne 0) { throw 'Core bundling failed.' }
   $argsList = @('--project', ('"' + $projectRoot + '"'), '--build', ('"configPath=' + (Join-Path $projectRoot 'build-config.json') + '"'))

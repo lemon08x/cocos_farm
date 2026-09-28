@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "pastoral",
+  "name": "现有田园",
+  "status": "ready",
+  "contract": "scenic-tiles@1",
+  "textureFilter": "linear",
+  "palette": {
+    "ink": "#213d2c", "muted": "#75836f", "paper": "#f8f3e6", "cream": "#eee4cb",
+    "green": "#2e5240", "gold": "#d9a441", "line": "#d9cfb4", "status": "#7aa95c",
+    "caption": "#8a9478", "disabled": "#b9bfae", "warning": "#c96f3b", "shade": "#1c3527", "base": "#5f8a4e",
+    "fog": "#bcc7b4", "map.mist": "#b9bfae", "map.field": "#9a7648", "map.water": "#5b8fa8",
+    "map.green": "#5f8a4e", "map.home": "#d9a441", "map.facility": "#8a6a44", "map.path": "#c2a26e", "map.bridge": "#80633e"
+  },
+  "generation": {
+    "description": "保留当前已生成的手绘田园风格，统一左上光照、右下短影。",
+    "references": ["art/expansion-previews/02-district-browse.png"],
+    "negative": "不要新增 UI、文字、悬浮底座或边框。"
+  }
+}

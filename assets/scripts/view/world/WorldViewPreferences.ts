@@ -19,14 +19,14 @@ export class WorldViewPreferences {
       const cameras:Record<string,WorldCamera>={};
       if(data?.cameras&&typeof data.cameras==='object')for(const [key,value] of Object.entries(data.cameras as Record<string,unknown>)){
         const c=value as WorldCamera;
-        if(c&&Number.isFinite(c.x)&&Number.isFinite(c.y)&&Number.isFinite(c.zoom))cameras[key]={x:c.x,y:c.y,zoom:c.zoom};
+        if(c&&Number.isFinite(c.x)&&Number.isFinite(c.y)&&Number.isFinite(c.zoom))cameras[key]=key==='scenic'&&data.tileLayoutVersion!==1?{x:c.x*2,y:c.y*2,zoom:c.zoom/2}:{x:c.x,y:c.y,zoom:c.zoom};
       }
       // Promote existing installs to the scenic main scene once. Keep camera
       // preferences; later explicit choices (including the legacy view) persist.
       return {version:data?.schemaVersion===PREFERENCE_SCHEMA_VERSION&&typeof data?.version==='string'?data.version:this.fallbackVersion,cameras};
     }catch{return {version:this.fallbackVersion,cameras:{}};}
   }
-  private write(data:PreferenceData){try{this.storage.setItem(WORLD_VIEW_PREFERENCES_KEY,JSON.stringify({...data,schemaVersion:PREFERENCE_SCHEMA_VERSION}));}catch(error){console.warn(error);}}
+  private write(data:PreferenceData){try{this.storage.setItem(WORLD_VIEW_PREFERENCES_KEY,JSON.stringify({...data,schemaVersion:PREFERENCE_SCHEMA_VERSION,tileLayoutVersion:1}));}catch(error){console.warn(error);}}
   preferredVersion():string{return this.read().version;}
   selectVersion(id:string){const data=this.read();data.version=id;this.write(data);}
   cameraFor(id:string):WorldCamera|undefined{return this.read().cameras[id];}

@@ -3,7 +3,7 @@ import { ArtRenderer, tint, visualNode } from '../../art/ArtRenderer';
 import { UiKit } from '../UiKit';
 import type { DistrictId, PlotRenderModel, SceneSnapshot, WorldCamera } from '../world/FarmWorldViewContract';
 import { buildMinimapModel, minimapSignature } from '../world/scenic/ScenicMinimap';
-import { worldToLogical } from '../world/scenic/ScenicProjection';
+import { worldPlot } from '../../FarmCore';
 import { CAMERA_LIFT } from '../world/scenic/ScenicLayout';
 import { districtOf } from '../FarmDistrict';
 
@@ -91,7 +91,7 @@ export class DistrictNavigator {
   update(plots: MinimapPlots, camera: WorldCamera | undefined, viewportHeight: number, selected = '',scene?:SceneSnapshot) {
     this.scene=scene;this.lastPlots = plots; this.lastCamera = camera; this.lastHeight = viewportHeight; this.selected = selected;
     if (!camera) return;
-    const at = worldToLogical({ x: camera.x, y: camera.y + CAMERA_LIFT });
+    const at = worldPlot({ x: camera.x, y: camera.y - CAMERA_LIFT });
     const district = districtOf(at.x, at.y), key = district.x + ',' + district.y;
     if (key !== this.activeKey) { this.activeKey = key; this.drawDistricts(); }
     this.redraw();
@@ -109,12 +109,12 @@ export class DistrictNavigator {
     fg.fillColor = tint(C.cream); fg.roundRect(-half, -half, MINIMAP_SIZE, MINIMAP_SIZE, 10); fg.fill();
     const model = buildMinimapModel(plots, camera, { width: 720, height: this.lastHeight }, MINIMAP_SIZE - 12,this.scene);
     for(const region of model.environment){
-      fg.fillColor=tint(TONES[region.tone]);region.boundary.forEach((p,i)=>i?fg.lineTo(p.x,-p.y):fg.moveTo(p.x,-p.y));fg.close();fg.fill();
+      fg.fillColor=tint(C['map.'+region.tone]??TONES[region.tone]);region.boundary.forEach((p,i)=>i?fg.lineTo(p.x,-p.y):fg.moveTo(p.x,-p.y));fg.close();fg.fill();
     }
     model.cells.forEach((cell, i) => {
       const marked = cell.id === this.selected;
       const size = cell.tone === 'home' || marked ? 7 : 5;
-      fg.fillColor = tint(TONES[cell.tone] ?? TONES.mist);
+      fg.fillColor = tint(C['map.'+cell.tone] ?? TONES[cell.tone] ?? TONES.mist);
       cell.boundary.forEach((p,i)=>i?fg.lineTo(p.x,-p.y):fg.moveTo(p.x,-p.y));
       fg.close(); fg.fill();
       if (marked) {

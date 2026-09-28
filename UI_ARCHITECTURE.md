@@ -41,21 +41,22 @@
 | view/world/scenic/ScenicRegionLayout.ts | 导出核心场景与有效地块区域，不再保留另一套区域计算 |
 | view/world/scenic/ScenicLayoutValidation.ts | 检查实际场景区域、地块对应关系和连接端点；无预留格豁免 |
 | view/world/scenic/ScenicHitTest.ts | 世界坐标 → 地块命中（四边形判定，环境带不命中） |
-| view/world/scenic/ScenicWorldView.ts | 分层渲染（地面/雾/河流/地块/道路/环境/叠加）、镜头、focusPlot 与选中脉冲 |
-| view/world/scenic/ScenicChunkStore.ts | 环境装饰按块确定性生成、可见性缓存与释放 |
+| view/world/scenic/ScenicWorldView.ts | 单元与对象分层渲染（地面/对象/雾/选中）、镜头、focusPlot 与选中脉冲 |
 | view/world/scenic/ScenicMinimap.ts | 分区缩略图模型与质心缩放 |
-| view/world/scenic/ScenicArtPack.ts | scenic 美术包与调色板加载（assets/resources/art-packs/scenic） |
+| view/world/scenic/ScenicArtPack.ts / ScenicStyleContract.ts | 独立地图风格包加载、共用规格校验与资源释放 |
 | view/hud/ScenicHud.ts | 田园 HUD：日期资源条与选中田卡 |
 | view/hud/DistrictNavigator.ts | 分区导航：缩略图、分区切换与收起 |
 | presentation/FarmViewModel.ts | HUD 视图模型；新增 fieldShort 与 todoBadge 供田园 HUD 使用 |
 
 ## 布局与可读性
 
-### 完整四边形素材生产契约（待运行时接入）
+### 完整四边形素材与运行时
 
-`core/src/game/scene/tile-art.ts` 定义 600×360 源图、300×180 显示尺寸、四边接口、占地和独立对象锚点。`tools/tile-art.mjs` 生成模板、登记 AI 原图、检查来源与透明区，再用公共 AI 接缝母版合成完整地面。生成包只写入 `build/tile-art/`，当前渲染器不读取它。完整目录及场景单元映射的剩余工作见 [图块规范](art/scenic/tiles-v1/SPEC.md)。
+`core/src/game/scene/tile-art.ts` 定义 600×360 源图、300×180 显示尺寸、四边接口和独立对象锚点。`tile-map.ts` 将稳定的玩法坐标映射到包含环境单元的格网；`world.ts` 输出单元区域、连接及对象。各风格的 `style.json`、生成任务、接缝母版和来源记录相互独立，共用几何契约。`publish-tile-art.mjs` 只发布完整 ready 包，现有田园保留在 `scenic-tiles`，其他包位于 `scenic-styles/<id>`，目录清单最后发布。
 
-图片契约不生成 FarmPlot、不判断探索与水流，也不允许根据图中道路颜色推导规则。后续需要让场景单元声明接口并选取素材，再统一驱动地图、小地图和命中；不能仅把新 PNG 替换进旧河流覆盖层。
+游戏设置从目录发现风格；ScenicArtPack 完整加载并校验后，ScenicWorldView 在隐藏容器创建替换节点，成功才交换显示层。失败保留当前包；切换保留模型、输入、选中和镜头，偏好单独存储。界面配色随包更新，玩法存档不记录风格。图片 agent 的操作入口见 [地图风格包指南](docs/scenic-style-packs.md)。
+
+ScenicWorldView 读取场景快照，按可见范围创建和释放完整地面单元，作物/建筑按落点在共同对象层排序；旧 ScenicChunkStore 已删除。选中轮廓、雾层和小地图同样使用快照边界。图片不判断探索与水流，逻辑规则仍由核心负责。
 
 以 720 为设计宽度，启动时按竖屏视口比例扩展设计高度；桌面横向窗口保留竖屏画幅。HUD 按顶部/底部定位，读取 Cocos 安全区并保留基础边距。手机浏览器中的系统刘海行为仍需真机确认。
 
@@ -68,6 +69,6 @@
 - `npm run test:ui`：真实核心的新局计划/日期/存档往返，任务日期与操作类型保护，返回栈与分页上下文，规则文案保留。
 - `tsconfig.ui.json`：面向 Cocos UI 脚本的 TypeScript 检查配置，使用 Creator 自带 TypeScript 与项目生成声明。
 - `npm run build`：生成 Web Mobile 版本。
-- `node tools/verify-scenic-r2.mjs`：田园场景第二版冒烟检查（需 `npm start` 运行中）；无头浏览器验证 scenic 启动、投影/镜头/命中、美术包 HTTP 200 与渲染异常，并输出 720×1280 首屏截图到 `art/scenic/revision-2/screenshots/`。
+- `node tools/verify-tile-scene.mjs`：使用临时浏览器和随机端口检查新素材加载、命中、镜头、状态刷新与渲染不修改存档；不截屏、不评分。
 
 浏览器交互验证使用独立端口 4329 的测试存档，不改动常用 4328 端口的玩家存档。

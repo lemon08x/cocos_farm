@@ -21,7 +21,7 @@ export function contractDigest(m){return sha(JSON.stringify([m.TILE_ART_SPEC,m.T
 export async function readJson(file){return JSON.parse(await fs.readFile(file,'utf8'));}
 export async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
 export async function fileExists(file){try{await fs.access(file);return true;}catch(e){if(e.code==='ENOENT')return false;throw e;}}
-export function sourcePath(id){if(!/^[a-z0-9][a-z0-9.-]*$/.test(id))throw new Error('素材 ID 不合法');return path.join(artDir,'sources',`${id}.png`);}
+export function sourcePath(id,dir=artDir){if(!/^[a-z0-9][a-z0-9.-]*$/.test(id))throw new Error('素材 ID 不合法');return path.join(dir,'sources',`${id}.png`);}
 export function diamondAt(c){return [[c.x,c.y-180],[c.x+300,c.y],[c.x,c.y+180],[c.x-300,c.y]];}
 const points=p=>p.map(v=>v.join(',')).join(' ');
 const color={grass:'#668756',road:'#bf9e6d',river:'#679cac'};
@@ -62,19 +62,20 @@ export function templateSvg(m,job,guide=false){
   const clip=job.kind==='ground'?`<defs><clipPath id="tile"><polygon points="300,0 600,180 300,360 0,180"/></clipPath></defs>`:'';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${job.width}" height="${job.height}" viewBox="0 0 ${job.width} ${job.height}">${clip}<g${job.kind==='ground'?' clip-path="url(#tile)"':''}>${content}</g></svg>`;
 }
-export function promptFor(m,job){
+export function promptFor(m,job,style){
   const ports=job.entry?.sockets?m.TILE_EDGES.map(e=>`${e}=${job.entry.sockets[e]}`).join(', '):'不适用';
   return `素材 ID：${job.id}
 这是一张游戏图块素材，不是完整场景、立体悬浮岛或带边框的卡片。
 内容：${job.entry?.description??(job.kind==='corner'?'所有图块顶点共用的连续草地接缝小图，无主体、无边框':`${job.socket} 接口母版，${job.axis} 方向；中线代表两个图块接缝，图像两半分别属于两侧图块`)}。
-输入参考：art/expansion-previews/02-district-browse.png（美术风格）；当前任务的 control.png（构图与比例）和 guide.png（几何说明）。
+输入参考：${style?style.generation.references.join('、'):'art/expansion-previews/02-district-browse.png'}（美术风格）；当前任务的 control.png（构图与比例）和 guide.png（几何说明）。
 先生成草地顶点与接口母版，再生成单元。已有 sources/edge.* 和 sources/corner.grass.png 时，同时提供对应母版作为材质参考，内部材质向母版靠拢。
 画布：${job.width}×${job.height}；保持参考构图比例和落点，禁止自行裁边、旋转、改变透视或添加底座。
 ${job.kind==='ground'?'整个菱形内部必须画满，包括道路和河流两侧草地；菱形外透明。地面没有悬空厚侧壁。':job.kind==='edge'||job.kind==='corner'?'整个矩形必须不透明；这是接缝母版，不能画可辨识的大物体或阴影。':'只画所需的作物/建筑主体，背景透明，不带草地或土壤底板。'}
 四边接口：${ports}。ul 左上边、ur 右上边、lr 右下边、ll 左下边。
 道路接口占边长 24%；水口占边长 40%；接口居中，接口外均为草地。道路宽度、河岸和水面必须在模板指定位置接出，不能靠近顶点。
 ${job.kind==='edge'?'母版中央横线不是要画的线。必须让纹理自然连续地穿过它；中央道路/河水纵向贯穿整幅图，左右区域为草地。两端不画石头、花或强阴影。':''}
-统一左上光照、右下短影；柔和手绘田园风格，材质和物体比例与风格参考一致。
+风格要求：${style?style.generation.description:'统一左上光照、右下短影；柔和手绘田园风格，材质和物体比例与风格参考一致。'}
+额外排除：${style?.generation.negative||'无'}。只使用本风格的 AI 接缝母版，不能混入其他风格边缘。
 不得把 guide 的红线、文字、点、control 的扁平示意色块或棋盘格画入成品。不要文字、标签、UI、黑白描边或边缘暗角。
 ${job.kind==='ground'?'外围接缝带会由相同的 AI 接口母版统一合成，主体与装饰集中于内部；边缘不要放独特石块、花丛或深阴影。':''}
 ${job.kind==='crop'?'作物行间透明，各生长阶段保持相同种植区域和排列。':''}

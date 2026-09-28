@@ -1,0 +1,558 @@
+{
+  "version": 1,
+  "id": "scenic-tiles",
+  "styleId": "pastoral",
+  "name": "现有田园",
+  "palette": {
+    "ink": "#213d2c",
+    "muted": "#75836f",
+    "paper": "#f8f3e6",
+    "cream": "#eee4cb",
+    "green": "#2e5240",
+    "gold": "#d9a441",
+    "line": "#d9cfb4",
+    "status": "#7aa95c",
+    "caption": "#8a9478",
+    "disabled": "#b9bfae",
+    "warning": "#c96f3b",
+    "shade": "#1c3527",
+    "base": "#5f8a4e",
+    "fog": "#bcc7b4",
+    "map.mist": "#b9bfae",
+    "map.field": "#9a7648",
+    "map.water": "#5b8fa8",
+    "map.green": "#5f8a4e",
+    "map.home": "#d9a441",
+    "map.facility": "#8a6a44",
+    "map.path": "#c2a26e",
+    "map.bridge": "#80633e"
+  },
+  "textureFilter": "linear",
+  "images": {
+    "grass.0": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "grass.0.de2477c0891bda1e.png"
+    },
+    "grass.1": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "grass.1.dd1ab714274dfb2e.png"
+    },
+    "grass.2": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "grass.2.15cdb8c3a1e81151.png"
+    },
+    "field.dry.0": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "field.dry.0.b9619302fe86b785.png"
+    },
+    "field.wet.0": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "field.wet.0.54f0a1ce901a1dec.png"
+    },
+    "courtyard.0": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "courtyard.0.0ad55749b19d968c.png"
+    },
+    "road.end.ul": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.end.ul.77e97d70639b6570.png"
+    },
+    "road.end.ur": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.end.ur.b34742279defbd1b.png"
+    },
+    "road.turn.ul-ur": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.turn.ul-ur.04c017bb9e33de87.png"
+    },
+    "road.end.lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.end.lr.8035c05b78fa1c9b.png"
+    },
+    "road.straight.ul-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.straight.ul-lr.c34788049d16c5ee.png"
+    },
+    "road.turn.ur-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.turn.ur-lr.bce31061de754d63.png"
+    },
+    "road.tee.ul-ur-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.tee.ul-ur-lr.23df6abd3e5fc359.png"
+    },
+    "road.end.ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.end.ll.d929483a7712a6f1.png"
+    },
+    "road.turn.ul-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.turn.ul-ll.47f03f8eb9bb7df1.png"
+    },
+    "road.straight.ur-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.straight.ur-ll.8db0bf893c6f84ce.png"
+    },
+    "road.tee.ul-ur-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.tee.ul-ur-ll.1b694a91114cd3e3.png"
+    },
+    "road.turn.lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.turn.lr-ll.e10f9bb74d6303bc.png"
+    },
+    "road.tee.ul-lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.tee.ul-lr-ll.afcee75253fb8769.png"
+    },
+    "road.tee.ur-lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.tee.ur-lr-ll.5a2dfd74b4b4378b.png"
+    },
+    "road.cross.ul-ur-lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "road.cross.ul-ur-lr-ll.1fbf14d0857aa1f8.png"
+    },
+    "river.end.ul": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.end.ul.3a034e88025d5c2b.png"
+    },
+    "river.end.ur": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.end.ur.783394a4e95841be.png"
+    },
+    "river.turn.ul-ur": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.turn.ul-ur.41d3fbfc952d038b.png"
+    },
+    "river.end.lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.end.lr.ea06c980e5e221fe.png"
+    },
+    "river.straight.ul-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.straight.ul-lr.b56d9a4419f9226b.png"
+    },
+    "river.turn.ur-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.turn.ur-lr.7a18383cabae55b1.png"
+    },
+    "river.tee.ul-ur-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.tee.ul-ur-lr.a6ea50b04c4c1a65.png"
+    },
+    "river.end.ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.end.ll.bac909a8d89f9e46.png"
+    },
+    "river.turn.ul-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.turn.ul-ll.3371153215e2a45c.png"
+    },
+    "river.straight.ur-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.straight.ur-ll.0a9ecaeb2fdc59d0.png"
+    },
+    "river.tee.ul-ur-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.tee.ul-ur-ll.4b23ce2ef1ad1583.png"
+    },
+    "river.turn.lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.turn.lr-ll.6dfd95dc98aa5d9c.png"
+    },
+    "river.tee.ul-lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.tee.ul-lr-ll.550ddc31693f2515.png"
+    },
+    "river.tee.ur-lr-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "river.tee.ur-lr-ll.a9faa2949359e5ea.png"
+    },
+    "bridge.ul-lr": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "bridge.ul-lr.f2ff370927d5eae0.png"
+    },
+    "bridge.ur-ll": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "bridge.ur-ll.d1ebd5022f5c7aea.png"
+    },
+    "crop.wheat.growing": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "crop.wheat.growing.71049082556f4329.png"
+    },
+    "crop.wheat.mature": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "crop.wheat.mature.cc0fc30905755873.png"
+    },
+    "crop.default.growing": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "crop.default.growing.e68dde95d1d9cb79.png"
+    },
+    "crop.default.mature": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "crop.default.mature.20bb98a374c7f235.png"
+    },
+    "object.tree": {
+      "width": 300,
+      "height": 360,
+      "anchor": [
+        0.5,
+        0.75
+      ],
+      "file": "object.tree.56d4220f09fb284e.png"
+    },
+    "object.house": {
+      "width": 600,
+      "height": 540,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "object.house.c0262145594bda97.png"
+    },
+    "icon.arrow": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.arrow.a2f88ee39cf3d41f.png"
+    },
+    "icon.coin": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.coin.8e82f67e661b0412.png"
+    },
+    "icon.date": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.date.fcdf640d4f239ca4.png"
+    },
+    "icon.food": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.food.efefa2712f996663.png"
+    },
+    "icon.pressure": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.pressure.ee1fb672d674414f.png"
+    },
+    "icon.seedling": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.seedling.5565f931495699ac.png"
+    },
+    "icon.todo": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "icon.todo.921963b9b12236b4.png"
+    },
+    "nav.basket": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "nav.basket.ff24da9b6078de56.png"
+    },
+    "nav.calendar": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "nav.calendar.815f5b92236fc55c.png"
+    },
+    "nav.field": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "nav.field.4b3c5e8d742d07d9.png"
+    },
+    "nav.more": {
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "nav.more.89e3fc6796fb3e7d.png"
+    },
+    "field.soil.dry": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "field.dry.0.b9619302fe86b785.png"
+    },
+    "field.soil.wet": {
+      "width": 300,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "field.wet.0.54f0a1ce901a1dec.png"
+    },
+    "env.tree.canopy": {
+      "width": 300,
+      "height": 360,
+      "anchor": [
+        0.5,
+        0.75
+      ],
+      "file": "object.tree.56d4220f09fb284e.png"
+    },
+    "env.homestead": {
+      "width": 600,
+      "height": 540,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "file": "object.house.c0262145594bda97.png"
+    }
+  },
+  "tileVersion": 1,
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "revision": "3ff139dd4844332de285eee073727d040fc1ca65312bcd4033bd4d716ac57646"
+}

@@ -16,6 +16,8 @@
     "tiles:status": "node tools/tile-art.mjs status",
     "tiles:normalize": "node tools/tile-art.mjs normalize",
     "tiles:import": "node tools/tile-art.mjs import",
+    "tiles:style": "node tools/tile-styles.mjs",
+    "tiles:publish": "node tools/publish-tile-art.mjs && node tools/export-art-packs.mjs",
     "test:tiles": "node tools/test-tile-art.mjs"
   },
   "dependencies": {

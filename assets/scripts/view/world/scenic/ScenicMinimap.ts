@@ -21,7 +21,7 @@ export function buildMinimapModel(plots:PlotRenderModel[],camera:WorldCamera,vie
   for(const r of map.regions){
     const at=project(r.center),boundary=r.boundary.map(project);
     if(r.plotId){const p=byId.get(r.plotId);if(p)cells.push({id:p.id,...at,boundary,tone:p.id==='p2q2'?'home':minimapTone(p)});}
-    else environment.push({...at,boundary,tone:r.type==='river'||r.capabilities.waterSource?'water':r.type==='path'?'path':r.type==='bridge'?'bridge':'home'});
+    else environment.push({...at,boundary,tone:r.type==='bridge'?'bridge':r.type==='river'||r.capabilities.waterSource?'water':r.type==='path'?'path':r.ground==='courtyard'?'home':'green'});
   }
   const hw=viewport.width/2/camera.zoom,hh=viewport.height/2/camera.zoom,tl=project({x:camera.x-hw,y:camera.y-hh});
   return {cells,environment,view:{...tl,w:hw*2*scale,h:hh*2*scale},scale};

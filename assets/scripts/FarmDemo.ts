@@ -11,6 +11,7 @@ import { registerCurrentWorldView, type WorldViewHost } from './view/world/curre
 import { registerScenicWorldView, ScenicWorldView } from './view/world/scenic/ScenicWorldView';
 import { clampScenicCamera, zoomCameraAboutPoint } from './view/world/scenic/ScenicLayout';
 import { ScenicHud } from './view/hud/ScenicHud';
+import {ScenicArtPack} from './view/world/scenic/ScenicArtPack';
 import { DistrictNavigator } from './view/hud/DistrictNavigator';
 import type { FarmWorldViewContract } from './view/world/FarmWorldViewContract';
 import { UiKit } from './view/UiKit';
@@ -66,7 +67,7 @@ export class FarmDemo extends Component {
     catch(error){this.saveBlocked=true;this.obs=await this.core.start(undefined);this.toast('原存档读取失败，已保留；当前为临时新局。');console.warn(error);}
     const savedCamera=this.worldPrefs.cameraFor('scenic');if(this.scenicView&&savedCamera)this.scenicView.setCamera(this.clampSceneCamera(savedCamera));
     this.refresh();if(!this.saveBlocked)this.persist();
-    (globalThis as any).__farmDemo=this;  // headless verification handle (tools/verify-scenic-p4.mjs)
+    (globalThis as any).__farmDemo=this;  // isolated functional check (tools/verify-tile-scene.mjs)
   }
   private text(parent:Node,s:string,x:number,y:number,size=28,fill=this.C.ink,w=560,h=50,align=Label.HorizontalAlign.CENTER){return this.ui.text(parent,s,x,y,size,fill,w,h,align);}
   private box(n:Node,w:number,h:number){this.art.surface(n,w,h,this.C.cream,20,this.C.line);}
@@ -173,11 +174,14 @@ export class FarmDemo extends Component {
     view.resize({width:W,height:this.height});
     if(view instanceof ScenicWorldView){
       this.scenicView=view;this.worldVersion='scenic';
+      this.art.setThemePalette(view.images.palette);
       const saved=this.worldPrefs.cameraFor('scenic');if(saved)view.setCamera(this.clampSceneCamera(saved));
     }else{
+      this.art.setThemePalette(null);
       this.worldVersion='current';this.world=FarmWorldView.adapt(view);this.world.background();
     }
     this.worldPrefs.selectVersion(id);
+    if(this.scenicView?.images.recoveredFrom)this.toast('之前选择的地图风格不可用，已使用现有田园风格。');
     if(this.obs)this.refresh();
     return true;
   }
@@ -414,12 +418,34 @@ export class FarmDemo extends Component {
     {label:'操作帮助',run:()=>this.openHelp()},{label:'备份并新开局',run:()=>this.confirmReset()}
   ]);}
   private async openStyles(){
+    if(this.scenicView){await this.openScenicStyles();return;}
     if(this.busy)return;this.busy=true;
     try{this.packs=await ArtPack.catalog();}catch(e){this.toast('风格目录读取失败');return;}finally{this.busy=false;}
     this.menu('美术风格','切换风格保留日期、资源和计划',[
       ...this.packs.map(p=>({label:(p.id===this.art.pack.manifest.id?'当前 · ':'')+p.name,run:()=>void this.switchStyle(p.id)})),
       {label:'重新加载当前风格',run:()=>void this.switchStyle(this.art.pack.manifest.id)}
     ]);
+  }
+  private async openScenicStyles(){
+    if(this.busy||!this.scenicView)return;this.busy=true;
+    try{
+      const styles=await ScenicArtPack.catalog(),current=this.scenicView.images.manifest.styleId;
+      this.menu('地图美术风格','切换保留游戏进度、选中地块和镜头',[
+        ...styles.map(p=>({label:(p.id===current?'当前 · ':'')+p.name,run:()=>void this.switchScenicStyle(p.id)})),
+        {label:'重新加载当前风格',run:()=>void this.switchScenicStyle(current)}
+      ]);
+    }catch(error){console.warn(error);this.toast('地图风格目录读取失败，当前画面保持不变。');}finally{this.busy=false;}
+  }
+  private async switchScenicStyle(id:string){
+    if(this.busy||!this.scenicView)return;this.busy=true;this.toast('正在加载地图风格…');
+    try{
+      await this.scenicView.switchStyle(id);
+      this.art.setThemePalette(this.scenicView.images.palette);this.close();
+      this.clearChildren(this.hud);this.hudView=null;this.scenicHudView=null;this.navigator=null;
+      this.refresh();
+      try{ScenicArtPack.remember(id);}catch(error){console.warn(error);this.toast('风格已切换，但无法保存偏好。');return;}
+      this.toast('已切换：'+this.scenicView.images.manifest.name);
+    }catch(error){console.warn(error);this.toast('地图风格加载失败，已保留原风格。');}finally{this.busy=false;}
   }
   private async switchStyle(id:string){
     if(this.busy)return;this.busy=true;this.toast('正在加载风格…');

@@ -15,10 +15,10 @@ export function scenicThumbnail(p:any):string[]{
     if(p.field?.crop){const stage=(p.maturity?.days??1)<=0?'mature':'growing';slots.push(p.field.crop==='wheat'?`crop.wheat.${stage}`:`crop.default.${stage}`);}
     return slots;
   }
-  if(p.kind==='water'||p.discovery?.id==='spring')return ['env.river.straight'];
+  if(p.kind==='water'||p.discovery?.id==='spring')return [];
   if(p.kind==='tree'||p.discovery?.id==='woodland')return ['env.tree.canopy'];
   if(p.kind==='rock')return [];
-  return ['env.flowers'];
+  return ['grass.0'];
 }
 
 export function plotTitle(p:any):string{

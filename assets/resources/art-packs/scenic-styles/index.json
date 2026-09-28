@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "defaultStyle": "pastoral",
+  "styles": [
+    {
+      "id": "pastoral",
+      "name": "现有田园",
+      "revision": "3ff139dd4844332de285eee073727d040fc1ca65312bcd4033bd4d716ac57646"
+    }
+  ]
+}

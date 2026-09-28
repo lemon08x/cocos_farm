@@ -32,3 +32,5 @@ export class FarmCore {
 export * from './src/game/scene/geometry';
 export * from './src/game/scene/layout';
 export * from './src/game/scene/world';
+export {worldPlot,plotWorld,plotTile,TILE_LAYOUT_VERSION} from './src/game/scene/tile-map';
+export {tileArtCatalog,tileCanvas,TILE_ART_VERSION} from './src/game/scene/tile-art';

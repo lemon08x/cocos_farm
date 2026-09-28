@@ -1,0 +1,104 @@
+{
+  "images": {
+    "icon.arrow": {
+      "file": "icon-arrow.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.coin": {
+      "file": "icon-coin.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.date": {
+      "file": "icon-date.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.food": {
+      "file": "icon-food.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.pressure": {
+      "file": "icon-pressure.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.seedling": {
+      "file": "icon-seedling.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "icon.todo": {
+      "file": "icon-todo.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "nav.basket": {
+      "file": "nav-basket.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "nav.calendar": {
+      "file": "nav-calendar.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "nav.field": {
+      "file": "nav-field.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    },
+    "nav.more": {
+      "file": "nav-more.png",
+      "width": 64,
+      "height": 64,
+      "anchor": [
+        0.5,
+        0.5
+      ]
+    }
+  },
+  "version": 1
+}

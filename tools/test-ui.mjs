@@ -14,7 +14,6 @@ const {MAP_LAYOUT,boardTileSlot}=await moduleAt('assets/scripts/view/world/curre
 const scenicProj=await moduleAt('assets/scripts/view/world/scenic/ScenicProjection.ts');
 const scenicLayout=await moduleAt('assets/scripts/view/world/scenic/ScenicLayout.ts');
 const {hitTestPlot}=await moduleAt('assets/scripts/view/world/scenic/ScenicHitTest.ts');
-const chunkStore=await moduleAt('assets/scripts/view/world/scenic/ScenicChunkStore.ts');
 const scenicMinimap=await moduleAt('assets/scripts/view/world/scenic/ScenicMinimap.ts');
 assert.equal(HOME_PLOT_ID,'p2q2');
 assert.equal(plotName('p1q1'),'田地 1·1');
@@ -101,10 +100,10 @@ assert.deepEqual(scenicThumbnail({kind:'field',land:{water:3}}),['field.soil.wet
 assert.deepEqual(scenicThumbnail({kind:'field',land:{water:1},field:{crop:'wheat'},maturity:{days:5}}),['field.soil.dry','crop.wheat.growing']);
 assert.deepEqual(scenicThumbnail({kind:'field',land:{water:2},field:{crop:'wheat'},maturity:{days:0}}),['field.soil.wet','crop.wheat.mature']);
 assert.deepEqual(scenicThumbnail({kind:'field',land:{water:0},field:{crop:'soy'},maturity:{days:2}}),['field.soil.dry','crop.default.growing'],'unlisted crops fall back to the default stages');
-assert.deepEqual(scenicThumbnail({kind:'water'}),['env.river.straight']);
+assert.deepEqual(scenicThumbnail({kind:'water'}),[]);
 assert.deepEqual(scenicThumbnail({kind:'tree'}),['env.tree.canopy']);
 assert.deepEqual(scenicThumbnail({kind:'story',discovery:{id:'woodland'}}),['env.tree.canopy']);
-assert.deepEqual(scenicThumbnail({kind:'wild'}),['env.flowers']);
+assert.deepEqual(scenicThumbnail({kind:'wild'}),['grass.0']);
 assert.equal(hudBoard.next,nextTaskText(true,obs.game.economy.farm.schedule.tasks,obs));
 assert.ok(hudBoard.money.startsWith('钱 ')&&hudBoard.date.length>0);
 const hudPlain=buildHudViewModel(obs,HOME_PLOT_ID,false);
@@ -137,7 +136,7 @@ assert.ok([...store.keys()].every(k=>k===WORLD_VIEW_PREFERENCES_KEY),'world pref
 store.set(WORLD_VIEW_PREFERENCES_KEY,JSON.stringify({version:42,cameras:{current:{x:'bad',y:1,zoom:2},scenic:{x:1,y:2,zoom:3}}}));
 assert.equal(prefs.preferredVersion(),'scenic','a non-string version must fall back to the main scene');
 assert.equal(prefs.cameraFor('current'),undefined,'non-numeric camera entries must be discarded');
-assert.deepEqual(prefs.cameraFor('scenic'),{x:1,y:2,zoom:3});
+assert.deepEqual(prefs.cameraFor('scenic'),{x:2,y:4,zoom:1.5},'old camera maps once to the expanded ground lattice');
 // --- R2: scenic projection (150/90 steps), plot quads, region layout, hit test, default camera ---
 for(const p of [{x:2,y:2},{x:1,y:1},{x:3,y:3},{x:-4,y:7},{x:0,y:-3},{x:-9,y:-11},{x:5,y:-2},{x:100,y:-80}]){
   const w=scenicProj.logicalToWorld(p);
@@ -160,71 +159,18 @@ assert.deepEqual(scenicProj.logicalToWorld({x:2,y:2}),{x:0,y:0},'p2q2 must ancho
 // Hit test on plot quads: correct plotId incl. boundary, belt and negative cases.
 const homePlots=[];for(let x=1;x<=3;x++)for(let y=1;y<=3;y++)homePlots.push({id:`p${x}q${y}`,x,y});
 assert.equal(hitTestPlot({x:0,y:0},homePlots),'p2q2');
-assert.equal(hitTestPlot({x:0,y:-71},homePlots),'p2q2','the top corner is boundary-inclusive');
-assert.equal(hitTestPlot({x:114,y:0},homePlots),'p2q2','the right corner is boundary-inclusive');
-assert.equal(hitTestPlot({x:57,y:35.5},homePlots),'p2q2','a point on the quad edge belongs to the quad');
-assert.equal(hitTestPlot({x:150,y:90},homePlots),'p3q2','a neighbouring cell center hits that plot');
-assert.equal(hitTestPlot({x:75,y:45},homePlots),null,'the environment belt between quads hits no plot');
-assert.equal(hitTestPlot({x:0,y:300},homePlots),null,'empty world space must not hit');
-assert.equal(hitTestPlot(scenicProj.logicalToWorld({x:-7,y:12}),[{id:'p-7q12',x:-7,y:12}]),'p-7q12','negative coordinates must hit');
+assert.equal(hitTestPlot({x:0,y:-90},homePlots),'p2q2','the top corner is boundary-inclusive');
+assert.equal(hitTestPlot({x:150,y:0},homePlots),'p2q2','the right corner is boundary-inclusive');
+assert.equal(hitTestPlot({x:75,y:45},homePlots),'p2q2','a point on the quad edge belongs to the quad');
+assert.equal(hitTestPlot({x:300,y:180},homePlots),'p3q2','a neighbouring game plot center hits that plot');
+assert.equal(hitTestPlot({x:150,y:90},homePlots),null,'the environmental tile between plots hits no plot');
+assert.equal(hitTestPlot({x:0,y:1000},homePlots),null,'empty world space must not hit');
+assert.equal(hitTestPlot({x:-5700,y:180},[{id:'p-7q12',x:-7,y:12}]),'p-7q12','negative coordinates must hit');
 assert.equal(hitTestPlot({x:0,y:0},[{id:'p2q2',x:2,y:2,interactive:false}]),null,'non-interactive plots must not hit');
 prefs.rememberCamera('scenic',{x:-100,y:40,zoom:1.6});
 prefs.rememberCamera('current',{x:12,y:-34,zoom:1.2});
 assert.deepEqual(prefs.cameraFor('scenic'),{x:-100,y:40,zoom:1.6},'scenic camera must roundtrip');
 assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version cameras must stay separate');
-// --- R2: river continuity, streets, chunks, minimap, centroid zoom ---
-// Chunks: deterministic content, single homestead, neighbor port agreement, visible+ring coverage.
-{
-  const occupied=new Set(obs.game.economy.farm.plots.map(p=>p.x+','+p.y));
-  const a=chunkStore.chunkContent(0,0,occupied),b=chunkStore.chunkContent(0,0,occupied);
-  assert.deepEqual(a,b,'chunk content must be deterministic (coordinate hash, never core RNG)');
-  const c=chunkStore.chunkContent(-2,1,occupied);
-  assert.deepEqual(c,chunkStore.chunkContent(-2,1,occupied),'filler variants must be deterministic');
-  let homesteads=0;
-  for(let cx=-3;cx<=3;cx++)for(let cy=-3;cy<=3;cy++)if(chunkStore.chunkContent(cx,cy,occupied).homestead)homesteads++;
-  assert.equal(homesteads,1,'the homestead must appear exactly once across the whole map');
-  const portShape=ports=>ports.map(p=>({kind:p.kind,world:p.world}));
-  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++){
-    assert.deepEqual(portShape(chunkStore.edgePorts(cx,cy,'e')),portShape(chunkStore.edgePorts(cx+1,cy,'w')),`east/west ports must agree at chunk ${cx},${cy}`);
-    assert.deepEqual(portShape(chunkStore.edgePorts(cx,cy,'s')),portShape(chunkStore.edgePorts(cx,cy+1,'n')),`south/north ports must agree at chunk ${cx},${cy}`);
-  }
-  const edgePortKeys=new Set();
-  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++)
-    for(const p of chunkStore.chunkContent(cx,cy,occupied).ports)edgePortKeys.add(p.kind+Math.round(p.world.x)+','+Math.round(p.world.y));
-  assert.ok([...edgePortKeys].some(k=>k.startsWith('river')),'river boundary connection points must be declared');
-  // Filler decor never lands on observed cells (no mist cover-up, no state leak).
-  for(let cx=-2;cx<=1;cx++)for(let cy=-2;cy<=1;cy++){
-    const content=chunkStore.chunkContent(cx,cy,occupied);
-    for(const cell of content.flowerCells)assert.ok(!occupied.has(cell.x+','+cell.y),'flowers must not sit on an observed cell');
-    for(const t of content.trees){
-      const approx=scenicProj.worldToLogical(t);
-      for(const key of occupied){
-        const [px,py]=key.split(',').map(Number);
-        if(Math.abs(px-approx.x)>1.6||Math.abs(py-approx.y)>1.6)continue;
-        assert.ok(!scenicProj.pointInQuad(t,scenicProj.logicalToWorld({x:px,y:py})),'trees must not cover an observed cell');
-      }
-    }
-    assert.equal(content.groundTiles.length,4,'each chunk owns a 2x2 ground tile set (no blank voids)');
-  }
-  const viewport={width:720,height:1280};
-  for(const cam of [scenicLayout.DEFAULT_CAMERA,{x:390,y:195,zoom:.8},{x:-390,y:495,zoom:.8},{x:scenicLayout.CAMERA_LIMITS.maxX,y:scenicLayout.CAMERA_LIMITS.maxY,zoom:.8}]){
-    const keys=chunkStore.visibleChunkKeys(cam,viewport);
-    assert.ok(keys.length<=24,'visible + one buffer ring must stay bounded');
-    const hw=viewport.width/2/cam.zoom,hh=viewport.height/2/cam.zoom;
-    for(const corner of [{x:cam.x-hw,y:cam.y-hh},{x:cam.x+hw,y:cam.y-hh},{x:cam.x-hw,y:cam.y+hh},{x:cam.x+hw,y:cam.y+hh}])
-      assert.ok(keys.some(k=>{const r=chunkStore.chunkRect(k.cx,k.cy);return corner.x>=r.left&&corner.x<=r.right&&corner.y>=r.top&&corner.y<=r.bottom;}),'visible chunks must cover the viewport (no blank voids)');
-  }
-  const store=new chunkStore.ScenicChunkStore();
-  const needed=chunkStore.visibleChunkKeys(scenicLayout.DEFAULT_CAMERA,viewport);
-  const first=store.sync(needed);
-  assert.equal(first.added.length,needed.length,'first sync builds every needed chunk');
-  assert.equal(first.removed.length,0);
-  const again=store.sync(needed);
-  assert.equal(again.added.length,0,'a stable camera must not rebuild chunks');
-  assert.equal(again.removed.length,0,'a stable camera must not unload chunks');
-  const moved=store.sync(chunkStore.visibleChunkKeys({x:390,y:195,zoom:1},viewport));
-  assert.ok(moved.removed.length>0,'leaving chunks must be released');
-}
 // Minimap model: real observation data only, mist never leaks terrain, viewport tracks the camera.
 {
   assert.equal(scenicMinimap.minimapTone({kind:'unknown',field:{crop:'wheat'}}),'mist','unexplored plots must stay mist even with hidden state');
@@ -253,4 +199,4 @@ assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version c
   const centered=scenicLayout.zoomCameraAboutPoint(cam,{x:cam.x,y:-cam.y},{x:0,y:0},zoom);
   assert.ok(Math.abs(centered.x-cam.x)<1e-9&&Math.abs(centered.y-cam.y)<1e-9,'viewport-center zoom is the degenerate case');
 }
-console.log('UI checks passed: task routing, save roundtrip, scene preferences, geometry, chunks, minimap and camera.');
+console.log('UI checks passed: task routing, save roundtrip, scene preferences, geometry, minimap and camera.');

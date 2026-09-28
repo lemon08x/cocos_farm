@@ -19,10 +19,10 @@ export const CAMERA_LIFT = 40;
 /** First screen (720×1280): homestead upper-left (top slightly off-frame), the
  * central home plots fully readable, west spring/south river run, one bridge,
  * streets and vegetation all in frame (plan §5). */
-export const DEFAULT_CAMERA: WorldCamera = { x: -280, y: 30, zoom: .85 };
+export const DEFAULT_CAMERA: WorldCamera = { x: -560, y: 60, zoom: .65 };
 /** Limits reach the east/south district centers, the whole river run from the
  * courtyard spring to the southern exit, and the street ends. */
-export const CAMERA_LIMITS = { minX: -1250, maxX: 1250, minY: -850, maxY: 1250, minZoom: .8, maxZoom: 2.4 };
+export const CAMERA_LIMITS = { minX: -2500, maxX: 2500, minY: -1700, maxY: 2500, minZoom: .35, maxZoom: 2.4 };
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 export function clampScenicCamera(camera: WorldCamera, bounds?: {minX:number;maxX:number;minY:number;maxY:number}): WorldCamera {

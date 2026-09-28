@@ -9,10 +9,12 @@ export interface DistrictId {x:number;y:number}
 export interface SceneRegion {
   regionId:string;type:string;boundary:WorldPoint[];center:WorldPoint;
   district:DistrictId;plotId?:string;ground:string;innerBoundary?:WorldPoint[];
+  tileCell?:WorldPoint;art?:string;
   capabilities:{selectable:boolean;walkable:boolean;waterSource:boolean;waterLevel?:number};
 }
 export interface SceneSnapshot {
   id:string;version:number;regions:SceneRegion[];
+  tileVersion:number;objects:{id:string;art:string;center:WorldPoint;depth:number}[];
   connections:{from:string;to:string;purpose:string;via?:string}[];
   bounds:{minX:number;maxX:number;minY:number;maxY:number};
 }

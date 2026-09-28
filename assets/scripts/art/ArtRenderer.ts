@@ -6,8 +6,10 @@ export function visualNode(name:string,parent:Node,x=0,y=0,w=0,h=0){const n=new 
 
 /** Owns images and fallback UI surfaces; contains no gameplay or action handlers. */
 export class ArtRenderer {
+  private themePalette:Record<string,string>|null=null;
   constructor(public pack:ArtPack){}
-  get palette(){return this.pack.manifest.palette;}
+  get palette(){return this.themePalette?{...this.pack.manifest.palette,...this.themePalette}:this.pack.manifest.palette;}
+  setThemePalette(palette:Record<string,string>|null){this.themePalette=palette;}
   image(slot:string,parent:Node,x=0,y=0,width?:number,height?:number):Node|null {
     const spec=this.pack.manifest.images[slot],frame=this.pack.frames.get(slot);
     if(!spec||!frame)return null;
@@ -24,7 +26,7 @@ export class ArtRenderer {
   surface(n:Node,w:number,h:number,fill:string,r=18,stroke?:string,slot?:string){
     const C=this.palette;
     const role=slot??(fill===C.green?'ui.primary':fill===C.cream?'ui.card':fill===C.disabled?'ui.disabled':fill===C.status?'ui.status':'ui.panel');
-    if(this.image(role,n,0,0,w,h))return;
+    if(!this.themePalette&&this.image(role,n,0,0,w,h))return;
     const g=n.addComponent(Graphics);g.fillColor=tint(fill);g.roundRect(-w/2,-h/2,w,h,r);g.fill();if(stroke){g.strokeColor=tint(stroke);g.lineWidth=2;g.stroke();}
   }
   shade(n:Node,w:number,h:number){const g=n.addComponent(Graphics);g.fillColor=tint(this.palette.shade,130);g.rect(-w/2,-h/2,w,h);g.fill();}

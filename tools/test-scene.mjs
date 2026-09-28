@@ -7,6 +7,7 @@ export {validateScenicLayout} from './assets/scripts/view/world/scenic/ScenicLay
 export {parseSession} from './core/src/runtime/session.ts';
 export {prepareGameSave,GAME_SAVE_KEY} from './assets/scripts/view/world/GameSaveStorage.ts';
 export {buildMinimapModel,minimapSignature} from './assets/scripts/view/world/scenic/ScenicMinimap.ts';
+export {tileArtCatalog,TILE_EDGES,TILE_EDGE_RULES,tileSocketsMatch} from './core/src/game/scene/tile-art.ts';
 `,resolveDir:process.cwd()},bundle:true,write:false,platform:'node',format:'esm'});
 const m=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
 const core=new m.FarmCore(),obs=await core.start(),initial=JSON.parse(core.save());
@@ -23,13 +24,23 @@ for(const at of [plot(4,6,'wild'),plot(4,8,'wild'),plot(-10,-10,'wild'),plot(30,
 }
 const snapshot=m.buildSceneSnapshot(Object.values(expanded.economy.farm.plots));
 assert.deepEqual(m.validateScenicLayout(snapshot),[]);
+// Every visible cell has matching art sockets, including the road/water split on bridges.
+const tileCatalog=new Map(m.tileArtCatalog().map(a=>[a.id,a]));
+const byTile=new Map(snapshot.regions.map(r=>[`${r.tileCell.x},${r.tileCell.y}`,r]));
+for(const r of snapshot.regions){
+ const art=tileCatalog.get(r.art);assert.ok(art,`missing art for ${r.regionId}`);
+ for(const edge of m.TILE_EDGES){const d=m.TILE_EDGE_RULES[edge],n=byTile.get(`${r.tileCell.x+d.dx},${r.tileCell.y+d.dy}`);if(n)assert.ok(m.tileSocketsMatch(art,edge,tileCatalog.get(n.art)),`${r.regionId} ${edge} interface mismatch`);}
+}
+assert.equal(snapshot.objects.filter(o=>o.id==='homestead').length,1);
+assert.deepEqual(m.worldPlot(m.plotWorld({x:-7,y:12})),{x:-7,y:12});
 const environment=snapshot.regions.filter(r=>!r.plotId);
 for(const r of snapshot.regions.filter(r=>r.plotId)){
- assert.ok(!environment.some(e=>m.scenePolygonsIntersect(r.boundary,e.boundary)),`${r.plotId} overlaps environment`);
+ const inset=r.boundary.map(p=>({x:r.center.x+(p.x-r.center.x)*.999,y:r.center.y+(p.y-r.center.y)*.999}));
+ assert.ok(!environment.some(e=>m.scenePolygonsIntersect(inset,e.boundary)),`${r.plotId} overlaps environmental interior`);
  assert.equal(m.sceneHitTest(r.center,snapshot,new Set([r.plotId])),r.plotId);
  assert.deepEqual(r,m.scenePlotRegion(r.cell.x,r.cell.y));
 }
-for(const r of snapshot.regions.filter(r=>!r.plotId))assert.equal(m.sceneHitTest(r.boundary[0],snapshot,new Set(farm.plots.map(p=>p.id))),null);
+for(const r of snapshot.regions.filter(r=>!r.plotId))assert.equal(m.sceneHitTest(r.center,snapshot,new Set(farm.plots.map(p=>p.id))),null);
 assert.ok(snapshot.bounds.maxY>m.CAMERA_LIMITS.maxY);
 assert.equal(m.clampScenicCamera({x:5000,y:5000,zoom:1},snapshot.bounds).y,5000);
 // No bridge: directly opposing banks remain disconnected. Existing bridges join only exploration.
