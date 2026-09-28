@@ -11,6 +11,7 @@ const outDir = path.join(root, 'art/scenic/reviews');
 const url = process.env.SCENIC_URL || 'http://127.0.0.1:4328/';
 const settleMs = Number(process.env.SCENIC_SETTLE_MS || 14000);
 const outName = process.env.SCENIC_OUT || 'graybox-720x1280.png';
+const [viewW, viewH] = (process.env.SCENIC_SIZE || '720x1280').split('x').map(Number);
 
 const candidates = [
   process.env.CHROME_PATH,
@@ -63,7 +64,7 @@ async function main() {
   const child = spawn(browser, [
     '--headless=new', '--enable-unsafe-swiftshader', '--hide-scrollbars', '--mute-audio',
     '--no-first-run', `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`,
-    '--window-size=720,1280', 'about:blank',
+    `--window-size=${viewW},${viewH}`, 'about:blank',
   ], { stdio: 'ignore' });
   try {
     let wsUrl;
@@ -78,9 +79,9 @@ async function main() {
     const cdp = await connect(wsUrl);
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
-    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 720, height: 1280, deviceScaleFactor: 1, mobile: false });
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: viewW, height: viewH, deviceScaleFactor: 1, mobile: false });
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
-      source: `localStorage.setItem('shanju.cocos.world.v1', JSON.stringify({version:'scenic',cameras:{}}));`,
+      source: `localStorage.setItem('shanju.cocos.world.v1', JSON.stringify({version:'scenic',cameras:${process.env.SCENIC_CAMERA || '{}'}}));`,
     });
     await cdp.send('Page.navigate', { url });
     await sleep(settleMs);
@@ -96,7 +97,7 @@ async function main() {
     const out = path.join(outDir, outName);
     await fs.writeFile(out, Buffer.from(shot.data, 'base64'));
     const stat = await fs.stat(out);
-    console.log(`${outName}: 720x1280, ${stat.size} bytes, page=${state.result.value}`);
+    console.log(`${outName}: ${viewW}x${viewH}, ${stat.size} bytes, page=${state.result.value}`);
     if (errors.length) console.log(`  page errors: ${errors.join(' | ')}`);
     cdp.close();
   } finally {

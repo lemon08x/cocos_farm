@@ -2,7 +2,23 @@ import { cropNames, num, plotName, playerText, taskView } from '../view/FarmPres
 import { boardTileSlot } from '../view/world/current/CurrentMapLayout';
 
 /** Pure mapping from observation data to HUD strings. Matches FarmHud's HudModel. */
-export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string;water:string;todoCount:number}
+export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string;thumbnailScenic:string[];water:string;todoCount:number}
+
+/** Scenic HUD thumbnail: stacked scenic art slots showing the selected plot's real
+ * observed state (soil + crop, environment look for wilderness). Never a board.* slot —
+ * the homestead image must not stand in for field condition (plan §7). */
+export function scenicThumbnail(p:any):string[]{
+  if(!p||p.kind==='unknown')return ['field.unknown'];
+  if(p.kind==='field'){
+    const slots=[(p.land?.water??0)>=2?'field.soil.wet':'field.soil.dry'];
+    if(p.field?.crop){const stage=(p.maturity?.days??1)<=0?'mature':'growing';slots.push(p.field.crop==='wheat'?`crop.wheat.${stage}`:`crop.default.${stage}`);}
+    return slots;
+  }
+  if(p.kind==='water'||p.discovery?.id==='spring')return ['env.river.straight'];
+  if(p.kind==='tree'||p.discovery?.id==='woodland')return ['env.tree.canopy'];
+  if(p.kind==='rock')return [];
+  return ['env.flowers'];
+}
 
 export function plotTitle(p:any):string{
   if(!p)return '田院';
@@ -29,7 +45,7 @@ export function buildHudViewModel(obs:any,selected:string,board:boolean):HudView
     money:'钱 '+num(g.family.money),food:'口粮 '+num(g.economy.foodTotal),pressure:'压力 '+num(g.life.person.pressure),
     field:p?plotName(selected):'地块单元',
     detail:board?(!p||p.kind==='unknown'?'未探索':p.kind==='field'&&p.purpose!=='other'?detail:plotTitle(p)):detail,
-    next:nextTaskText(board,g.economy.farm.schedule.tasks,obs),thumbnail:boardTileSlot(p),
+    next:nextTaskText(board,g.economy.farm.schedule.tasks,obs),thumbnail:boardTileSlot(p),thumbnailScenic:scenicThumbnail(p),
     water:p?.land?.waterName?'水分 '+p.land.waterName:'',todoCount:g.economy.farm.schedule.tasks.length
   };
 }

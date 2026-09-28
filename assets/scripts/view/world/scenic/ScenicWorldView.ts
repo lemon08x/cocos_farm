@@ -1,6 +1,7 @@
 import { Graphics, Label, Node, Sprite, Tween, UITransform, tween, Vec3 } from 'cc';
 import { tint, visualNode } from '../../../art/ArtRenderer';
 import { coordinatesOf } from '../../FarmDistrict';
+import { plotName } from '../../FarmPresentation';
 import type { DistrictId, FarmWorldViewContract, PlotRenderModel, WorldCamera, WorldPoint, WorldRenderModel, WorldViewport } from '../FarmWorldViewContract';
 import type { WorldViewRegistry } from '../WorldViewRegistry';
 import type { WorldViewHost } from '../current/CurrentWorldView';
@@ -17,16 +18,27 @@ export function registerScenicWorldView(registry: WorldViewRegistry<WorldViewHos
 }
 
 interface PlotEntry { node: Node; key: string; x: number; y: number; interactive: boolean }
-type LayerName = 'ground' | 'river' | 'path' | 'plot' | 'env' | 'overlay';
+type LayerName = 'ground' | 'river' | 'plot' | 'path' | 'env' | 'overlay';
 
 /** Graybox fallback colors; the scenic manifest palette overrides where a key exists. */
 const FALLBACK_COLORS: Record<string, string> = {
-  dry: '#9a7648', wet: '#5f5140', wild: '#4e7a40', brush: '#4e7a40',
-  water: '#5b8fa8', tree: '#3c6334', rock: '#8a8a80', story: '#c2a14d'
+  dry: '#9a7648', wet: '#5f5140', water: '#5b8fa8', rock: '#8a8a80'
 };
+/** Grass diamond variants for non-field plots (wild/brush/tree/rock/story ground),
+ * picked by a deterministic coordinate hash — never the core RNG. */
+const GRASS_VARIANTS = ['#5f8a4e', '#649355', '#578549'];
+const BRUSH_GRASS = '#4f7a42';
+const ROCK_GROUND = '#7e8a6a';
+const PATH_EDGE = '#96805a';
+const PATH_FILL = '#c2a26e';
 
-/** Scenic (田园场景) graybox world view: layered oblique rendering with
- * Graphics placeholders plus any scenic manifest images that happen to load.
+/** Deterministic per-cell hash for decoration variants (independent of core RNG). */
+function cellHash(x: number, y: number): number {
+  return ((x * 73856093) ^ (y * 19349663)) >>> 0;
+}
+
+/** Scenic (田园场景) world view: layered oblique rendering driven by the scenic
+ * art pack, with Graphics fallbacks when a slot is missing.
  * Rendering only — no rules commands, no save access, selection via the contract. */
 export class ScenicWorldView implements FarmWorldViewContract {
   private camera: WorldCamera = { ...layout.DEFAULT_CAMERA };
@@ -48,7 +60,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
     sorted.forEach((p, index) => {
       const w = logicalToWorld(p);
       const interactive = p.kind !== 'unknown' || p.reachable === true;
-      const key = JSON.stringify([p.kind, p.field, p.land?.water, (p.maturity?.days ?? 1) <= 0, interactive]);
+      const key = JSON.stringify([p.kind, p.field, p.land?.water, p.discovery?.id, (p.maturity?.days ?? 1) <= 0, interactive]);
       let e = this.plots.get(p.id);
       if (!e) { e = { node: visualNode('Scenic plot ' + p.id, this.layers!.plot, 0, 0, 260, 130), key: '', x: p.x, y: p.y, interactive }; this.plots.set(p.id, e); }
       e.x = p.x; e.y = p.y; e.interactive = interactive;
@@ -110,6 +122,14 @@ export class ScenicWorldView implements FarmWorldViewContract {
     return n;
   }
 
+  /** Grass-covered plot ground with a deterministic decoration overlay. */
+  private drawWildGround(node: Node, p: PlotRenderModel, fill: string) {
+    this.diamond(node, fill);
+    const h = cellHash(p.x, p.y);
+    const overlay = this.placeImage('env.flowers', node, 0, 0);
+    if (overlay) overlay.setScale((h & 1) ? -1 : 1, (h & 2) ? -1 : 1, 1);
+  }
+
   private drawPlot(node: Node, p: PlotRenderModel, interactive: boolean) {
     const P = this.palette;
     if (p.kind === 'unknown') {
@@ -135,12 +155,36 @@ export class ScenicWorldView implements FarmWorldViewContract {
       }
       return;
     }
-    this.diamond(node, FALLBACK_COLORS[p.kind] || FALLBACK_COLORS.wild);
-    if (p.kind === 'tree') {
-      const n = visualNode('Tree', node, 0, 10, 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint(P.shade); g.circle(0, 14, 26); g.fill();
+    if (p.kind === 'water') {
+      if (!this.placeRiverArt(node, cellHash(p.x, p.y) % 2 === 0 ? 'straight-y' : 'straight-x'))
+        this.diamond(node, FALLBACK_COLORS.water);
+      return;
     }
+    if (p.kind === 'tree' || p.discovery?.id === 'woodland') {
+      this.drawWildGround(node, p, GRASS_VARIANTS[cellHash(p.x, p.y) % GRASS_VARIANTS.length]);
+      if (!this.placeImage('env.tree.canopy', node, 0, 8)) {
+        const n = visualNode('Tree', node, 0, 10, 0, 0), g = n.addComponent(Graphics);
+        g.fillColor = tint(P.shade); g.circle(0, 14, 26); g.fill();
+      }
+      return;
+    }
+    if (p.kind === 'rock') {
+      this.diamond(node, ROCK_GROUND);
+      const n = visualNode('Rock', node, 0, 6, 0, 0), g = n.addComponent(Graphics);
+      g.fillColor = tint(FALLBACK_COLORS.rock);
+      g.roundRect(-34, -20, 68, 34, 12); g.fill();
+      g.fillColor = tint('#a3a397'); g.roundRect(-26, -16, 30, 14, 7); g.fill();
+      return;
+    }
+    if (p.discovery?.id === 'spring') {
+      if (!this.placeRiverArt(node, 'straight-x')) this.diamond(node, FALLBACK_COLORS.water);
+      return;
+    }
+    // wild / brush / story and other observed wilderness: grass + deterministic flowers.
+    const h = cellHash(p.x, p.y);
+    this.drawWildGround(node, p, p.kind === 'brush' ? BRUSH_GRASS : GRASS_VARIANTS[h % GRASS_VARIANTS.length]);
   }
+
   private drawSelection(selected: string) {
     const overlay = this.layers!.overlay;
     this.clear(overlay);
@@ -154,16 +198,35 @@ export class ScenicWorldView implements FarmWorldViewContract {
     };
     g.strokeColor = tint(this.palette.gold, 240); g.lineWidth = 9; trace();
     g.strokeColor = tint(this.palette.paper); g.lineWidth = 3; trace();
+    const marker = visualNode('Selected field name', n, 0, -(DIAMOND_HALF_HEIGHT + 34), 168, 44), mg = marker.addComponent(Graphics);
+    mg.fillColor = tint(this.palette.paper, 245); mg.roundRect(-84, -22, 168, 44, 12); mg.fill();
+    mg.strokeColor = tint(this.palette.gold); mg.lineWidth = 3; mg.roundRect(-84, -22, 168, 44, 12); mg.stroke();
+    const caption = visualNode('Name', marker, 0, 0, 160, 40), label = caption.addComponent(Label);
+    label.string = plotName(selected); label.fontSize = 24; label.lineHeight = 30; label.color = tint(this.palette.ink);
   }
 
-  /** Static environment, built once: ground → river → paths → homestead/decor. */
+  /** River art for one cell; straight-y mirrors SPEC §6 by rotating the
+   * long-axis straight 90° inside the same diamond (affine swap of the basis).
+   * Corner variants flip the base left-in → bottom-out corner for the other orientations. */
+  private placeRiverArt(parent: Node, kind: 'straight-x' | 'straight-y' | 'corner' | 'corner-fx' | 'corner-fy' | 'corner-fxy'): Node | null {
+    const isCorner = kind.startsWith('corner');
+    const n = this.placeImage(isCorner ? 'env.river.corner' : 'env.river.straight', parent, 0, 0);
+    if (!n) return null;
+    if (kind === 'straight-y') { n.angle = 90; n.setScale(0.5, 2, 1); }
+    if (kind === 'corner-fx') n.setScale(-1, 1, 1);
+    if (kind === 'corner-fy') n.setScale(1, -1, 1);
+    if (kind === 'corner-fxy') n.setScale(-1, -1, 1);
+    return n;
+  }
+
+  /** Static environment, built once: ground → river → plots → streets → decor. */
   private ensureWorld() {
     if (this.layers) return;
     const L = this.layers = {
       ground: visualNode('Scenic ground', this.map),
       river: visualNode('Scenic river', this.map),
-      path: visualNode('Scenic path', this.map),
       plot: visualNode('Scenic plots', this.map),
+      path: visualNode('Scenic streets', this.map),
       env: visualNode('Scenic environment', this.map),
       overlay: visualNode('Scenic overlay', this.map)
     };
@@ -173,57 +236,81 @@ export class ScenicWorldView implements FarmWorldViewContract {
     if (this.pack.frames.has('ground.base')) for (let i = -4; i <= 4; i++) for (let j = -4; j <= 4; j++) this.placeImage('ground.base', L.ground, i * 512, j * 512);
     for (const seg of layout.RIVER_SEGMENTS) {
       const w = logicalToWorld(seg.cell);
-      const slot = seg.kind === 'corner' ? 'env.river.corner' : seg.kind === 'straight-x' ? 'env.river.straight' : null;
-      if (slot && this.placeImage(slot, L.river, w.x, w.y)) continue;
+      const art = this.placeRiverArt(L.river, seg.kind);
+      if (art) { art.setPosition(w.x, -w.y); continue; }
       const n = visualNode('River ' + seg.cell.x + ',' + seg.cell.y, L.river, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
       g.strokeColor = tint(FALLBACK_COLORS.water); g.lineWidth = 60;
       if (seg.kind === 'straight-y') { g.moveTo(0, 65); g.lineTo(0, -65); }
-      else if (seg.kind === 'corner') { g.moveTo(-130, 0); g.lineTo(0, 0); g.lineTo(0, -65); }
+      else if (seg.kind.startsWith('corner')) { g.moveTo(-130, 0); g.lineTo(0, 0); g.lineTo(0, seg.kind === 'corner-fy' || seg.kind === 'corner-fxy' ? -65 : 65); }
       else { g.moveTo(-130, 0); g.lineTo(130, 0); }
       g.stroke();
     }
-    for (const path of layout.PATHS) {
-      const n = visualNode('Scenic path', L.path, 0, 0, 0, 0), g = n.addComponent(Graphics);
-      g.strokeColor = tint(P.cream); g.lineWidth = path.width;
-      g.moveTo(path.points[0].x, -path.points[0].y);
-      for (const pt of path.points.slice(1)) g.lineTo(pt.x, -pt.y);
-      g.stroke();
+    // Flower overlays sit on the ground below the plot layer (plots may cover them later).
+    for (const cell of layout.FLOWER_CELLS) {
+      const w = logicalToWorld(cell);
+      this.placeImage('env.flowers', L.river, w.x, w.y);
     }
+    // Packed-earth streets: darker wide under-stroke + warm sand core, round joins.
+    for (const path of layout.PATHS) {
+      const n = visualNode('Scenic street', L.path, 0, 0, 0, 0), g = n.addComponent(Graphics);
+      const stroke = (color: string, width: number, alpha: number) => {
+        g.strokeColor = tint(color, alpha); g.lineWidth = width;
+        g.lineCap = Graphics.LineCap.ROUND; g.lineJoin = Graphics.LineJoin.ROUND;
+        g.moveTo(path.points[0].x, -path.points[0].y);
+        for (const pt of path.points.slice(1)) g.lineTo(pt.x, -pt.y);
+        g.stroke();
+      };
+      stroke(PATH_EDGE, path.width + 6, 210);
+      stroke(PATH_FILL, path.width, 255);
+    }
+    const envDepth: { node: Node; y: number }[] = [];
+    const track = (node: Node | null, y: number) => { if (node) envDepth.push({ node, y }); };
     for (const b of layout.BRIDGES) {
-      if (this.placeImage('env.bridge', L.env, b.world.x, b.world.y)) continue;
+      const placed = this.placeImage('env.bridge', L.env, b.world.x, b.world.y);
+      if (placed) { track(placed, b.world.y); continue; }
       const n = visualNode('Bridge', L.env, b.world.x, -b.world.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#8a6a44'); g.roundRect(-75, -16, 150, 32, 6); g.fill();
+      track(n, b.world.y);
     }
     const h = layout.HOMESTEAD;
-    if (!this.placeImage('env.homestead', L.env, h.world.x, h.world.y)) {
+    const homestead = this.placeImage('env.homestead', L.env, h.world.x, h.world.y);
+    if (homestead) track(homestead, h.world.y);
+    else {
       const n = visualNode('Homestead placeholder', L.env, h.world.x, -h.world.y + h.height * (h.anchor[1] - 0.5), 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint(P.cream); g.roundRect(-190, -160, 380, 110, 12); g.fill();
       g.fillColor = tint(P.paper); g.roundRect(-130, -60, 190, 130, 8); g.fill();
       g.fillColor = tint('#7a4f35'); g.moveTo(-160, 70); g.lineTo(-35, 150); g.lineTo(90, 70); g.close(); g.fill();
       g.strokeColor = tint(P.line); g.lineWidth = 3; g.roundRect(-190, -160, 380, 110, 12); g.stroke();
+      track(n, h.world.y);
     }
     for (const s of layout.SIGNPOSTS) {
-      if (this.placeImage('env.signpost', L.env, s.world.x, s.world.y)) continue;
-      const n = visualNode('Signpost ' + s.name, L.env, s.world.x, -s.world.y, 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint('#8a6a44'); g.rect(-4, -60, 8, 60); g.fill();
-      g.fillColor = tint(P.cream); g.roundRect(-55, -100, 110, 44, 6); g.fill();
-      const label = visualNode('Signpost name', n, 0, -78, 106, 40), text = label.addComponent(Label);
+      const placed = this.placeImage('env.signpost', L.env, s.world.x, s.world.y);
+      const n = placed ?? visualNode('Signpost ' + s.name, L.env, s.world.x, -s.world.y, 0, 0);
+      if (!placed) {
+        const g = n.addComponent(Graphics);
+        g.fillColor = tint('#8a6a44'); g.rect(-4, -60, 8, 60); g.fill();
+        g.fillColor = tint(P.cream); g.roundRect(-55, -100, 110, 44, 6); g.fill();
+      }
+      const label = visualNode('Signpost name', n, 0, placed ? 55 : -78, 110, 40), text = label.addComponent(Label);
       text.string = s.name; text.fontSize = 20; text.lineHeight = 26; text.color = tint(P.ink);
+      track(n, s.world.y);
     }
     for (const f of layout.FENCES) {
-      if (this.placeImage('env.fence', L.env, f.x, f.y)) continue;
+      const placed = this.placeImage('env.fence', L.env, f.x, f.y);
+      if (placed) { track(placed, f.y); continue; }
       const n = visualNode('Fence', L.env, f.x, -f.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#8a6a44'); g.rect(-60, -8, 120, 8); g.fill(); g.rect(-60, 6, 120, 8); g.fill();
+      track(n, f.y);
     }
     for (const t of layout.TREES) {
-      if (this.placeImage('env.tree.canopy', L.env, t.x, t.y)) continue;
+      const placed = this.placeImage('env.tree.canopy', L.env, t.x, t.y);
+      if (placed) { track(placed, t.y); continue; }
       const n = visualNode('Tree canopy', L.env, t.x, -t.y, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint('#6b4a30'); g.rect(-6, -20, 12, 30); g.fill();
       g.fillColor = tint(P.shade); g.circle(0, 40, 58); g.fill();
+      track(n, t.y);
     }
-    for (const cell of layout.FLOWER_CELLS) {
-      const w = logicalToWorld(cell);
-      this.placeImage('env.flowers', L.env, w.x, w.y);
-    }
+    // Depth: foreground decor sorts by ground contact point (plan §5.2).
+    envDepth.sort((a, b) => a.y - b.y).forEach((e, i) => e.node.setSiblingIndex(i));
   }
 }

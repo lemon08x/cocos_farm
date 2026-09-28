@@ -7,7 +7,7 @@ const {taskView,playerText,actionSummary,plotName}=await moduleAt('assets/script
 const {PanelStack}=await moduleAt('assets/scripts/view/PanelStack.ts');
 const {districtOf,districtOrigin,localPlotOf,plotAtDistrict,plotPosition,cameraForDistrict,districtAtCamera,HOME_PLOT_ID}=await moduleAt('assets/scripts/view/FarmDistrict.ts');
 const {farmUnitOf,farmUnitStart,farmLocalOf}=await moduleAt('core/src/game/model/farm-coordinates.ts');
-const {buildHudViewModel,nextTaskText,plotTitle:viewTitle}=await moduleAt('assets/scripts/presentation/FarmViewModel.ts');
+const {buildHudViewModel,nextTaskText,plotTitle:viewTitle,scenicThumbnail}=await moduleAt('assets/scripts/presentation/FarmViewModel.ts');
 const {WorldViewPreferences,WORLD_VIEW_PREFERENCES_KEY}=await moduleAt('assets/scripts/view/world/WorldViewPreferences.ts');
 const {WorldViewRegistry,WORLD_VIEW_VERSIONS}=await moduleAt('assets/scripts/view/world/WorldViewRegistry.ts');
 const {MAP_LAYOUT,boardTileSlot}=await moduleAt('assets/scripts/view/world/current/CurrentMapLayout.ts');
@@ -90,6 +90,19 @@ assert.equal(viewTitle(undefined),'田院');
 const hudBoard=buildHudViewModel(obs,HOME_PLOT_ID,true);
 assert.equal(hudBoard.field,'院前田');
 assert.equal(hudBoard.thumbnail,'board.home','the home plot thumbnail must use the homestead slot');
+assert.deepEqual(hudBoard.thumbnailScenic,scenicThumbnail(obs.game.economy.farm.plots.find(p=>p.id===HOME_PLOT_ID)),'scenic thumbnail must derive from the real plot state');
+assert.ok(hudBoard.thumbnailScenic.every(s=>!s.startsWith('board.')),'scenic thumbnail must never reuse board slots');
+assert.ok(hudBoard.thumbnailScenic.length>0&&hudBoard.thumbnailScenic[0]!=='board.home','the homestead image must not replace the field condition thumbnail');
+assert.deepEqual(scenicThumbnail({kind:'unknown'}),['field.unknown'],'unexplored plots show the mist diamond');
+assert.deepEqual(scenicThumbnail({kind:'field',land:{water:0}}),['field.soil.dry']);
+assert.deepEqual(scenicThumbnail({kind:'field',land:{water:3}}),['field.soil.wet']);
+assert.deepEqual(scenicThumbnail({kind:'field',land:{water:1},field:{crop:'wheat'},maturity:{days:5}}),['field.soil.dry','crop.wheat.growing']);
+assert.deepEqual(scenicThumbnail({kind:'field',land:{water:2},field:{crop:'wheat'},maturity:{days:0}}),['field.soil.wet','crop.wheat.mature']);
+assert.deepEqual(scenicThumbnail({kind:'field',land:{water:0},field:{crop:'soy'},maturity:{days:2}}),['field.soil.dry','crop.default.growing'],'unlisted crops fall back to the default stages');
+assert.deepEqual(scenicThumbnail({kind:'water'}),['env.river.straight']);
+assert.deepEqual(scenicThumbnail({kind:'tree'}),['env.tree.canopy']);
+assert.deepEqual(scenicThumbnail({kind:'story',discovery:{id:'woodland'}}),['env.tree.canopy']);
+assert.deepEqual(scenicThumbnail({kind:'wild'}),['env.flowers']);
 assert.equal(hudBoard.next,nextTaskText(true,obs.game.economy.farm.schedule.tasks,obs));
 assert.ok(hudBoard.money.startsWith('钱 ')&&hudBoard.date.length>0);
 const hudPlain=buildHudViewModel(obs,HOME_PLOT_ID,false);
@@ -135,17 +148,49 @@ assert.equal(hitTestPlot({x:65,y:32.5},homePlots),'p3q2','a shared edge resolves
 assert.equal(hitTestPlot({x:0,y:200},homePlots),null,'empty world space must not hit');
 assert.equal(hitTestPlot({x:-130,y:-325},[{id:'p-1q0',x:-1,y:0}]),'p-1q0','negative coordinates must hit');
 assert.equal(hitTestPlot({x:0,y:0},[{id:'p2q2',x:2,y:2,interactive:false}]),null,'non-interactive plots must not hit');
-// Homestead footprint must not overlap any home-district plot diamond.
+// Homestead footprint must not overlap any initial plot diamond (home district + frontier).
 const footprint=scenicLayout.homesteadFootprint();
 const rectEdges=r=>[[{x:r.left,y:r.top},{x:r.right,y:r.top}],[{x:r.right,y:r.top},{x:r.right,y:r.bottom}],[{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}],[{x:r.left,y:r.bottom},{x:r.left,y:r.top}]];
 const diamondEdges=d=>d.map((p,i)=>[p,d[(i+1)%d.length]]);
 const crosses=(a,b,c,d)=>{const o=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
-for(let x=1;x<=3;x++)for(let y=1;y<=3;y++){
+for(let x=1;x<=5;x++)for(let y=1;y<=4;y++){
   const center=scenicProj.logicalToWorld({x,y}),diamond=scenicProj.plotDiamond(center);
   const diamondInside=rectEdges(footprint).some(([,b])=>scenicProj.pointInDiamond(b,center));
-  const cornerInside=diamond.some(p=>p.x>=footprint.left&&p.x<=footprint.right&&p.y>=footprint.top&&p.y<=footprint.bottom);
+  const cornerInside=diamond.some(p=>p.x>footprint.left&&p.x<footprint.right&&p.y>footprint.top&&p.y<footprint.bottom);
   const edgeHit=rectEdges(footprint).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
   assert.ok(!diamondInside&&!cornerInside&&!edgeHit,`homestead must not cover plot p${x}q${y}`);
+}
+// The river chain must never sit on an observed plot cell (the initial world
+// extends past the 5x4 block via extendFarm), and must clear the homestead.
+const plotCells=new Set(obs.game.economy.farm.plots.map(p=>p.x+','+p.y));
+for(const seg of scenicLayout.RIVER_SEGMENTS)
+  assert.ok(!plotCells.has(seg.cell.x+','+seg.cell.y),`river segment ${seg.cell.x},${seg.cell.y} must not share a plot cell`);
+for(const seg of scenicLayout.RIVER_SEGMENTS){
+  const center=scenicProj.logicalToWorld(seg.cell),diamond=scenicProj.plotDiamond(center);
+  const cornerInside=diamond.some(p=>p.x>footprint.left&&p.x<footprint.right&&p.y>footprint.top&&p.y<footprint.bottom);
+  const edgeHit=rectEdges(footprint).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
+  assert.ok(!cornerInside&&!edgeHit,`river segment ${seg.cell.x},${seg.cell.y} must not cross the homestead`);
+}
+// River segments must connect corner-to-corner (shared corners of edge-adjacent cells).
+for(let i=1;i<scenicLayout.RIVER_SEGMENTS.length;i++){
+  const a=scenicLayout.RIVER_SEGMENTS[i-1].cell,b=scenicLayout.RIVER_SEGMENTS[i].cell;
+  const d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+  assert.ok(d===1||d===2,`river cells ${a.x},${a.y} and ${b.x},${b.y} must be adjacent`);
+}
+// Bridges sit on river cells so paths crossing the water stay aligned.
+for(const b of scenicLayout.BRIDGES){
+  const cell=scenicProj.worldToLogical(b.world);
+  assert.ok(scenicLayout.RIVER_SEGMENTS.some(s=>s.cell.x===Math.round(cell.x)&&s.cell.y===Math.round(cell.y)),'each bridge must anchor on a river segment');
+}
+// Foreground tree canopies must not cover any initial plot diamond (180x240, anchor [0.5,0.92]).
+for(const t of scenicLayout.TREES){
+  const canopy={left:t.x-90,right:t.x+90,top:t.y-0.92*240,bottom:t.y+0.08*240};
+  for(let x=1;x<=5;x++)for(let y=1;y<=4;y++){
+    const center=scenicProj.logicalToWorld({x,y}),diamond=scenicProj.plotDiamond(center);
+    const cornerInside=diamond.some(p=>p.x>canopy.left&&p.x<canopy.right&&p.y>canopy.top&&p.y<canopy.bottom);
+    const edgeHit=rectEdges(canopy).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
+    assert.ok(!cornerInside&&!edgeHit,`tree canopy at ${t.x},${t.y} must not cover plot p${x}q${y}`);
+  }
 }
 assert.ok(WORLD_VIEW_VERSIONS.some(v=>v.id==='scenic'&&v.name==='田园场景'),'the registry catalog must list the scenic map version');
 {
@@ -160,4 +205,4 @@ prefs.rememberCamera('scenic',{x:-100,y:40,zoom:1.6});
 prefs.rememberCamera('current',{x:12,y:-34,zoom:1.2});
 assert.deepEqual(prefs.cameraFor('scenic'),{x:-100,y:40,zoom:1.6},'scenic camera must roundtrip');
 assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version cameras must stay separate');
-console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test.');
+console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test, P3 scenic layout (homestead/river/bridges/canopy) and thumbnail mapping.');

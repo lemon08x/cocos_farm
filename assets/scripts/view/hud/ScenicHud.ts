@@ -80,16 +80,29 @@ export class ScenicHud {
       const text = model.todoCount > 0 ? '待办 ' + model.todoCount : '暂无待办';
       if (this.todoLabel.string !== text) this.todoLabel.string = text;
     }
-    if (this.thumbnailParent && model.thumbnail !== this.lastThumbnail) {
-      this.thumbnail?.destroy();
-      this.thumbnail = this.art.image(model.thumbnail, this.thumbnailParent, 0, 0, 128, 128);
-      if (!this.thumbnail) {
-        this.thumbnail = visualNode('Thumbnail placeholder', this.thumbnailParent, 0, 0, 0, 0);
-        const g = this.thumbnail.addComponent(Graphics);
-        g.fillColor = tint(this.art.palette.disabled);
-        g.moveTo(0, -56); g.lineTo(64, 0); g.lineTo(0, 56); g.lineTo(-64, 0); g.close(); g.fill();
+    if (this.thumbnailParent) {
+      const slots = model.thumbnailScenic ?? [];
+      const key = slots.join('|');
+      if (key !== this.lastThumbnail) {
+        this.thumbnail?.destroy(); this.thumbnail = null;
+        const stack = visualNode('Thumbnail stack', this.thumbnailParent, 0, 0, 0, 0);
+        let placed = 0;
+        for (const slot of slots) {
+          const spec = this.images?.spec(slot), frame = this.images?.frames.get(slot);
+          if (!spec || !frame) continue;
+          const s = Math.min(124 / spec.width, 118 / spec.height);
+          const n = visualNode(slot, stack, 0, 0, spec.width * s, spec.height * s);
+          const sp = n.addComponent(Sprite); sp.spriteFrame = frame; sp.sizeMode = Sprite.SizeMode.CUSTOM;
+          n.getComponent(UITransform)!.setContentSize(spec.width * s, spec.height * s);
+          placed++;
+        }
+        if (!placed) {
+          const g = stack.addComponent(Graphics);
+          g.fillColor = tint(this.art.palette.disabled);
+          g.moveTo(0, -56); g.lineTo(64, 0); g.lineTo(0, 56); g.lineTo(-64, 0); g.close(); g.fill();
+        }
+        this.thumbnail = stack; this.lastThumbnail = key;
       }
-      this.lastThumbnail = model.thumbnail;
     }
   }
 }
