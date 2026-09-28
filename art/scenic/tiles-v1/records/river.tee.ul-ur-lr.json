@@ -1,0 +1,10 @@
+{
+  "id": "river.tee.ul-ur-lr",
+  "generator": "OpenAI built-in image_gen (model not exposed); AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "original": "raw/8d1f64ef1eb3911a2c2a60f8a50ddc8b0eb24947d381f10117f2ee83d852b1dd.png",
+  "originalHash": "8d1f64ef1eb3911a2c2a60f8a50ddc8b0eb24947d381f10117f2ee83d852b1dd",
+  "sourceHash": "8d1f64ef1eb3911a2c2a60f8a50ddc8b0eb24947d381f10117f2ee83d852b1dd",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T16:46:36.419Z"
+}

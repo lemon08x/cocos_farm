@@ -1,0 +1,16 @@
+{
+  "id": "edge.river.y",
+  "method": "new AI generation",
+  "original": "generation-records/originals/edge.river.y.png",
+  "originalSha256": "cfc6dd84fe5fcd0290a7c3d3422d5dab8f22cbfe7f617bc222ae82a229afa33c",
+  "previousSource": null,
+  "processing": "Original AI seam; tiles:normalize crop 0,94,2079,567 to 352x96",
+  "source": "sources/edge.river.y.png",
+  "normalizeRecord": "records/edge.river.y.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/tiles-v1/jobs/edge.river.y/control.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

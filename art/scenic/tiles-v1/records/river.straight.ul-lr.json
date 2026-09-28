@@ -1,0 +1,10 @@
+{
+  "id": "river.straight.ul-lr",
+  "generator": "OpenAI built-in image_gen (model not exposed); AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "original": "raw/9a2b3e1ef17169d5d80edbf554dc5a45dd1ec3505082e24430c62aad7b6ab3dc.png",
+  "originalHash": "9a2b3e1ef17169d5d80edbf554dc5a45dd1ec3505082e24430c62aad7b6ab3dc",
+  "sourceHash": "9a2b3e1ef17169d5d80edbf554dc5a45dd1ec3505082e24430c62aad7b6ab3dc",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T16:46:36.229Z"
+}

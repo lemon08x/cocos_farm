@@ -1,0 +1,17 @@
+{
+  "id": "crop.default.mature",
+  "method": "new AI generation",
+  "original": "generation-records/originals/crop.default.mature.png",
+  "originalSha256": "076756ac8cdb7375a4313c0e53d74b5aaec44161b4d219d9f55a09e144617271",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; preserve generated plant alpha",
+  "source": "sources/crop.default.mature.png",
+  "normalizeRecord": "records/crop.default.mature.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/revision-2/sources/crop-default-growing.png",
+    "art/scenic/revision-2/sources/crop-default-mature.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

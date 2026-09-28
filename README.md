@@ -106,4 +106,6 @@ npm start
 
 交给其他 agent 生成素材时，从 [图片生成要求](docs/tile-art-generation-requirements.md) 开始，包含首批 50 个任务、复用范围、原稿记录和交付要求。
 
+首批 50 个素材任务已生成并通过导入校验；逐图来源、处理步骤和已知视觉偏差见 [图片生成报告](art/scenic/tiles-v1/GENERATION-REPORT.md)，总览与拼接预览位于 `art/scenic/tiles-v1/previews/`。新素材仍未接入当前游戏场景。
+
 「清和田院」使用 Grok Build 生成的连续场景与小麦素材。[制作记录](art/grok-qinghe/README.md) 保留首版提示词、原稿和后续连续场景改动；[首版操作实例](http://127.0.0.1:4328/art-study/case-study.html) 是历史对照，并非当前主屏布局。

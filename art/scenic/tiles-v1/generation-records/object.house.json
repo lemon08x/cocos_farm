@@ -1,0 +1,16 @@
+{
+  "id": "object.house",
+  "method": "new AI generation",
+  "original": "generation-records/originals/object.house.png",
+  "originalSha256": "ff64e62b46ba4949d3194d03b03655bdc62276a89d92c616887cbe4889784093",
+  "previousSource": null,
+  "processing": "AI edit of old farmhouse; crop 1,1,1320,1188; proportional resize to 1200x1080; shift 200 px upward so house foundation surrounds anchor (600,540); preserve alpha",
+  "source": "sources/object.house.png",
+  "normalizeRecord": "records/object.house.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/scenic/revision-2/sources/env-homestead.png",
+    "art/scenic/tiles-v1/jobs/object.house/control.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "corner.grass",
+  "method": "new AI generation",
+  "original": "generation-records/originals/corner.grass.png",
+  "originalSha256": "eb452e1910170297f929ddd3e65b40ca498ff1aee1c5b20a49b774c2696b4de9",
+  "previousSource": null,
+  "processing": "Original AI seam; tiles:normalize crop 0,0,1254,1254 to 80x80",
+  "source": "sources/corner.grass.png",
+  "normalizeRecord": "records/corner.grass.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/scenic/tiles-v1/generation-records/originals/grass.0.png",
+    "art/scenic/tiles-v1/generation-records/originals/road.straight.ul-lr.png",
+    "art/scenic/tiles-v1/jobs/corner.grass/control.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

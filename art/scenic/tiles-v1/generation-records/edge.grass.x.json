@@ -1,0 +1,17 @@
+{
+  "id": "edge.grass.x",
+  "method": "new AI generation",
+  "original": "generation-records/originals/edge.grass.x.png",
+  "originalSha256": "edc7b5b58e2721dc5049d56ca6e818d8a4e26da3e1e1c93c40bd107395dc44e5",
+  "previousSource": null,
+  "processing": "Original AI seam; tiles:normalize crop 0,74,2145,585 to 352x96",
+  "source": "sources/edge.grass.x.png",
+  "normalizeRecord": "records/edge.grass.x.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/scenic/tiles-v1/generation-records/originals/grass.0.png",
+    "art/scenic/tiles-v1/generation-records/originals/road.straight.ul-lr.png",
+    "art/scenic/tiles-v1/jobs/edge.grass.x/control.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

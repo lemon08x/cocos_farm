@@ -1,0 +1,17 @@
+{
+  "id": "courtyard.0",
+  "method": "new AI generation",
+  "original": "generation-records/originals/courtyard.0.png",
+  "originalSha256": "9317812ab84766d01138ef485b857ff94f957b5888365343158e182cc4eee788",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "source": "sources/courtyard.0.png",
+  "normalizeRecord": "records/courtyard.0.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/tiles-v1/jobs/courtyard.0/control.png",
+    "art/scenic/tiles-v1/generation-records/references/initial-grass-0.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

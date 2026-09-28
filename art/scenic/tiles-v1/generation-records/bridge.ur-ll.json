@@ -1,0 +1,17 @@
+{
+  "id": "bridge.ur-ll",
+  "method": "new AI generation",
+  "original": "generation-records/originals/bridge.ur-ll.png",
+  "originalSha256": "519da77a61a7445f2838d1a8878be16ca3ba61269846f436cf4ae27730768268",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "source": "sources/bridge.ur-ll.png",
+  "normalizeRecord": "records/bridge.ur-ll.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/tiles-v1/jobs/bridge.ur-ll/control.png",
+    "art/scenic/tiles-v1/sources/edge.river.x.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

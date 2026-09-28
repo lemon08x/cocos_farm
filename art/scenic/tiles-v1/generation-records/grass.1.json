@@ -1,0 +1,17 @@
+{
+  "id": "grass.1",
+  "method": "new AI generation",
+  "original": "generation-records/originals/grass.1.png",
+  "originalSha256": "62c960b48a8b2877cdcdceb69a850199528f979e5fc90c66518adaab48118903",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "source": "sources/grass.1.png",
+  "normalizeRecord": "records/grass.1.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/scenic/tiles-v1/generation-records/originals/road.straight.ul-lr.png",
+    "art/scenic/tiles-v1/generation-records/originals/river.straight.ul-lr.png",
+    "art/scenic/tiles-v1/jobs/grass.1/control.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

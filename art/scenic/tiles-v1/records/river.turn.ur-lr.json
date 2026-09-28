@@ -1,0 +1,10 @@
+{
+  "id": "river.turn.ur-lr",
+  "generator": "OpenAI built-in image_gen (model not exposed); AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "original": "raw/136becc8d8865166b0fcf6fedba643bc297cb92fd8e09be5b402286f964ed705.png",
+  "originalHash": "136becc8d8865166b0fcf6fedba643bc297cb92fd8e09be5b402286f964ed705",
+  "sourceHash": "136becc8d8865166b0fcf6fedba643bc297cb92fd8e09be5b402286f964ed705",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T16:46:36.324Z"
+}

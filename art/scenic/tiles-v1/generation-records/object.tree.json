@@ -1,0 +1,15 @@
+{
+  "id": "object.tree",
+  "method": "reuse and process earlier AI artwork",
+  "original": "generation-records/originals/object.tree.png",
+  "originalSha256": "f4241557f99face21d4162527cb5915e1426aba26bcef622c28ad2502d9edba1",
+  "previousSource": "art/scenic/revision-2/sources/env-tree-canopy.png",
+  "processing": "Preserve earlier AI artwork at original 360x480, no scaling; transparent padding to 600x720, place at (120,100)",
+  "source": "sources/object.tree.png",
+  "normalizeRecord": "records/object.tree.json",
+  "promptSource": "earlier revision-2 generation records",
+  "references": [
+    "art/scenic/revision-2/sources/env-tree-canopy.png"
+  ],
+  "generator": "Existing revision-2 AI artwork"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "river.tee.ur-lr-ll",
+  "method": "new AI generation",
+  "original": "generation-records/originals/river.tee.ur-lr-ll.png",
+  "originalSha256": "101fcdd74f918ad3696f733022a6639f0c8cbea9f272faa8d4b4fc5988bf7eaa",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "source": "sources/river.tee.ur-lr-ll.png",
+  "normalizeRecord": "records/river.tee.ur-lr-ll.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/tiles-v1/jobs/river.tee.ur-lr-ll/control.png",
+    "art/scenic/tiles-v1/sources/edge.river.y.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}

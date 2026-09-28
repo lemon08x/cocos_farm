@@ -1,0 +1,10 @@
+{
+  "id": "crop.default.growing",
+  "generator": "Reuse of revision-2 AI artwork; Preserve earlier AI artwork at original 456x284, no scaling; transparent padding to 600x360, place at (72,38)",
+  "original": "raw/e68dde95d1d9cb7915204c3ba0e77397ec6feb214e3dcc7810f1be40d5d031c9.png",
+  "originalHash": "e68dde95d1d9cb7915204c3ba0e77397ec6feb214e3dcc7810f1be40d5d031c9",
+  "sourceHash": "e68dde95d1d9cb7915204c3ba0e77397ec6feb214e3dcc7810f1be40d5d031c9",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T16:46:37.496Z"
+}

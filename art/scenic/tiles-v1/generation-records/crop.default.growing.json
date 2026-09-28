@@ -1,0 +1,15 @@
+{
+  "id": "crop.default.growing",
+  "method": "reuse and process earlier AI artwork",
+  "original": "generation-records/originals/crop.default.growing.png",
+  "originalSha256": "74ddbdd4942a322280e1767b6901c3896f7b1c340cce73c5ad9bcb1d11e8d2c7",
+  "previousSource": "art/scenic/revision-2/sources/crop-default-growing.png",
+  "processing": "Preserve earlier AI artwork at original 456x284, no scaling; transparent padding to 600x360, place at (72,38)",
+  "source": "sources/crop.default.growing.png",
+  "normalizeRecord": "records/crop.default.growing.json",
+  "promptSource": "earlier revision-2 generation records",
+  "references": [
+    "art/scenic/revision-2/sources/crop-default-growing.png"
+  ],
+  "generator": "Existing revision-2 AI artwork"
+}

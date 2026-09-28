@@ -1,0 +1,10 @@
+{
+  "id": "road.turn.lr-ll",
+  "generator": "OpenAI built-in image_gen (model not exposed); AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "original": "raw/9eacff63f39aa2fde5e3860164e8d9959374875129ecfda3c2d934a217f0fb65.png",
+  "originalHash": "9eacff63f39aa2fde5e3860164e8d9959374875129ecfda3c2d934a217f0fb65",
+  "sourceHash": "9eacff63f39aa2fde5e3860164e8d9959374875129ecfda3c2d934a217f0fb65",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T16:46:35.418Z"
+}

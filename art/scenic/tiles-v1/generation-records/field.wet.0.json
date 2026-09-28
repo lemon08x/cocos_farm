@@ -1,0 +1,17 @@
+{
+  "id": "field.wet.0",
+  "method": "new AI generation",
+  "original": "generation-records/originals/field.wet.0.png",
+  "originalSha256": "d559cc658472520cad61c44d4837e67413e9a037f18b90f5e3040f825ef040ea",
+  "previousSource": null,
+  "processing": "AI image crop 2,1,1615,969; proportional resize to 600x360; fill tiny transparent perimeter gaps with AI grass seam texture; exact diamond alpha mask",
+  "source": "sources/field.wet.0.png",
+  "normalizeRecord": "records/field.wet.0.json",
+  "promptSource": "generation-records/generation-calls.json",
+  "references": [
+    "art/expansion-previews/02-district-browse.png",
+    "art/scenic/tiles-v1/jobs/field.wet.0/control.png",
+    "art/scenic/tiles-v1/generation-records/references/initial-grass-0.png"
+  ],
+  "generator": "OpenAI built-in image_gen (model not exposed)"
+}
