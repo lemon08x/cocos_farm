@@ -104,4 +104,6 @@ npm start
 
 完整四边形拼接的新图片规范已落地为独立生产工具，见 [图块规范](art/scenic/tiles-v1/SPEC.md) 与 [技术模板目录](art/scenic/tiles-v1/index.html)。`npm run tiles:prepare` 生成模板与逐图说明；`tiles:normalize` 登记 AI 原图，`tiles:import` 校验并合成接缝。此目录暂未替换运行时 revision-2 美术，也未完成场景单元映射；技术模板不作为正式美术使用。
 
+交给其他 agent 生成素材时，从 [图片生成要求](docs/tile-art-generation-requirements.md) 开始，包含首批 50 个任务、复用范围、原稿记录和交付要求。
+
 「清和田院」使用 Grok Build 生成的连续场景与小麦素材。[制作记录](art/grok-qinghe/README.md) 保留首版提示词、原稿和后续连续场景改动；[首版操作实例](http://127.0.0.1:4328/art-study/case-study.html) 是历史对照，并非当前主屏布局。
