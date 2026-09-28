@@ -1,10 +1,10 @@
 # 山居农事 · Cocos Demo
 
-Cocos Creator **3.8.8** 的竖屏 2D 农业原型。当前默认界面为「田格手账」：房屋位于中心，地图按每单元 3×3 地块向四周延伸；可以连续拖动、双指缩放。地块外观随真实状态和用途变化，主屏保留资源状态、选中地块卡和四个导航入口。「更多 → 场景版本」可切换到第二版「田园场景」地图（见下文），规则与进度和默认界面完全共用。
+Cocos Creator **3.8.8** 的竖屏 2D 农业原型。当前主场景为「田园场景」（scenic revision-2），后续地图、交互和玩法空间关系以此场景为基准。新用户直接进入主场景；旧用户首次升级会切换到主场景，保留游戏进度和镜头记录。旧版「田格手账」保留在「更多 → 下一页 → 设置 → 场景版本」中，主动切换后的选择会被记住。
 
-![当前游戏主屏](art/fieldbook/final-preview.png)
+[旧版田格手账运行截图](art/fieldbook/final-preview.png)
 
-上图是实际 Web Mobile 运行截图。仓库目前只保存源码和美术素材；`build/` 被 Git 忽略，尚未配置 GitHub Pages，所以推送代码不会自动更新线上可玩的页面。
+该链接保留旧版实际 Web Mobile 运行画面作为历史参考。仓库目前只保存源码和美术素材；`build/` 被 Git 忽略，尚未配置 GitHub Pages，所以推送代码不会自动更新线上可玩的页面。
 
 ## 立即运行
 
@@ -20,7 +20,7 @@ npm start
 
 仓库不包含依赖、编辑器缓存和 `build/` 构建产物；首次运行需要完成构建。UI 回归检查可执行 `npm run test:ui`。
 
-本机已构建的浏览器版本：双击 `start.cmd`，打开 <http://127.0.0.1:4328>。启动窗口需要保持运行。本机需安装 Node.js（当前使用 24）。
+Windows 一键启动：安装 Node.js 24 LTS 后，双击根目录的 `start.cmd`。脚本在缺少构建产物或源码、配置发生变化时按需执行 `npm ci` 和 `npm run build`（首次构建还需安装 Cocos Creator 3.8.8），服务就绪后自动打开 <http://127.0.0.1:4328>。启动窗口需要保持运行，按 `Ctrl+C` 停止服务。构建成功后会记录源码与配置指纹；未发生变化时直接启动，修改后再次双击会自动重新构建。设置了 `PORT` 环境变量时，浏览器会打开对应端口。
 
 命令行启动：
 
@@ -31,11 +31,11 @@ npm start
 
 这是 Cocos 构建的 Web Mobile 版本，尚未打包 Android APK，也尚未做手机真机性能验收。
 
-## 田园场景（第二版）
+## 田园场景（主场景）
 
-「田园场景」是可选的第二版地图表现：区域驱动的连续田园画面（农舍院落、环路、河流与桥、远景合并雾），地块按 150/90 斜面投影排布，耕作四边形 228×142，配独立的分区导航与缩略图。规则、存档与默认「田格手账」完全共用，切换不推进日期。
+「田园场景」是默认主场景：包含农舍院落、道路、河流与桥、远景合并雾，现有地块按 150/90 斜面投影排布，耕作四边形 228×142，配分区导航与缩略图。当前与旧版共用规则和存档，切换不推进日期；后续区域与逻辑统一方案见 [主场景后续方案](docs/scenic-main-scene-followup.md)。
 
-查看方式：`npm run build` 后 `npm start`，打开 <http://127.0.0.1:4328>，进入「更多 → 场景版本 → 田园场景」。场景选择会被记住，下次启动直接生效。
+查看方式：双击 `start.cmd`，或在 `npm run build` 后执行 `npm start`，打开 <http://127.0.0.1:4328>即可进入主场景。如果升级后曾主动切回旧版，可在「更多 → 下一页 → 设置 → 场景版本 → 田园场景」返回。无需清除存档或新开局。启动脚本只检查本地源码与构建状态，不会自动拉取远端 Git 更新；其他环境提交的新版本需先同步到本目录。
 
 设计依据见 `docs/farm-scene-v2-recovery-plan.md`。美术源图、画布模板与生成记录保存在 `art/scenic/revision-2/`（当前生效规格为其中的 SPEC.md）；`node tools/process-scenic-art.mjs` 校验并导出 `assets/resources/art-packs/scenic/`。
 
@@ -86,7 +86,7 @@ npm start
 - `assets/scripts/FarmDemo.ts`：会话协调、地图交互和边缘业务面板。
 - `assets/scripts/art/`：独立的风格配置加载与图片呈现。
 - `assets/scripts/view/`：HUD、返回栈、展示适配、地图与共用 UI 组件。
-- `assets/resources/art-packs/`：运行时美术入口，包含当前默认的田格手账及其他可切换风格。
+- `assets/resources/art-packs/`：运行时美术入口，包含主场景 scenic 美术包与旧版田格手账等风格。
 - `assets/scripts/FarmCore.ts`：自动生成的规则包，请改源文件再运行 `npm run core`。
 - `core/bridge.ts`：原规则与客户端之间的接口。
 - `core/src/`、`core/rulesets/`：原项目规则快照。
@@ -97,7 +97,7 @@ npm start
 - `tools/build.ps1`、`build-config.json`：Creator 命令行构建。
 - `tools/serve.mjs`、`start.cmd`：本机浏览器运行入口。
 
-当前默认美术使用项目内的手绘地块图片与图片图标，原稿保存在 `art/fieldbook/sources/`。地块和图标的重建脚本分别为 `tools/process-fieldbook-art.mjs` 与 `tools/create-fieldbook-icons.mjs`。
+主场景美术原稿保存在 `art/scenic/revision-2/`，通过 `tools/process-scenic-art.mjs` 导出。旧版原稿继续保存在 `art/fieldbook/sources/`，对应脚本为 `tools/process-fieldbook-art.mjs` 与 `tools/create-fieldbook-icons.mjs`。
 
 美术替换步骤、槽位及图片规格见 [ART_GUIDE.md](ART_GUIDE.md)。现有 UI 分层、局限与优化顺序见 [UI_ARCHITECTURE.md](UI_ARCHITECTURE.md)。
 

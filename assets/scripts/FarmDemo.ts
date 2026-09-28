@@ -5,7 +5,7 @@ import { FarmWorldView } from './view/FarmWorldView';
 import { cameraForDistrict, coordinatesOf, districtAtCamera, districtOf, HOME_PLOT_ID, type District } from './view/FarmDistrict';
 import { MapInputController } from './view/world/MapInputController';
 import { WorldViewPreferences } from './view/world/WorldViewPreferences';
-import { WorldViewRegistry } from './view/world/WorldViewRegistry';
+import { DEFAULT_WORLD_VIEW, WorldViewRegistry } from './view/world/WorldViewRegistry';
 import { registerCurrentWorldView, type WorldViewHost } from './view/world/current/CurrentWorldView';
 import { registerScenicWorldView, ScenicWorldView } from './view/world/scenic/ScenicWorldView';
 import { clampScenicCamera, zoomCameraAboutPoint } from './view/world/scenic/ScenicLayout';
@@ -27,7 +27,7 @@ export class FarmDemo extends Component {
   private base!:Node; private map!:Node; private hud!:Node; private overlay!:Node; private fx!:Node;
   private art!:ArtRenderer; private ui!:UiKit; private world:FarmWorldView|null=null;
   private panels=new PanelStack(); private hudView:FarmHud|null=null;
-  private worldVersion='current'; private scenicView:ScenicWorldView|null=null;
+  private worldVersion=DEFAULT_WORLD_VIEW; private scenicView:ScenicWorldView|null=null;
   private scenicHudView:ScenicHud|null=null; private navigator:DistrictNavigator|null=null; private worldSwitchSeq=0;
   private packs:PackInfo[]=[]; private selected=HOME_PLOT_ID;
   private busy=false; private motion=true; private saveBlocked=false;
@@ -55,11 +55,11 @@ export class FarmDemo extends Component {
     try{pack=await ArtPack.load(sys.localStorage.getItem(STYLE)||'fieldbook');}
     catch(error){console.warn(error);pack=await ArtPack.load('fieldbook');}
     this.art=new ArtRenderer(pack);this.ui=new UiKit(this.art);
-    registerCurrentWorldView(this.worldViews);registerScenicWorldView(this.worldViews);
+    registerScenicWorldView(this.worldViews);registerCurrentWorldView(this.worldViews);
     const preferred=this.worldPrefs.preferredVersion();
-    const version=this.worldViews.has(preferred)?preferred:'current';
+    const version=this.worldViews.has(preferred)?preferred:DEFAULT_WORLD_VIEW;
     try{await this.mountWorldVersion(version);}
-    catch(error){console.warn(error);await this.mountWorldVersion('current');}
+    catch(error){console.warn(error);await this.mountWorldVersion('current');this.worldPrefs.selectVersion(version);this.toast('主场景加载失败，暂时使用田格手账，可在设置中重试。');}
     this.bindMap();
     try{this.obs=await this.core.start(sys.localStorage.getItem(SAVE)||undefined);}
     catch(error){this.saveBlocked=true;this.obs=await this.core.start(undefined);this.toast('原存档读取失败，已保留；当前为临时新局。');console.warn(error);}

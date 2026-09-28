@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
 const root=path.resolve(import.meta.dirname,'../build/web-mobile');
 const artRoot=path.resolve(import.meta.dirname,'../assets/resources/art-packs');
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.wasm':'application/wasm','.bin':'application/octet-stream','.ttf':'font/ttf','.woff':'font/woff'};
@@ -16,4 +17,13 @@ http.createServer(async(req,res)=>{
     const data=await fs.readFile(file);
     res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});res.end(data);
   }catch{res.writeHead(404);res.end('Not found. Build with Cocos Creator first.');}
-}).listen(port,'127.0.0.1',()=>console.log(`Shanju Farm: http://127.0.0.1:${port}`));
+}).listen(port,'127.0.0.1',function(){
+  const address=`http://127.0.0.1:${this.address().port}`;
+  console.log(`Shanju Farm: ${address}`);
+  if(process.argv.includes('--open')){
+    const opener=process.platform==='win32'?'explorer.exe':process.platform==='darwin'?'open':'xdg-open';
+    const child=spawn(opener,[address],{stdio:'ignore',detached:true});
+    child.on('error',()=>console.log(`Open this address in your browser: ${address}`));
+    child.unref();
+  }
+});

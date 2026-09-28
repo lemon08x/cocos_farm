@@ -16,6 +16,8 @@ try {
   if ($builtPage.LastWriteTime -lt $buildStarted -or $buildLog -match 'run build task[^\r\n]*failed!') { throw 'The current build failed; older output is not a successful build. See build-editor.log.' }
   & node tools/export-art-packs.mjs
   if ($LASTEXITCODE -ne 0) { throw 'Art pack export failed.' }
+  & node tools/build-state.mjs --write
+  if ($LASTEXITCODE -ne 0) { throw 'Recording build state failed.' }
   Write-Host 'Cocos Web Mobile output generated successfully.'
   Write-Host 'Browser demo: npm start'
 } finally { Pop-Location }
