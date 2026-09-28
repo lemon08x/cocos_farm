@@ -1,5 +1,5 @@
 import type { WorldCamera, WorldViewport } from '../FarmWorldViewContract';
-import { LogicalPoint, ScenicWorldPoint, logicalToWorld, pointInDiamond, worldToLogical } from './ScenicProjection';
+import { LogicalPoint, ScenicWorldPoint, logicalToWorld, pointInQuad, worldToLogical } from './ScenicProjection';
 import * as layout from './ScenicLayout';
 
 /** 地景块缓存与卸载 (plan §5.3). Pure data: no engine imports, so test-ui can
@@ -16,7 +16,9 @@ import * as layout from './ScenicLayout';
  * Boundary connections: every chunk declares its river/street crossing points
  * (ports) per edge. Ports are computed from the shared edge itself, so the two
  * chunks adjacent to an edge always declare the same crossings — the river
- * continues and streets meet no matter which chunks are instantiated.
+ * continues and streets meet no matter which chunks are instantiated. River
+ * ports are the shared-edge midpoints of the water cells (plan §4.2), not
+ * diamond corners.
  *
  * Instantiation & release policy (enforced by ScenicWorldView):
  * - Only chunks returned by visibleChunkKeys (visible rect + one buffer ring)
@@ -25,9 +27,10 @@ import * as layout from './ScenicLayout';
  *   textures: SpriteFrames stay owned by ScenicArtPack (one per world view),
  *   so destroying the chunk nodes releases the only chunk-side references and
  *   texture lifetime is bounded by the view, not by panning.
- * - Filler decor is filtered against the observed plot cells (no decor on top
- *   of mist or fields, and nothing leaks real field states); when exploration
- *   changes the plot set the affected chunks are rebuilt from scratch. */
+ * - Filler decor is filtered against the observed plot quads and the reserved
+ *   homestead/river cells (no decor on top of fields, the courtyard or the
+ *   water, and nothing leaks real field states); when exploration changes the
+ *   plot set the affected chunks are rebuilt from scratch. */
 
 export const CHUNK_SIZE = 1024;
 /** Ground tiles are 512px, so every chunk owns exactly 2×2 of them. */
@@ -76,7 +79,6 @@ function chunkRand(cx: number, cy: number, i: number): number {
   h = Math.imul(h ^ (h >>> 13), 2654435761) >>> 0;
   return (h >>> 8) / 16777216;
 }
-const riverCellSet = new Set(layout.RIVER_SEGMENTS.map(s => s.cell.x + ',' + s.cell.y));
 
 /** Intersection of segment a→b with a chunk edge line, restricted to the edge span. */
 function edgeCrossing(a: ScenicWorldPoint, b: ScenicWorldPoint, rect: ReturnType<typeof chunkRect>, edge: ChunkEdge): ScenicWorldPoint | null {
@@ -137,14 +139,19 @@ function insideOccupied(p: ScenicWorldPoint, occupied: ReadonlySet<string>): boo
   const approx = worldToLogical(p), cx = Math.round(approx.x), cy = Math.round(approx.y);
   for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
     const cell = { x: cx + dx, y: cy + dy };
-    if (occupied.has(cell.x + ',' + cell.y) && pointInDiamond(p, logicalToWorld(cell))) return true;
+    if (occupied.has(cell.x + ',' + cell.y) && pointInQuad(p, logicalToWorld(cell))) return true;
   }
   return false;
 }
 
+function insideHomestead(p: ScenicWorldPoint): boolean {
+  const f = layout.homesteadFootprint();
+  return p.x > f.left - 60 && p.x < f.right + 60 && p.y > f.top - 60 && p.y < f.bottom + 60;
+}
+
 /** Full deterministic content of one chunk. `occupied` holds observed plot cell
- * keys ("x,y"); filler decor never lands on them, so unexplored areas keep
- * their mist and no real field state leaks through decoration. */
+ * keys ("x,y"); filler decor never lands on their quads, so unexplored areas
+ * keep their merged fog and no real field state leaks through decoration. */
 export function chunkContent(cx: number, cy: number, occupied: ReadonlySet<string> = new Set()): ScenicChunkContent {
   const rect = chunkRect(cx, cy);
   const inChunk = (p: ScenicWorldPoint) => p.x >= rect.left && p.x < rect.right && p.y >= rect.top && p.y < rect.bottom;
@@ -162,7 +169,8 @@ export function chunkContent(cx: number, cy: number, occupied: ReadonlySet<strin
   const fences = layout.FENCES.filter(f => inChunk(f));
   const trees = layout.TREES.filter(t => inChunk(t));
   const flowerCells = layout.FLOWER_CELLS.filter(c => inChunk(logicalToWorld(c)));
-  // Filler trees: 1-3 per chunk on free ground, clear of plots, water and streets.
+  // Filler trees: 1-3 per chunk on free ground, clear of plot quads, water,
+  // the courtyard and streets.
   const treeCount = 1 + Math.floor(chunkRand(cx, cy, 0) * 2.999);
   for (let i = 0; i < treeCount; i++) {
     const p = {
@@ -170,13 +178,14 @@ export function chunkContent(cx: number, cy: number, occupied: ReadonlySet<strin
       y: rect.top + 120 + chunkRand(cx, cy, 2 + i * 2) * (CHUNK_SIZE - 240)
     };
     const cell = worldToLogical(p), key = Math.round(cell.x) + ',' + Math.round(cell.y);
-    if (riverCellSet.has(key) || insideOccupied(p, occupied) || nearStreet(p, 110)) continue;
+    if (layout.RIVER_CELLS.has(key) || layout.isHomesteadReservedCell(Math.round(cell.x), Math.round(cell.y))) continue;
+    if (insideOccupied(p, occupied) || insideHomestead(p) || nearStreet(p, 110)) continue;
     if (trees.some(t => Math.hypot(t.x - p.x, t.y - p.y) < 260)) continue;
     trees.push(p);
   }
   // Filler flowers: deterministic free cells inside the chunk.
-  const u0 = Math.floor(rect.left / 130), u1 = Math.ceil(rect.right / 130);
-  const v0 = Math.floor(rect.top / 65), v1 = Math.ceil(rect.bottom / 65);
+  const u0 = Math.floor(rect.left / 150), u1 = Math.ceil(rect.right / 150);
+  const v0 = Math.floor(rect.top / 90), v1 = Math.ceil(rect.bottom / 90);
   for (let u = u0; u <= u1; u++) for (let v = v0; v <= v1; v++) {
     // u = x−y, v+4 = x+y → solve for integer cells only.
     if (((u + v) & 1) !== 0) continue;
@@ -184,7 +193,7 @@ export function chunkContent(cx: number, cy: number, occupied: ReadonlySet<strin
     const w = logicalToWorld(cell);
     if (!inChunk(w)) continue;
     const key = cell.x + ',' + cell.y;
-    if (occupied.has(key) || riverCellSet.has(key)) continue;
+    if (occupied.has(key) || layout.RIVER_CELLS.has(key) || layout.isHomesteadReservedCell(cell.x, cell.y)) continue;
     if (flowerCells.some(c => c.x === cell.x && c.y === cell.y)) continue;
     const h = ((cell.x * 73856093) ^ (cell.y * 19349663)) >>> 0;
     if (h % 5 === 0) flowerCells.push(cell);

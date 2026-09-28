@@ -1,0 +1,25 @@
+Generate ONE game-art asset for a pastoral farm game: a bending river segment sprite. Follow the steps exactly and work efficiently (one image_gen call, then the post-process commands).
+
+STYLE: Look at the attached reference image (art/expansion-previews/02-district-browse.png) and match its river: soft painterly pastoral illustration, blue-green water with delicate white sparkle highlights, lush grassy banks, warm sunlight from the upper-left, soft shadows toward the lower-right. Same brushwork, palette and detail scale as the reference river.
+
+INPUT MOCK: art/scenic/revision-2/templates/mock-env-river-corner.png (attached) is a 1200x720 rough mock that defines the EXACT required composition on a pure #00ff00 green screen: the blue crescent is the water, the olive areas are grassy banks, the gray blobs are stones. The water is a smooth crescent BEND on the left side of the cell: a circular arc centered on the cell's left corner (0,360) with radius 350, from (300,180) to (300,540). The blue water visibly crosses the diamond edge at both endpoints; a grassy wedge at the cell's left corner sits inside the bend.
+
+TASK: Use your built-in image_gen tool in EDIT mode with the mock image as the input image. Repaint it into a polished painterly sprite:
+- Turn the blue crescent into painterly river water in the reference style: blue-green, gentle flow streaks following the bend, subtle white sparkle, soft shaded waterline. KEEP the crescent's exact position, width and both endpoints — the water must still cross the cell edge at (300,180) and (300,540), and the grassy wedge at the left corner must stay grass, not water.
+- Turn the olive areas into lush grassy banks in the reference style, keeping the same coverage; repaint the gray blobs into a few small grey stones along the waterline.
+- Everything that is flat pure green #00ff00 in the mock MUST remain flat pure green #00ff00 — this is a chroma-key background that will be deleted. No texture, no gradient, no vignette, no haze there. Do NOT use black or any other background color.
+- Do NOT move, rotate, mirror, resize or re-compose any element. Do not add new elements.
+- EXCLUDE: no text, no letters, no UI, no frame, no bridge, no buildings, no fences, no people, no animals, no boats, no waterfalls, no extra ponds or side streams.
+- Output the edited image at EXACTLY the same 1200x720 size. If the tool cannot take an input image, generate fresh at the largest landscape size and match the mock composition exactly.
+
+POST-PROCESS (run these exact steps from the project root C:/Users/Geeker/Desktop/github/cocos_farm; adapt the copy command to your shell):
+1. Locate the generated file (the newest file under C:/Users/Geeker/.codex/generated_images/) and copy it unchanged to:
+   art/scenic/revision-2/generation-records/raw/env-river-corner-raw.png
+2. Remove the green background:
+   python "C:/Users/Geeker/.codex/skills/.system/imagegen/scripts/remove_chroma_key.py" --input art/scenic/revision-2/generation-records/raw/env-river-corner-raw.png --out art/scenic/revision-2/generation-records/raw/env-river-corner-keyed.png --auto-key corners --soft-matte --despill --force
+3. Center-crop to 5:3 and resize to exactly 600x360:
+   node art/scenic/revision-2/fit-canvas.mjs art/scenic/revision-2/generation-records/raw/env-river-corner-keyed.png art/scenic/revision-2/sources/env-river-corner.png 600 360
+4. Verify:
+   node art/scenic/revision-2/verify-art.mjs art/scenic/revision-2/sources/env-river-corner.png 600 360 river
+
+Do not modify any other project files. Do not create documentation files. Finally report: the generated image size, the full verify script output, and whether the water still bends from the upper-left midpoint (150,90 of the final 600x360) around the left side to the lower-left midpoint (150,270).

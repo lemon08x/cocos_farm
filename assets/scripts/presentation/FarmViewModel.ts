@@ -2,7 +2,7 @@ import { cropNames, num, plotName, playerText, taskView } from '../view/FarmPres
 import { boardTileSlot } from '../view/world/current/CurrentMapLayout';
 
 /** Pure mapping from observation data to HUD strings. Matches FarmHud's HudModel. */
-export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string;thumbnailScenic:string[];water:string;todoCount:number}
+export interface HudViewModel {date:string;term:string;money:string;food:string;pressure:string;field:string;detail:string;next:string;thumbnail:string;thumbnailScenic:string[];water:string;todoCount:number;fieldShort?:string;todoBadge?:string}
 
 /** Scenic HUD thumbnail: stacked scenic art slots showing the selected plot's real
  * observed state (soil + crop, environment look for wilderness). Never a board.* slot —
@@ -37,6 +37,27 @@ export function fieldDetailText(board:boolean,p:any):string{
     p?.kind==='field'?(board?'空田 · 水分'+(p.land?.waterName||'未知'):'空田 · 查看播种条件\n未到农时可提前安排'):
     plotTitle(p)+(board?' · 查看农事条件':' · 点农事查看');
 }
+/** Scenic 专用短田况（plan §7）：一行概括状态与水分，长度与选中田卡片一起设计，
+ * 不使用旧版多行文案，也不依赖 CLAMP 截断。 */
+export function fieldShortText(p:any):string{
+  if(!p)return '';
+  if(p.kind==='unknown')return '未探索';
+  if(p.kind==='field'&&p.purpose!=='other'){
+    const water='水分'+(p.land?.waterName||'未知');
+    if(p.field?.crop)return (cropNames[p.field.crop]||p.field.crop)+((p.maturity?.days??1)<=0?' · 可以收获':' · 生长中')+' · '+water;
+    return '空田 · '+water;
+  }
+  return plotTitle(p);
+}
+/** Scenic 待办徽标（plan §7）：标明是选中田待办还是全局待办，只数未过期的计划任务。 */
+export function todoBadgeText(selected:string,tasks:any[],obs:any):string{
+  const now=obs?.game?.life?.calendar?.absoluteDay??0;
+  const open=(t:any)=>typeof t?.deadline==='number'?now<t.deadline:true;
+  const mine=tasks.filter((t:any)=>t?.plotId===selected&&open(t)).length;
+  if(mine)return '本田待办 '+mine;
+  const all=tasks.filter(open).length;
+  return all?'全局待办 '+all:'暂无待办';
+}
 export function buildHudViewModel(obs:any,selected:string,board:boolean):HudViewModel{
   const g=obs.game,c=g.life.calendar,p=g.economy.farm.plots.find((p:any)=>p.id===selected);
   const detail=fieldDetailText(board,p);
@@ -46,6 +67,7 @@ export function buildHudViewModel(obs:any,selected:string,board:boolean):HudView
     field:p?plotName(selected):'地块单元',
     detail:board?(!p||p.kind==='unknown'?'未探索':p.kind==='field'&&p.purpose!=='other'?detail:plotTitle(p)):detail,
     next:nextTaskText(board,g.economy.farm.schedule.tasks,obs),thumbnail:boardTileSlot(p),thumbnailScenic:scenicThumbnail(p),
-    water:p?.land?.waterName?'水分 '+p.land.waterName:'',todoCount:g.economy.farm.schedule.tasks.length
+    water:p?.land?.waterName?'水分 '+p.land.waterName:'',todoCount:g.economy.farm.schedule.tasks.length,
+    fieldShort:fieldShortText(p),todoBadge:todoBadgeText(selected,g.economy.farm.schedule.tasks,obs)
   };
 }

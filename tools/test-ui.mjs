@@ -13,6 +13,8 @@ const {WorldViewRegistry,WORLD_VIEW_VERSIONS}=await moduleAt('assets/scripts/vie
 const {MAP_LAYOUT,boardTileSlot}=await moduleAt('assets/scripts/view/world/current/CurrentMapLayout.ts');
 const scenicProj=await moduleAt('assets/scripts/view/world/scenic/ScenicProjection.ts');
 const scenicLayout=await moduleAt('assets/scripts/view/world/scenic/ScenicLayout.ts');
+const scenicRegions=await moduleAt('assets/scripts/view/world/scenic/ScenicRegionLayout.ts');
+const scenicValidation=await moduleAt('assets/scripts/view/world/scenic/ScenicLayoutValidation.ts');
 const {hitTestPlot}=await moduleAt('assets/scripts/view/world/scenic/ScenicHitTest.ts');
 const chunkStore=await moduleAt('assets/scripts/view/world/scenic/ScenicChunkStore.ts');
 const scenicMinimap=await moduleAt('assets/scripts/view/world/scenic/ScenicMinimap.ts');
@@ -133,7 +135,7 @@ store.set(WORLD_VIEW_PREFERENCES_KEY,JSON.stringify({version:42,cameras:{current
 assert.equal(prefs.preferredVersion(),'current','a non-string version must fall back');
 assert.equal(prefs.cameraFor('current'),undefined,'non-numeric camera entries must be discarded');
 assert.deepEqual(prefs.cameraFor('scenic'),{x:1,y:2,zoom:3});
-// --- P2: scenic projection, layout, hit test, registry, default camera ---
+// --- R2: scenic projection (150/90 steps), plot quads, region layout, hit test, default camera ---
 for(const p of [{x:2,y:2},{x:1,y:1},{x:3,y:3},{x:-4,y:7},{x:0,y:-3},{x:-9,y:-11},{x:5,y:-2},{x:100,y:-80}]){
   const w=scenicProj.logicalToWorld(p);
   assert.deepEqual(scenicProj.worldToLogical(w),p,'scenic projection roundtrip '+JSON.stringify(p));
@@ -141,75 +143,110 @@ for(const p of [{x:2,y:2},{x:1,y:1},{x:3,y:3},{x:-4,y:7},{x:0,y:-3},{x:-9,y:-11}
   assert.deepEqual(scenicProj.screenToWorld(s,scenicLayout.DEFAULT_CAMERA),w,'scenic camera transform roundtrip '+JSON.stringify(p));
 }
 assert.deepEqual(scenicProj.logicalToWorld({x:2,y:2}),{x:0,y:0},'p2q2 must anchor the scenic world origin');
+// Revision-2 geometry contract: tilled plot quad 228x142 inside a 300x180 ground cell.
+{
+  const c=scenicProj.logicalToWorld({x:2,y:2});
+  assert.deepEqual(scenicProj.plotQuad(c),[{x:0,y:-71},{x:114,y:0},{x:0,y:71},{x:-114,y:0}],'plot quad half extents are 114x71');
+  assert.deepEqual(scenicProj.cellDiamond(c),[{x:0,y:-90},{x:150,y:0},{x:0,y:90},{x:-150,y:0}],'ground cell diamond half extents are 150x90');
+  assert.ok(scenicProj.pointInQuad({x:114,y:0},c)&&scenicProj.pointInQuad({x:0,y:-71},c),'quad corners are boundary-inclusive');
+  assert.ok(!scenicProj.pointInQuad({x:115,y:0},c),'just past a quad corner is outside');
+  assert.ok(scenicProj.pointInQuad({x:57,y:35.5},c),'a point on the quad edge belongs to the quad');
+  assert.deepEqual(scenicProj.cellEdgeMidpoint({x:4,y:7},'lr'),{x:-375,y:675},'river ports are shared-edge midpoints, not diamond corners');
+  assert.deepEqual(scenicProj.cellEdgeMidpoint({x:5,y:7},'ul'),{x:-375,y:675},'edge-adjacent cells share the same edge midpoint');
+}
+// Hit test on plot quads: correct plotId incl. boundary, belt and negative cases.
 const homePlots=[];for(let x=1;x<=3;x++)for(let y=1;y<=3;y++)homePlots.push({id:`p${x}q${y}`,x,y});
 assert.equal(hitTestPlot({x:0,y:0},homePlots),'p2q2');
-assert.equal(hitTestPlot({x:0,y:-65},homePlots),'p2q2','the top corner is boundary-inclusive');
-assert.equal(hitTestPlot({x:130,y:0},homePlots)===null,false,'the right corner must hit a plot');
-assert.equal(hitTestPlot({x:131,y:0},homePlots),'p3q1','just past the corner belongs to the next diamond');
-assert.equal(hitTestPlot({x:65,y:32.5},homePlots),'p3q2','a shared edge resolves to the front (deeper) plot');
-assert.equal(hitTestPlot({x:0,y:200},homePlots),null,'empty world space must not hit');
-assert.equal(hitTestPlot({x:-130,y:-325},[{id:'p-1q0',x:-1,y:0}]),'p-1q0','negative coordinates must hit');
+assert.equal(hitTestPlot({x:0,y:-71},homePlots),'p2q2','the top corner is boundary-inclusive');
+assert.equal(hitTestPlot({x:114,y:0},homePlots),'p2q2','the right corner is boundary-inclusive');
+assert.equal(hitTestPlot({x:57,y:35.5},homePlots),'p2q2','a point on the quad edge belongs to the quad');
+assert.equal(hitTestPlot({x:150,y:90},homePlots),'p3q2','a neighbouring cell center hits that plot');
+assert.equal(hitTestPlot({x:75,y:45},homePlots),null,'the environment belt between quads hits no plot');
+assert.equal(hitTestPlot({x:0,y:300},homePlots),null,'empty world space must not hit');
+assert.equal(hitTestPlot({x:-150,y:-450},[{id:'p-1q0',x:-1,y:0}]),'p-1q0','negative coordinates must hit');
 assert.equal(hitTestPlot({x:0,y:0},[{id:'p2q2',x:2,y:2,interactive:false}]),null,'non-interactive plots must not hit');
-// Homestead footprint must not overlap any initial plot diamond (home district + frontier).
-const footprint=scenicLayout.homesteadFootprint();
-const rectEdges=r=>[[{x:r.left,y:r.top},{x:r.right,y:r.top}],[{x:r.right,y:r.top},{x:r.right,y:r.bottom}],[{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}],[{x:r.left,y:r.bottom},{x:r.left,y:r.top}]];
-const diamondEdges=d=>d.map((p,i)=>[p,d[(i+1)%d.length]]);
-const crosses=(a,b,c,d)=>{const o=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
-for(let x=1;x<=5;x++)for(let y=1;y<=4;y++){
-  const center=scenicProj.logicalToWorld({x,y}),diamond=scenicProj.plotDiamond(center);
-  const diamondInside=rectEdges(footprint).some(([,b])=>scenicProj.pointInDiamond(b,center));
-  const cornerInside=diamond.some(p=>p.x>footprint.left&&p.x<footprint.right&&p.y>footprint.top&&p.y<footprint.bottom);
-  const edgeHit=rectEdges(footprint).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
-  assert.ok(!diamondInside&&!cornerInside&&!edgeHit,`homestead must not cover plot p${x}q${y}`);
+// Region model: formula plot regions for ANY coordinates + consistent winding.
+{
+  const region=scenicRegions.plotRegion(-7,12);
+  assert.equal(region.plotId,'p-7q12','every logical plot gets a region by formula, incl. negative and expansion coordinates');
+  assert.equal(region.type,'plot');
+  assert.equal(region.boundary.length,4);
+  const regions=[...scenicRegions.courtyardRegions(),region,scenicRegions.plotRegion(2,2)];
+  for(const r of regions){
+    assert.ok(r.regionId&&r.boundary.length>=3&&r.ground&&r.layer,'region carries id, boundary, ground material and draw layer');
+    assert.ok(['plot','path','river','environment','bridge'].includes(r.type),'region type must be one of the plan §3.2 types');
+  }
+  const sign=b=>{let a=0;for(let i=0;i<b.length;i++){const p=b[i],q=b[(i+1)%b.length];a+=p.x*q.y-q.x*p.y;}return Math.sign(a);};
+  assert.equal(new Set(regions.map(r=>sign(r.boundary))).size,1,'all region boundaries share one consistent winding');
+  const river=scenicRegions.riverRegions();
+  assert.ok(river.every((r,i)=>i===0||r.connections.some(c=>c.to===river[i-1].regionId&&c.port)),'river regions declare their shared-edge connection ports');
 }
+// The full layout check: plot quads vs paths/river, quad separation, river chain
+// continuity via shared-edge midpoints + single component, bridges on straight-x
+// segments, homestead clearance — over courtyard, east/south, negative and expansion ranges.
+assert.deepEqual(scenicValidation.validateScenicLayout(),[],'the revision-2 region layout must be geometrically valid');
 // The river chain must never sit on an observed plot cell (the initial world
-// extends past the 5x4 block via extendFarm), and must clear the homestead.
+// extends past the known block via extendFarm).
 const plotCells=new Set(obs.game.economy.farm.plots.map(p=>p.x+','+p.y));
 for(const seg of scenicLayout.RIVER_SEGMENTS)
   assert.ok(!plotCells.has(seg.cell.x+','+seg.cell.y),`river segment ${seg.cell.x},${seg.cell.y} must not share a plot cell`);
-for(const seg of scenicLayout.RIVER_SEGMENTS){
-  const center=scenicProj.logicalToWorld(seg.cell),diamond=scenicProj.plotDiamond(center);
-  const cornerInside=diamond.some(p=>p.x>footprint.left&&p.x<footprint.right&&p.y>footprint.top&&p.y<footprint.bottom);
-  const edgeHit=rectEdges(footprint).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
-  assert.ok(!cornerInside&&!edgeHit,`river segment ${seg.cell.x},${seg.cell.y} must not cross the homestead`);
+// The homestead reserves only distant unknown cells (never known or frontier plots).
+for(const key of scenicLayout.HOMESTEAD_RESERVED){
+  const [x,y]=key.split(',').map(Number);
+  const p=obs.game.economy.farm.plots.find(p=>p.x===x&&p.y===y);
+  assert.ok(!p||(p.kind==='unknown'&&p.reachable!==true),`homestead reserved cell ${key} must be a distant unknown plot`);
 }
-// River segments must connect corner-to-corner (shared corners of edge-adjacent cells).
+// Consecutive river segments share exactly one edge midpoint (spot check on top of the full validation).
 for(let i=1;i<scenicLayout.RIVER_SEGMENTS.length;i++){
-  const a=scenicLayout.RIVER_SEGMENTS[i-1].cell,b=scenicLayout.RIVER_SEGMENTS[i].cell;
-  const d=Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-  assert.ok(d===1||d===2,`river cells ${a.x},${a.y} and ${b.x},${b.y} must be adjacent`);
+  const a=scenicLayout.riverPorts(scenicLayout.RIVER_SEGMENTS[i-1]),b=scenicLayout.riverPorts(scenicLayout.RIVER_SEGMENTS[i]);
+  assert.ok(a.some(pa=>b.some(pb=>Math.hypot(pa.x-pb.x,pa.y-pb.y)<1e-6)),`river segments ${i-1} and ${i} must share an edge midpoint`);
 }
-// Bridges sit on river cells so paths crossing the water stay aligned.
+// Bridges anchor on straight-x river cells so paths crossing the water stay aligned.
 for(const b of scenicLayout.BRIDGES){
-  const cell=scenicProj.worldToLogical(b.world);
-  assert.ok(scenicLayout.RIVER_SEGMENTS.some(s=>s.cell.x===Math.round(cell.x)&&s.cell.y===Math.round(cell.y)),'each bridge must anchor on a river segment');
+  const seg=scenicLayout.RIVER_SEGMENTS.find(s=>s.cell.x===b.cell.x&&s.cell.y===b.cell.y);
+  assert.ok(seg&&seg.kind==='straight-x','each bridge must anchor on a straight-x river segment');
 }
-// Foreground tree canopies must not cover any initial plot diamond (180x240, anchor [0.5,0.92]).
+// Foreground tree canopies must not cover any interactive plot quad (180x240, anchor [0.5,0.92]).
+const rectEdges=r=>[[{x:r.left,y:r.top},{x:r.right,y:r.top}],[{x:r.right,y:r.top},{x:r.right,y:r.bottom}],[{x:r.right,y:r.bottom},{x:r.left,y:r.bottom}],[{x:r.left,y:r.bottom},{x:r.left,y:r.top}]];
+const quadEdges=d=>d.map((p,i)=>[p,d[(i+1)%d.length]]);
+const crosses=(a,b,c,d)=>{const o=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0;};
 for(const t of scenicLayout.TREES){
   const canopy={left:t.x-90,right:t.x+90,top:t.y-0.92*240,bottom:t.y+0.08*240};
-  for(let x=1;x<=5;x++)for(let y=1;y<=4;y++){
-    const center=scenicProj.logicalToWorld({x,y}),diamond=scenicProj.plotDiamond(center);
-    const cornerInside=diamond.some(p=>p.x>canopy.left&&p.x<canopy.right&&p.y>canopy.top&&p.y<canopy.bottom);
-    const edgeHit=rectEdges(canopy).some(([a,b])=>diamondEdges(diamond).some(([c,d])=>crosses(a,b,c,d)));
-    assert.ok(!cornerInside&&!edgeHit,`tree canopy at ${t.x},${t.y} must not cover plot p${x}q${y}`);
+  for(const p of obs.game.economy.farm.plots){
+    if(p.kind==='unknown'&&p.reachable!==true)continue;
+    const center=scenicProj.logicalToWorld(p),quad=scenicProj.plotQuad(center);
+    const cornerInside=quad.some(pt=>pt.x>canopy.left&&pt.x<canopy.right&&pt.y>canopy.top&&pt.y<canopy.bottom);
+    const edgeHit=rectEdges(canopy).some(([a,b])=>quadEdges(quad).some(([c,d])=>crosses(a,b,c,d)));
+    assert.ok(!cornerInside&&!edgeHit,`tree canopy at ${t.x},${t.y} must not cover plot ${p.id}`);
   }
 }
 assert.ok(WORLD_VIEW_VERSIONS.some(v=>v.id==='scenic'&&v.name==='田园场景'),'the registry catalog must list the scenic map version');
+// Default camera (720x1280): 4-6 central home plots fully visible, homestead
+// upper-left, river + one bridge + streets + vegetation in frame (plan §5).
 {
-  const cam=scenicLayout.DEFAULT_CAMERA;let shown=0;
+  const cam=scenicLayout.DEFAULT_CAMERA,hw=720/2/cam.zoom,hh=1280/2/cam.zoom;
+  const vp={left:cam.x-hw,right:cam.x+hw,top:cam.y-hh,bottom:cam.y+hh};
+  let shown=0;
   for(let x=1;x<=3;x++)for(let y=1;y<=3;y++){
-    const w=scenicProj.logicalToWorld({x,y});
-    if(Math.abs(w.x-cam.x)*cam.zoom<=360&&Math.abs(w.y-cam.y)*cam.zoom<=640)shown++;
+    const c=scenicProj.logicalToWorld({x,y});
+    if(scenicProj.plotQuad(c).every(p=>p.x>=vp.left&&p.x<=vp.right&&p.y>=vp.top&&p.y<=vp.bottom))shown++;
   }
-  assert.ok(shown>=4&&shown<=6,`the scenic default camera must show 4-6 home plots in 720x1280, got ${shown}`);
+  assert.ok(shown>=4&&shown<=6,`the scenic default camera must show 4-6 home plots fully in 720x1280, got ${shown}`);
+  const f=scenicLayout.homesteadFootprint();
+  assert.ok(f.left<vp.left+hw&&f.right>vp.left&&f.top<vp.top+hh&&f.bottom>vp.top,'the homestead must compose the upper-left of the first screen');
+  const inFrame=p=>p.x>=vp.left&&p.x<=vp.right&&p.y>=vp.top&&p.y<=vp.bottom;
+  assert.ok(scenicLayout.RIVER_SEGMENTS.some(s=>inFrame(scenicProj.logicalToWorld(s.cell))),'the river must join the first screen');
+  assert.ok(scenicLayout.BRIDGES.some(b=>inFrame(b.world)),'a bridge must join the first screen');
+  assert.ok(scenicLayout.PATHS.some(p=>p.points.some(inFrame)),'streets must join the first screen');
+  assert.ok(scenicLayout.TREES.some(inFrame),'vegetation must join the first screen');
 }
 prefs.rememberCamera('scenic',{x:-100,y:40,zoom:1.6});
 prefs.rememberCamera('current',{x:12,y:-34,zoom:1.2});
 assert.deepEqual(prefs.cameraFor('scenic'),{x:-100,y:40,zoom:1.6},'scenic camera must roundtrip');
 assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version cameras must stay separate');
-// --- P4: connected districts, chunks, minimap, centroid zoom ---
-// The river is one connected chain: every port either meets another segment's
-// port, is the spring source, or exits the pannable bounds (no dead-ends).
+// --- R2: river continuity, streets, chunks, minimap, centroid zoom ---
+// The river is one connected chain via shared-edge midpoints: every port either
+// meets another segment's port, is the spring source, or exits the pannable bounds.
 {
   const L=scenicLayout.CAMERA_LIMITS,margin={x:720/2/L.minZoom,y:1280/2/L.minZoom};
   const bounds={minX:L.minX-margin.x,maxX:L.maxX+margin.x,minY:L.minY-margin.y,maxY:L.maxY+margin.y};
@@ -228,20 +265,19 @@ assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version c
       assert.ok(partners.length>=2||outside(p)||spring,`river port of cell ${seg.cell.x},${seg.cell.y} must connect, exit or be the spring`);
     }
   });
-  // Single connected component via shared vertices.
+  // Single connected component via shared edge midpoints.
   const parent=scenicLayout.RIVER_SEGMENTS.map((_,i)=>i);
   const find=i=>parent[i]===i?i:(parent[i]=find(parent[i]));
   for(const list of byVertex.values())for(let i=1;i<list.length;i++)parent[find(list[0])]=find(list[i]);
   assert.equal(new Set(scenicLayout.RIVER_SEGMENTS.map((_,i)=>find(i))).size,1,'the river must be one continuous waterway');
 }
-// East/south streets continue across district borders and cross the river at the south bridge.
+// East/south streets continue across district borders and cross the river only at bridges.
 {
   const pts=scenicLayout.PATHS.flatMap(p=>p.points);
   assert.ok(pts.some(p=>p.x>650),'a street must continue east across the district border');
   assert.ok(pts.some(p=>p.y>260),'a street must continue south across the district border');
-  const southBridge=scenicLayout.BRIDGES[1];
-  assert.ok(southBridge,'the south river run must have a bridge');
-  assert.ok(pts.some(p=>Math.hypot(p.x-southBridge.world.x,p.y-southBridge.world.y)<=130),'the south street must cross the river at the south bridge');
+  for(const bridge of scenicLayout.BRIDGES)
+    assert.ok(pts.some(p=>Math.hypot(p.x-bridge.world.x,p.y-bridge.world.y)<=130),'a street must cross the river at each bridge');
   for(const d of scenicLayout.SCENIC_DISTRICTS){
     const c=scenicLayout.districtCenter(d.district),L=scenicLayout.CAMERA_LIMITS;
     assert.ok(c.x>=L.minX&&c.x<=L.maxX&&c.y+scenicLayout.CAMERA_LIFT>=L.minY&&c.y+scenicLayout.CAMERA_LIFT<=L.maxY,`${d.name} must stay pannable`);
@@ -275,7 +311,7 @@ assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version c
       for(const key of occupied){
         const [px,py]=key.split(',').map(Number);
         if(Math.abs(px-approx.x)>1.6||Math.abs(py-approx.y)>1.6)continue;
-        assert.ok(!scenicProj.pointInDiamond(t,scenicProj.logicalToWorld({x:px,y:py})),'trees must not cover an observed cell');
+        assert.ok(!scenicProj.pointInQuad(t,scenicProj.logicalToWorld({x:px,y:py})),'trees must not cover an observed cell');
       }
     }
     assert.equal(content.groundTiles.length,4,'each chunk owns a 2x2 ground tile set (no blank voids)');
@@ -327,4 +363,4 @@ assert.deepEqual(prefs.cameraFor('current'),{x:12,y:-34,zoom:1.2},'per-version c
   const centered=scenicLayout.zoomCameraAboutPoint(cam,{x:cam.x,y:-cam.y},{x:0,y:0},zoom);
   assert.ok(Math.abs(centered.x-cam.x)<1e-9&&Math.abs(centered.y-cam.y)<1e-9,'viewport-center zoom is the degenerate case');
 }
-console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, P2 scenic projection/layout/hit-test, P3 scenic layout (homestead/river/bridges/canopy) and thumbnail mapping, P4 river continuity/ports, chunk determinism/release, minimap model and centroid zoom.');
+console.log('UI regression checks passed: 3x3 districts, signed expansion and save, plan/date, task routing and guards, P1 world-view isolation, R2 scenic projection/quads/regions/hit-test, scenic layout validation (homestead/river/bridges/paths/canopy) and thumbnail mapping, R2 river continuity/shared-edge ports, chunk determinism/release, minimap model and centroid zoom.');

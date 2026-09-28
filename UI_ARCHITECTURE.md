@@ -22,9 +22,29 @@
 | view/PanelStack.ts | 页面栈、返回、同页分页替换、选田上下文恢复与销毁 |
 | view/FarmPresentation.ts | 玩家名称、行动展示、规则说明清理、待办状态与操作匹配检查 |
 | view/UiKit.ts | 共用文字、按钮、拖动取消点击、可滚动长文本 |
-| view/FarmWorldView.ts | 地图增量刷新、命中、边界与选中标签、收获标记 |
+| view/FarmWorldView.ts | 兼容入口，委托 view/world/current 实现；地图增量刷新、命中、边界与选中标签 |
+| view/world/WorldViewRegistry.ts | 场景版本注册表（current=田格手账，scenic=田园场景），切换只重建视图层 |
 | art/ArtRenderer.ts / ArtPack.ts | 风格资源、图片和底板渲染、资源生命周期 |
 | FarmCore / core/bridge.ts | 沿用 submitCommand → transition → observeSession 的规则调用链 |
+
+## 田园场景（scenic，第二版）
+
+第二版地图表现经 WorldViewRegistry 注册为 `scenic`，由「更多 → 场景版本」切换；切换只重建视图层，规则、存档与页面栈不动。几何约定：逻辑坐标 → 世界像素 `wx=(x−y)·150`、`wy=(x+y−4)·90`（p2q2 在原点）；地面单元菱形 300×180，地块耕作四边形 228×142，两者之间为道路/田埂/河岸环境带；河流只经共享边中点衔接，不走角点。v1 的固定 2:1、260×130 菱形与角点连接约定已废弃。
+
+| 模块 | 职责 |
+| --- | --- |
+| view/world/scenic/ScenicProjection.ts | 投影、单元菱形/地块四边形、边中点端口、线段与多边形纯几何 |
+| view/world/scenic/ScenicLayout.ts | 地块排布、默认镜头、缩放/拖动约束与分区中心 |
+| view/world/scenic/ScenicRegionLayout.ts | 院落、河流链、环路、树冠等环境区域的单元占用模型 |
+| view/world/scenic/ScenicLayoutValidation.ts | 布局离线校验（房屋/河流/桥/道路/树冠），供回归测试使用 |
+| view/world/scenic/ScenicHitTest.ts | 世界坐标 → 地块命中（四边形判定，环境带不命中） |
+| view/world/scenic/ScenicWorldView.ts | 分层渲染（地面/雾/河流/地块/道路/环境/叠加）、镜头、focusPlot 与选中脉冲 |
+| view/world/scenic/ScenicChunkStore.ts | 环境装饰按块确定性生成、可见性缓存与释放 |
+| view/world/scenic/ScenicMinimap.ts | 分区缩略图模型与质心缩放 |
+| view/world/scenic/ScenicArtPack.ts | scenic 美术包与调色板加载（assets/resources/art-packs/scenic） |
+| view/hud/ScenicHud.ts | 田园 HUD：日期资源条与选中田卡 |
+| view/hud/DistrictNavigator.ts | 分区导航：缩略图、分区切换与收起 |
+| presentation/FarmViewModel.ts | HUD 视图模型；新增 fieldShort 与 todoBadge 供田园 HUD 使用 |
 
 ## 布局与可读性
 
@@ -39,5 +59,6 @@
 - `npm run test:ui`：真实核心的新局计划/日期/存档往返，任务日期与操作类型保护，返回栈与分页上下文，规则文案保留。
 - `tsconfig.ui.json`：面向 Cocos UI 脚本的 TypeScript 检查配置，使用 Creator 自带 TypeScript 与项目生成声明。
 - `npm run build`：生成 Web Mobile 版本。
+- `node tools/verify-scenic-r2.mjs`：田园场景第二版冒烟检查（需 `npm start` 运行中）；无头浏览器验证 scenic 启动、投影/镜头/命中、美术包 HTTP 200 与渲染异常，并输出 720×1280 首屏截图到 `art/scenic/revision-2/screenshots/`。
 
 浏览器交互验证使用独立端口 4329 的测试存档，不改动常用 4328 端口的玩家存档。

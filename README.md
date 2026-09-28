@@ -1,6 +1,6 @@
 # 山居农事 · Cocos Demo
 
-Cocos Creator **3.8.8** 的竖屏 2D 农业原型。当前默认界面为「田格手账」：房屋位于中心，地图按每单元 3×3 地块向四周延伸；可以连续拖动、双指缩放。地块外观随真实状态和用途变化，主屏保留资源状态、选中地块卡和四个导航入口。
+Cocos Creator **3.8.8** 的竖屏 2D 农业原型。当前默认界面为「田格手账」：房屋位于中心，地图按每单元 3×3 地块向四周延伸；可以连续拖动、双指缩放。地块外观随真实状态和用途变化，主屏保留资源状态、选中地块卡和四个导航入口。「更多 → 场景版本」可切换到第二版「田园场景」地图（见下文），规则与进度和默认界面完全共用。
 
 ![当前游戏主屏](art/fieldbook/final-preview.png)
 
@@ -31,6 +31,14 @@ npm start
 
 这是 Cocos 构建的 Web Mobile 版本，尚未打包 Android APK，也尚未做手机真机性能验收。
 
+## 田园场景（第二版）
+
+「田园场景」是可选的第二版地图表现：区域驱动的连续田园画面（农舍院落、环路、河流与桥、远景合并雾），地块按 150/90 斜面投影排布，耕作四边形 228×142，配独立的分区导航与缩略图。规则、存档与默认「田格手账」完全共用，切换不推进日期。
+
+查看方式：`npm run build` 后 `npm start`，打开 <http://127.0.0.1:4328>，进入「更多 → 场景版本 → 田园场景」。场景选择会被记住，下次启动直接生效。
+
+设计依据见 `docs/farm-scene-v2-recovery-plan.md`。美术源图、画布模板与生成记录保存在 `art/scenic/revision-2/`（当前生效规格为其中的 SPEC.md）；`node tools/process-scenic-art.mjs` 校验并导出 `assets/resources/art-packs/scenic/`。
+
 ## 在 Cocos 中打开
 
 1. 在 Cocos Dashboard 中导入本文件夹，选择 Creator 3.8.8。
@@ -58,6 +66,7 @@ npm start
 - 「休养」保留原有半日休息，压力为零时不可执行。
 - 面板左上图片按钮返回上一页并保留分页/滚动位置，右上图片按钮回到田院；长说明可上下滑动。
 - 每次执行后显示真实资源和日期变化，自动保存。设置可手动保存、切换风格或备份后新开局。
+- 「更多 → 场景版本」在「田格手账」与第二版「田园场景」之间切换地图表现，规则、资源与进度保持不变。
 
 新局从正月初一开始，起始田为空田。小麦在惊蛰才可播种；可以先安排计划、开垦、整治或学习，不绕开农时、材料、知识与时间条件。
 
@@ -84,6 +93,7 @@ npm start
 - `art/*.svg`：本 Demo 的可编辑程序绘制素材源。
 - `assets/resources/art/`：保留的示例背景和农舍源图，不再作为运行时入口。
 - `tools/art.mjs`：导出原示例素材；不会覆盖已编辑的风格包。
+- `tools/process-scenic-art.mjs`：导出田园场景美术包到 `assets/resources/art-packs/scenic/`（源图 `art/scenic/revision-2/sources/`，HUD 图标沿用 `art/scenic/sources/icons/`）。
 - `tools/build.ps1`、`build-config.json`：Creator 命令行构建。
 - `tools/serve.mjs`、`start.cmd`：本机浏览器运行入口。
 

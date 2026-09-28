@@ -5,8 +5,9 @@ import { plotName } from '../../FarmPresentation';
 import type { DistrictId, FarmWorldViewContract, PlotRenderModel, WorldCamera, WorldPoint, WorldRenderModel, WorldViewport } from '../FarmWorldViewContract';
 import type { WorldViewRegistry } from '../WorldViewRegistry';
 import type { WorldViewHost } from '../current/CurrentWorldView';
-import { DIAMOND_HALF_HEIGHT, DIAMOND_HALF_WIDTH, ScenicWorldPoint, logicalToWorld } from './ScenicProjection';
+import { QUAD_HALF_HEIGHT, QUAD_HALF_WIDTH, ScenicWorldPoint, logicalToWorld } from './ScenicProjection';
 import * as layout from './ScenicLayout';
+import { isEnvironmentReservedCell } from './ScenicRegionLayout';
 import { hitTestPlot } from './ScenicHitTest';
 import { ScenicArtPack } from './ScenicArtPack';
 import { CHUNK_SIZE, ScenicChunkStore, chunkContent, chunkKey, visibleChunkKeys } from './ScenicChunkStore';
@@ -19,13 +20,13 @@ export function registerScenicWorldView(registry: WorldViewRegistry<WorldViewHos
 }
 
 interface PlotEntry { node: Node; key: string; x: number; y: number; interactive: boolean }
-type LayerName = 'ground' | 'river' | 'plot' | 'path' | 'env' | 'overlay';
+type LayerName = 'ground' | 'fog' | 'river' | 'plot' | 'path' | 'env' | 'overlay';
 
 /** Graybox fallback colors; the scenic manifest palette overrides where a key exists. */
 const FALLBACK_COLORS: Record<string, string> = {
-  dry: '#9a7648', wet: '#5f5140', water: '#5b8fa8', rock: '#8a8a80'
+  dry: '#9a7648', wet: '#5f5140', water: '#5b8fa8', rock: '#8a8a80', fog: '#b9bfae'
 };
-/** Grass diamond variants for non-field plots (wild/brush/tree/rock/story ground),
+/** Grass quad variants for non-field plots (wild/brush/tree/rock/story ground),
  * picked by a deterministic coordinate hash — never the core RNG. */
 const GRASS_VARIANTS = ['#5f8a4e', '#649355', '#578549'];
 const BRUSH_GRASS = '#4f7a42';
@@ -38,14 +39,16 @@ function cellHash(x: number, y: number): number {
   return ((x * 73856093) ^ (y * 19349663)) >>> 0;
 }
 
-/** Scenic (田园场景) world view: layered oblique rendering driven by the scenic
- * art pack, with Graphics fallbacks when a slot is missing.
- * Rendering only — no rules commands, no save access, selection via the contract. */
+/** Scenic (田园场景) world view, revision 2: region-driven layered rendering.
+ * Plot quads, the decorative river chain, belt streets, courtyard environment
+ * and merged unknown-area fog all come from the shared layout geometry
+ * (plan §4/§7). Rendering only — no rules commands, no save access. */
 export class ScenicWorldView implements FarmWorldViewContract {
   private camera: WorldCamera = { ...layout.DEFAULT_CAMERA };
   private viewport: WorldViewport = { width: 720, height: 1280 };
   private layers: Record<LayerName, Node> | null = null;
   private plots = new Map<string, PlotEntry>();
+  private fogSignature = '';
   private chunkStore = new ScenicChunkStore();
   private chunks = new Map<string, { ground: Node; river: Node; path: Node; env: Node }>();
   private chunkOccupiedSig = '';
@@ -66,12 +69,13 @@ export class ScenicWorldView implements FarmWorldViewContract {
       const interactive = p.kind !== 'unknown' || p.reachable === true;
       const key = JSON.stringify([p.kind, p.field, p.land?.water, p.discovery?.id, (p.maturity?.days ?? 1) <= 0, interactive]);
       let e = this.plots.get(p.id);
-      if (!e) { e = { node: visualNode('Scenic plot ' + p.id, this.layers!.plot, 0, 0, 260, 130), key: '', x: p.x, y: p.y, interactive }; this.plots.set(p.id, e); }
+      if (!e) { e = { node: visualNode('Scenic plot ' + p.id, this.layers!.plot, 0, 0, 228, 142), key: '', x: p.x, y: p.y, interactive }; this.plots.set(p.id, e); }
       e.x = p.x; e.y = p.y; e.interactive = interactive;
       e.node.setPosition(w.x, -w.y); e.node.setSiblingIndex(index);
       if (e.key === key) return;
       e.key = key; this.clear(e.node); this.drawPlot(e.node, p, interactive);
     });
+    this.syncFog(sorted);
     this.drawSelection(model.selected);
     this.syncChunks();
   }
@@ -122,39 +126,70 @@ export class ScenicWorldView implements FarmWorldViewContract {
     n.getComponent(UITransform)!.setContentSize(spec.width, spec.height);
     return n;
   }
-  private diamond(parent: Node, fill: string, alpha = 255): Node {
-    const n = visualNode('Diamond', parent, 0, 0, 0, 0), g = n.addComponent(Graphics);
+  private quad(parent: Node, fill: string, alpha = 255): Node {
+    const n = visualNode('Plot quad', parent, 0, 0, 0, 0), g = n.addComponent(Graphics);
     g.fillColor = tint(fill, alpha);
-    g.moveTo(0, -DIAMOND_HALF_HEIGHT); g.lineTo(DIAMOND_HALF_WIDTH, 0); g.lineTo(0, DIAMOND_HALF_HEIGHT); g.lineTo(-DIAMOND_HALF_WIDTH, 0); g.close(); g.fill();
+    g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.fill();
     return n;
+  }
+  /** Explicit quad outline for interactive (frontier/reachable/reserved) unknowns. */
+  private quadOutline(parent: Node, color: string, alpha: number) {
+    const n = visualNode('Quad outline', parent, 0, 0, 0, 0), g = n.addComponent(Graphics);
+    g.strokeColor = tint(color, alpha); g.lineWidth = 4;
+    g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.stroke();
   }
 
   /** Grass-covered plot ground with a deterministic decoration overlay. */
   private drawWildGround(node: Node, p: PlotRenderModel, fill: string) {
-    this.diamond(node, fill);
+    this.quad(node, fill);
     const h = cellHash(p.x, p.y);
     const overlay = this.placeImage('env.flowers', node, 0, 0);
     if (overlay) overlay.setScale((h & 1) ? -1 : 1, (h & 2) ? -1 : 1, 1);
   }
 
+  /** Real water-source plots stay identifiable (plan §3.1): a recognizable
+   * water quad with a bank post, never confused with the decorative river. */
+  private drawWaterPlot(node: Node) {
+    const P = this.palette;
+    this.quad(node, FALLBACK_COLORS.water);
+    const n = visualNode('Water ripples', node, 0, 0, 0, 0), g = n.addComponent(Graphics);
+    g.strokeColor = tint(P.paper, 160); g.lineWidth = 5; g.lineCap = Graphics.LineCap.ROUND;
+    for (const [y, half] of [[-18, 52], [6, 76]] as const) { g.moveTo(-half, y); g.lineTo(-half + 34, y); g.moveTo(half - 34, y + 10); g.lineTo(half, y + 10); }
+    g.stroke();
+    const post = visualNode('Water sign', node, 58, -58, 0, 0), pg = post.addComponent(Graphics);
+    pg.fillColor = tint('#8a6a44'); pg.rect(-3, -6, 6, 30); pg.fill();
+    pg.fillColor = tint(P.cream); pg.roundRect(-22, -30, 44, 26, 6); pg.fill();
+    pg.fillColor = tint(FALLBACK_COLORS.water); pg.circle(0, -17, 7); pg.fill();
+  }
+
   private drawPlot(node: Node, p: PlotRenderModel, interactive: boolean) {
     const P = this.palette;
+    // Homestead/river reserved cells render as environment, never as field
+    // quads; an interactive frontier there still gets an explicit outline.
+    if (isEnvironmentReservedCell(p.x, p.y)) {
+      if (interactive) this.quadOutline(node, P.paper, 150);
+      return;
+    }
     if (p.kind === 'unknown') {
-      if (!this.placeImage('field.unknown', node, 0, 0)) this.diamond(node, P.disabled, interactive ? 150 : 90);
+      // Distant unknowns merge into the fog cluster layer (drawn in syncFog);
+      // only frontier/reachable unknowns get their own quad + outline (plan §4.4).
+      if (!interactive) return;
+      if (!this.placeImage('field.unknown', node, 0, 0)) this.quad(node, P.disabled, 150);
+      this.quadOutline(node, P.paper, 170);
       return;
     }
     if (p.kind === 'field') {
       const wet = (p.land?.water ?? 0) >= 2;
-      if (!this.placeImage(wet ? 'field.soil.wet' : 'field.soil.dry', node, 0, 0)) this.diamond(node, wet ? FALLBACK_COLORS.wet : FALLBACK_COLORS.dry);
+      if (!this.placeImage(wet ? 'field.soil.wet' : 'field.soil.dry', node, 0, 0)) this.quad(node, wet ? FALLBACK_COLORS.wet : FALLBACK_COLORS.dry);
       this.placeImage('field.ridge', node, 0, 0);
       if (p.field?.crop) {
         const stage = (p.maturity?.days ?? 1) <= 0 ? 'mature' : 'growing';
         const specific = `crop.${p.field.crop}.${stage}`;
         if (!this.placeImage(this.pack.frames.has(specific) ? specific : `crop.default.${stage}`, node, 0, 0)) {
           const n = visualNode('Crop rows', node, 0, 0, 0, 0), g = n.addComponent(Graphics);
-          g.strokeColor = tint(stage === 'mature' ? P.gold : P.status); g.lineWidth = 10;
-          for (const y of [-30, -10, 10, 30]) {
-            const half = DIAMOND_HALF_WIDTH * (1 - Math.abs(y) / DIAMOND_HALF_HEIGHT) * 0.8;
+          g.strokeColor = tint(stage === 'mature' ? P.gold : P.status); g.lineWidth = 9;
+          for (const y of [-36, -12, 12, 36]) {
+            const half = QUAD_HALF_WIDTH * (1 - Math.abs(y) / QUAD_HALF_HEIGHT) * 0.8;
             g.moveTo(-half, y); g.lineTo(half, y);
           }
           g.stroke();
@@ -162,11 +197,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
       }
       return;
     }
-    if (p.kind === 'water') {
-      if (!this.placeRiverArt(node, cellHash(p.x, p.y) % 2 === 0 ? 'straight-y' : 'straight-x'))
-        this.diamond(node, FALLBACK_COLORS.water);
-      return;
-    }
+    if (p.kind === 'water') { this.drawWaterPlot(node); return; }
     if (p.kind === 'tree' || p.discovery?.id === 'woodland') {
       this.drawWildGround(node, p, GRASS_VARIANTS[cellHash(p.x, p.y) % GRASS_VARIANTS.length]);
       if (!this.placeImage('env.tree.canopy', node, 0, 8)) {
@@ -176,20 +207,62 @@ export class ScenicWorldView implements FarmWorldViewContract {
       return;
     }
     if (p.kind === 'rock') {
-      this.diamond(node, ROCK_GROUND);
+      this.quad(node, ROCK_GROUND);
       const n = visualNode('Rock', node, 0, 6, 0, 0), g = n.addComponent(Graphics);
       g.fillColor = tint(FALLBACK_COLORS.rock);
       g.roundRect(-34, -20, 68, 34, 12); g.fill();
       g.fillColor = tint('#a3a397'); g.roundRect(-26, -16, 30, 14, 7); g.fill();
       return;
     }
-    if (p.discovery?.id === 'spring') {
-      if (!this.placeRiverArt(node, 'straight-x')) this.diamond(node, FALLBACK_COLORS.water);
-      return;
-    }
+    if (p.discovery?.id === 'spring') { this.drawWaterPlot(node); return; }
     // wild / brush / story and other observed wilderness: grass + deterministic flowers.
     const h = cellHash(p.x, p.y);
     this.drawWildGround(node, p, p.kind === 'brush' ? BRUSH_GRASS : GRASS_VARIANTS[h % GRASS_VARIANTS.length]);
+  }
+
+  /** Merged unknown-area fog (plan §4.4): distant unknown plots no longer draw
+   * one mist tile each — each connected cluster of unreachable unknowns gets a
+   * single soft fog blob on the fog layer (below rivers/paths/plots), while
+   * frontier and selected unknowns keep explicit quads on the plot layer.
+   * Merging is visual only: hit tests still resolve the underlying plotIds. */
+  private syncFog(sorted: PlotRenderModel[]) {
+    const distant = new Map<string, { x: number; y: number }>();
+    for (const p of sorted)
+      if (p.kind === 'unknown' && p.reachable !== true && !isEnvironmentReservedCell(p.x, p.y)) distant.set(p.x + ',' + p.y, { x: p.x, y: p.y });
+    const sig = Array.from(distant.keys()).sort().join('|');
+    if (sig === this.fogSignature) return;
+    this.fogSignature = sig;
+    const fog = this.layers!.fog;
+    this.clear(fog);
+    const seen = new Set<string>();
+    for (const key of distant.keys()) {
+      if (seen.has(key)) continue;
+      // Flood-fill one 4-adjacent cluster.
+      const cluster: { x: number; y: number }[] = [], queue = [key];
+      seen.add(key);
+      while (queue.length) {
+        const k = queue.pop()!, cell = distant.get(k)!;
+        cluster.push(cell);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const nk = (cell.x + dx) + ',' + (cell.y + dy);
+          if (distant.has(nk) && !seen.has(nk)) { seen.add(nk); queue.push(nk); }
+        }
+      }
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (const cell of cluster) {
+        const w = logicalToWorld(cell);
+        minX = Math.min(minX, w.x); maxX = Math.max(maxX, w.x);
+        minY = Math.min(minY, w.y); maxY = Math.max(maxY, w.y);
+      }
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      const scale = Math.min(6, Math.max(1.5, (maxX - minX + 228) / 228, (maxY - minY + 142) / 142));
+      const art = this.placeImage('field.unknown', fog, cx, cy);
+      if (art) { art.setScale(scale, scale, 1); continue; }
+      const n = visualNode('Fog cluster', fog, cx, -cy, 0, 0), g = n.addComponent(Graphics);
+      g.fillColor = tint(FALLBACK_COLORS.fog, 120);
+      const hw = (maxX - minX) / 2 + QUAD_HALF_WIDTH, hh = (maxY - minY) / 2 + QUAD_HALF_HEIGHT;
+      g.moveTo(0, -hh); g.lineTo(hw, 0); g.lineTo(0, hh); g.lineTo(-hw, 0); g.close(); g.fill();
+    }
   }
 
   private drawSelection(selected: string) {
@@ -201,36 +274,34 @@ export class ScenicWorldView implements FarmWorldViewContract {
     const w = logicalToWorld(c);
     const n = visualNode('Selection outline', overlay, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
     const trace = () => {
-      g.moveTo(0, -DIAMOND_HALF_HEIGHT); g.lineTo(DIAMOND_HALF_WIDTH, 0); g.lineTo(0, DIAMOND_HALF_HEIGHT); g.lineTo(-DIAMOND_HALF_WIDTH, 0); g.close(); g.stroke();
+      g.moveTo(0, -QUAD_HALF_HEIGHT); g.lineTo(QUAD_HALF_WIDTH, 0); g.lineTo(0, QUAD_HALF_HEIGHT); g.lineTo(-QUAD_HALF_WIDTH, 0); g.close(); g.stroke();
     };
     g.strokeColor = tint(this.palette.gold, 240); g.lineWidth = 9; trace();
     g.strokeColor = tint(this.palette.paper); g.lineWidth = 3; trace();
-    const marker = visualNode('Selected field name', n, 0, -(DIAMOND_HALF_HEIGHT + 34), 168, 44), mg = marker.addComponent(Graphics);
+    const marker = visualNode('Selected field name', n, 0, -(QUAD_HALF_HEIGHT + 34), 168, 44), mg = marker.addComponent(Graphics);
     mg.fillColor = tint(this.palette.paper, 245); mg.roundRect(-84, -22, 168, 44, 12); mg.fill();
     mg.strokeColor = tint(this.palette.gold); mg.lineWidth = 3; mg.roundRect(-84, -22, 168, 44, 12); mg.stroke();
     const caption = visualNode('Name', marker, 0, 0, 160, 40), label = caption.addComponent(Label);
     label.string = plotName(selected); label.fontSize = 24; label.lineHeight = 30; label.color = tint(this.palette.ink);
   }
 
-  /** River art for one cell; straight-y mirrors SPEC §6 by rotating the
-   * long-axis straight 90° inside the same diamond (affine swap of the basis).
-   * Corner variants flip the base left-in → bottom-out corner for the other orientations. */
-  private placeRiverArt(parent: Node, kind: 'straight-x' | 'straight-y' | 'corner' | 'corner-fx' | 'corner-fy' | 'corner-fxy'): Node | null {
-    const isCorner = kind.startsWith('corner');
-    const n = this.placeImage(isCorner ? 'env.river.corner' : 'env.river.straight', parent, 0, 0);
+  /** River art for one water cell: dedicated orientation slots, corners only
+   * ever need the base art plus a 180° rotation (plan §6.4 — no mirroring). */
+  private placeRiverArt(parent: Node, seg: layout.RiverSegment): Node | null {
+    const slot = seg.kind === 'corner' ? 'env.river.corner' : seg.kind === 'straight-y' ? 'env.river.straight.y' : 'env.river.straight';
+    const n = this.placeImage(slot, parent, 0, 0);
     if (!n) return null;
-    if (kind === 'straight-y') { n.angle = 90; n.setScale(0.5, 2, 1); }
-    if (kind === 'corner-fx') n.setScale(-1, 1, 1);
-    if (kind === 'corner-fy') n.setScale(1, -1, 1);
-    if (kind === 'corner-fxy') n.setScale(-1, -1, 1);
+    if (seg.rotation === 180) n.angle = 180;
     return n;
   }
 
-  /** Layers only; all environment content is chunk-driven (plan §5.3). */
+  /** Layers only; all environment content is chunk-driven (plan §5.3). The fog
+   * layer sits below the river so merged unknown ground never covers water. */
   private ensureWorld() {
     if (this.layers) return;
     this.layers = {
       ground: visualNode('Scenic ground', this.map),
+      fog: visualNode('Scenic fog', this.map),
       river: visualNode('Scenic river', this.map),
       plot: visualNode('Scenic plots', this.map),
       path: visualNode('Scenic streets', this.map),
@@ -275,20 +346,19 @@ export class ScenicWorldView implements FarmWorldViewContract {
     const river = visualNode('Chunk river ' + key, L.river);
     for (const seg of content.rivers) {
       const w = logicalToWorld(seg.cell);
-      const art = this.placeRiverArt(river, seg.kind);
+      const art = this.placeRiverArt(river, seg);
       if (art) { art.setPosition(w.x, -w.y); continue; }
+      const [p1, p2] = layout.riverPorts(seg);
       const n = visualNode('River ' + seg.cell.x + ',' + seg.cell.y, river, w.x, -w.y, 0, 0), g = n.addComponent(Graphics);
-      g.strokeColor = tint(FALLBACK_COLORS.water); g.lineWidth = 60;
-      if (seg.kind === 'straight-y') { g.moveTo(0, 65); g.lineTo(0, -65); }
-      else if (seg.kind.startsWith('corner')) { g.moveTo(-130, 0); g.lineTo(0, 0); g.lineTo(0, seg.kind === 'corner-fy' || seg.kind === 'corner-fxy' ? -65 : 65); }
-      else { g.moveTo(-130, 0); g.lineTo(130, 0); }
-      g.stroke();
+      g.strokeColor = tint(FALLBACK_COLORS.water); g.lineWidth = 46;
+      g.lineCap = Graphics.LineCap.ROUND; g.lineJoin = Graphics.LineJoin.ROUND;
+      g.moveTo(p1.x - w.x, -(p1.y - w.y)); g.lineTo(0, 0); g.lineTo(p2.x - w.x, -(p2.y - w.y)); g.stroke();
     }
     if (content.spring) {
       const s = layout.RIVER_SPRING;
       const n = visualNode('River spring', river, s.x, -s.y, 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint(FALLBACK_COLORS.water); g.ellipse(0, 0, 110, 60); g.fill();
-      g.strokeColor = tint(P.status, 180); g.lineWidth = 10; g.ellipse(0, 0, 118, 68); g.stroke();
+      g.fillColor = tint(FALLBACK_COLORS.water); g.ellipse(0, 0, 110, 65); g.fill();
+      g.strokeColor = tint(P.status, 180); g.lineWidth = 10; g.ellipse(0, 0, 118, 73); g.stroke();
     }
     // Flower overlays sit on the ground below the plot layer (plots may cover them later).
     for (const cell of content.flowerCells) {
@@ -296,7 +366,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
       const placed = this.placeImage('env.flowers', river, w.x, w.y);
       if (placed) { const h = cellHash(cell.x, cell.y); placed.setScale((h & 1) ? -1 : 1, (h & 2) ? -1 : 1, 1); }
     }
-    // Packed-earth streets: darker wide under-stroke + warm sand core, round caps.
+    // Packed-earth streets in the belts: darker wide under-stroke + warm sand core, round caps.
     const path = visualNode('Chunk streets ' + key, L.path);
     for (const seg of content.streets) {
       const n = visualNode('Scenic street', path, 0, 0, 0, 0), g = n.addComponent(Graphics);
@@ -315,7 +385,7 @@ export class ScenicWorldView implements FarmWorldViewContract {
       const placed = this.placeImage('env.bridge', env, b.world.x, b.world.y);
       if (placed) { track(placed, b.world.y); continue; }
       const n = visualNode('Bridge', env, b.world.x, -b.world.y, 0, 0), g = n.addComponent(Graphics);
-      g.fillColor = tint('#8a6a44'); g.roundRect(-75, -16, 150, 32, 6); g.fill();
+      g.fillColor = tint('#8a6a44'); g.roundRect(-90, -16, 180, 32, 6); g.fill();
       track(n, b.world.y);
     }
     if (content.homestead) {

@@ -6,6 +6,16 @@
 
 美术入口为 `assets/resources/art-packs/`。游戏规则与存档不在这个目录；换风格不会调用行动接口或推进日期。
 
+## 田园场景 revision-2 · AI 素材工作流
+
+「田园场景」美术包的当前生效规格是 [art/scenic/revision-2/SPEC.md](art/scenic/revision-2/SPEC.md)；[art/scenic/SPEC.md](art/scenic/SPEC.md)（v1：固定 2:1、260×130 菱形、角点河流连接）仅作历史存档，新素材一律以 v2 为准。风格与构图的唯一基准是 `art/scenic/revision-2/standard/courtyard-standard.png`。
+
+1. 模板先行：`art/scenic/revision-2/templates/` 的 mock/guide 图锁定每种画布的几何（四边形角点、河流共享边中点、锚点）；提示词按 `templates/README.md` 的必须包含/不得包含清单编写。
+2. 生成：codex CLI（`codex exec --skip-git-repo-check`）内置 image_gen。提示词要求主体之外铺满纯 `#00FF00` 色键、禁止文字与多余元素；实际返回的背景有纯绿幕、黑底、原生透明三种，按生成记录如实处理，不假设一定是绿幕。
+3. 去底与裁切：色键素材用 `remove_chroma_key.py --auto-key … --soft-matte --despill`（或等效 sharp/PIL 脚本）去底；半透明雾丝（`field.unknown`）改用黑底亮度转 alpha，不做阈值抠图。产物为显示尺寸 2 倍，落盘 `art/scenic/revision-2/sources/`。
+4. 记录：每个槽位在 `art/scenic/revision-2/generation-records/` 留一份 `.md`（最终提示词、`raw/` 原稿、后处理步骤、验证结果）；原稿只增不覆盖，返修追加小节。
+5. 导出：`node tools/process-scenic-art.mjs` 校验宽高比（偏差 ≤4%）、四角/中心 alpha、`ground.base` 全不透明，全部通过后写出 `assets/resources/art-packs/scenic/`（2× PNG + manifest + .meta）。透视素材只 cover 缩放，绝不 fill 拉伸；HUD 图标沿用 `art/scenic/sources/icons/` 的 SVG 源。
+
 ## 最快尝试一张新图
 
 1. 双击 `start.cmd`，打开 http://127.0.0.1:4328 。

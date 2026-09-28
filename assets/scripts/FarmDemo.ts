@@ -151,7 +151,7 @@ export class FarmDemo extends Component {
     if(!this.obs)return;
     if(this.worldVersion==='scenic'){
       this.scenicView?.render({plots:this.obs.game.economy.farm.plots,selected:this.selected});
-      this.navigator?.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height);
+      this.navigator?.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected);
       return;
     }
     if(this.boardMode())this.district=districtAtCamera(this.panX,this.panY,this.zoom);
@@ -204,7 +204,7 @@ export class FarmDemo extends Component {
         const camera=this.scenicView?.focusDistrict(district);if(!camera)return;
         this.scenicView?.setCamera(clampScenicCamera(camera));this.renderPlots();this.persistCamera();
       });
-      this.navigator.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height);
+      this.navigator.update(this.obs.game.economy.farm.plots,this.scenicView?.getCamera(),this.height,this.selected);
       return;
     }
     if(!this.hudView)this.hudView=new FarmHud(this.hud,this.art,this.ui,this.height,this.safeTop,this.safeBottom,this.hudActions());

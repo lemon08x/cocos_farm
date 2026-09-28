@@ -1,8 +1,9 @@
 /**
- * Scenic art pipeline: validate art/scenic/sources and export the runtime pack
- * into assets/resources/art-packs/scenic (PNGs + manifest.json + Cocos .meta).
+ * Scenic art pipeline: validate art/scenic/revision-2/sources and export the
+ * runtime pack into assets/resources/art-packs/scenic
+ * (PNGs + manifest.json + Cocos .meta).
  *
- * Rules enforced (art/scenic/SPEC.md):
+ * Rules enforced (art/scenic/revision-2/SPEC.md):
  *  - sources are ~2x display size; aspect must match the slot within 4% —
  *    perspective art is NEVER stretched with fit:'fill' (cover only).
  *  - slots marked transparent must have transparent canvas corners;
@@ -15,7 +16,8 @@ import crypto from 'node:crypto';
 import sharp from 'sharp';
 
 const root = path.resolve(import.meta.dirname, '..');
-const sourceDir = path.join(root, 'art/scenic/sources');
+const sourceDir = path.join(root, 'art/scenic/revision-2/sources');
+const iconSourceDir = path.join(root, 'art/scenic/sources'); // HUD 图标 SVG 沿用 v1 源
 const outDir = path.join(root, 'assets/resources/art-packs/scenic');
 
 const PALETTE = {
@@ -25,22 +27,23 @@ const PALETTE = {
   base: '#5f8a4e'
 };
 
-// display = zoom-1 size; exported PNG is 2x. alpha: diamond | edge | opaque
+// display = zoom-1 size; exported PNG is 2x. alpha: quad | quad-overlay | quad-hollow | edge | opaque
 const SLOTS = [
-  { slot: 'field.soil.dry',      src: 'field-soil-dry.png',      file: 'field-soil-dry.png',      w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond' },
-  { slot: 'field.soil.wet',      src: 'field-soil-wet.png',      file: 'field-soil-wet.png',      w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond' },
-  { slot: 'field.unknown',       src: 'field-unknown.png',       file: 'field-unknown.png',       w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond' },
-  { slot: 'field.ridge',         src: 'field-ridge.png',         file: 'field-ridge.png',         w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-hollow' },
-  { slot: 'crop.wheat.growing',  src: 'crop-wheat-growing.png',  file: 'crop-wheat-growing.png',  w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-overlay' },
-  { slot: 'crop.wheat.mature',   src: 'crop-wheat-mature.png',   file: 'crop-wheat-mature.png',   w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-overlay' },
-  { slot: 'crop.default.growing',src: 'crop-default-growing.png',file: 'crop-default-growing.png',w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-overlay' },
-  { slot: 'crop.default.mature', src: 'crop-default-mature.png', file: 'crop-default-mature.png', w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-overlay' },
+  { slot: 'field.soil.dry',      src: 'field-soil-dry.png',      file: 'field-soil-dry.png',      w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad' },
+  { slot: 'field.soil.wet',      src: 'field-soil-wet.png',      file: 'field-soil-wet.png',      w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad' },
+  { slot: 'field.unknown',       src: 'field-unknown.png',       file: 'field-unknown.png',       w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad' },
+  { slot: 'field.ridge',         src: 'field-ridge.png',         file: 'field-ridge.png',         w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-hollow' },
+  { slot: 'crop.wheat.growing',  src: 'crop-wheat-growing.png',  file: 'crop-wheat-growing.png',  w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-overlay' },
+  { slot: 'crop.wheat.mature',   src: 'crop-wheat-mature.png',   file: 'crop-wheat-mature.png',   w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-overlay' },
+  { slot: 'crop.default.growing',src: 'crop-default-growing.png',file: 'crop-default-growing.png',w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-overlay' },
+  { slot: 'crop.default.mature', src: 'crop-default-mature.png', file: 'crop-default-mature.png', w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-overlay' },
   { slot: 'env.homestead',       src: 'env-homestead.png',       file: 'env-homestead.png',       w: 460, h: 380, anchor: [0.5, 0.8],  alpha: 'edge' },
-  { slot: 'env.river.straight',  src: 'env-river-straight.png',  file: 'env-river-straight.png',  w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond' },
-  { slot: 'env.river.corner',    src: 'env-river-corner.png',    file: 'env-river-corner.png',    w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond' },
+  { slot: 'env.river.straight',  src: 'env-river-straight.png',  file: 'env-river-straight.png',  w: 300, h: 180, anchor: [0.5, 0.5],  alpha: 'quad' },
+  { slot: 'env.river.straight.y',src: 'env-river-straight-y.png',file: 'env-river-straight-y.png',w: 300, h: 180, anchor: [0.5, 0.5],  alpha: 'quad' },
+  { slot: 'env.river.corner',    src: 'env-river-corner.png',    file: 'env-river-corner.png',    w: 300, h: 180, anchor: [0.5, 0.5],  alpha: 'quad' },
   { slot: 'env.bridge',          src: 'env-bridge.png',          file: 'env-bridge.png',          w: 260, h: 200, anchor: [0.5, 0.75], alpha: 'edge' },
   { slot: 'env.tree.canopy',     src: 'env-tree-canopy.png',     file: 'env-tree-canopy.png',     w: 180, h: 240, anchor: [0.5, 0.92], alpha: 'edge' },
-  { slot: 'env.flowers',         src: 'env-flowers.png',         file: 'env-flowers.png',         w: 260, h: 130, anchor: [0.5, 0.5],  alpha: 'diamond-overlay' },
+  { slot: 'env.flowers',         src: 'env-flowers.png',         file: 'env-flowers.png',         w: 228, h: 142, anchor: [0.5, 0.5],  alpha: 'quad-overlay' },
   { slot: 'env.fence',           src: 'env-fence.png',           file: 'env-fence.png',           w: 260, h: 60,  anchor: [0.5, 0.8],  alpha: 'edge' },
   { slot: 'env.signpost',        src: 'env-signpost.png',        file: 'env-signpost.png',        w: 120, h: 160, anchor: [0.5, 0.92], alpha: 'edge' },
   { slot: 'ground.base',         src: 'ground-base.png',         file: 'ground-base.png',         w: 512, h: 512, anchor: [0.5, 0.5],  alpha: 'opaque' },
@@ -92,10 +95,11 @@ const manifest = { version: 1, id: 'scenic', name: '田园场景 · 第二版', 
 let metasCreated = 0;
 
 for (const s of SLOTS) {
-  const srcPath = path.join(sourceDir, s.src);
+  const srcPath = path.join(s.src.startsWith('icons/') ? iconSourceDir : sourceDir, s.src);
+  const srcRel = path.relative(root, srcPath);
   const outPath = path.join(outDir, s.file);
   const tw = s.w * 2, th = s.h * 2;
-  if (!fs.existsSync(srcPath)) { errors.push(`MISSING source: art/scenic/sources/${s.src} (slot ${s.slot})`); continue; }
+  if (!fs.existsSync(srcPath)) { errors.push(`MISSING source: ${srcRel} (slot ${s.slot})`); continue; }
 
   let img = sharp(srcPath);
   const meta = await img.metadata();
@@ -121,18 +125,18 @@ for (const s of SLOTS) {
   } else {
     const corners = await sampleAlpha(buf, tw, th, [[0.004, 0.004], [0.996, 0.004], [0.004, 0.996], [0.996, 0.996]]);
     if (Math.max(...corners) >= 160) { errors.push(`TRANSPARENCY: ${s.src} corner alpha ${corners} >= 160, slot ${s.slot} requires transparent background`); continue; }
-    if (s.alpha === 'diamond') {
+    if (s.alpha === 'quad') {
       const [centerA] = await sampleAlpha(buf, tw, th, [[0.5, 0.5]]);
-      if (centerA < 128) errors.push(`TRANSPARENCY: ${s.src} diamond center is transparent (alpha ${centerA}) — expected painted plot`);
+      if (centerA < 128) errors.push(`TRANSPARENCY: ${s.src} quad center is transparent (alpha ${centerA}) — expected painted plot`);
     }
-    if (s.alpha === 'diamond-overlay') {
+    if (s.alpha === 'quad-overlay') {
       const { data } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
       let sum = 0, n = 0;
       for (let i = 3; i < data.length; i += 4) { sum += data[i]; n++; }
       const mean = sum / n;
       if (!(mean > 8)) { errors.push(`OVERLAY: ${s.src} carries almost no paint (mean alpha ${mean.toFixed(1)})`); continue; }
     }
-    if (s.alpha === 'diamond-hollow') {
+    if (s.alpha === 'quad-hollow') {
       const [centerA] = await sampleAlpha(buf, tw, th, [[0.5, 0.5]]);
       if (centerA >= 128) warnings.push(`RIDGE: ${s.src} center alpha ${centerA} — ridge overlay should have a hollow center`);
     }

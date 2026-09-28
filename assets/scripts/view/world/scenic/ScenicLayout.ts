@@ -1,17 +1,27 @@
 import type { DistrictId, WorldCamera } from '../FarmWorldViewContract';
-import { LogicalPoint, ScenicWorldPoint, logicalToWorld } from './ScenicProjection';
+import { CellEdgeId, LogicalPoint, ScenicWorldPoint, cellEdgeMidpoint, logicalToWorld, plotQuad, pointInPolygon, pointInQuad, segmentsCross } from './ScenicProjection';
 
-/** Courtyard (院前) scene layout: anchors, outlines and layer order live here,
- * separate from the scenic image manifest (which owns files, sizes, anchors).
- * All positions are world-plane pixels at zoom 1 (y-down). Pure data, no engine imports. */
+/** Courtyard (院前) scene layout revision 2: anchors, street belts, the river
+ * chain and camera live here, separate from the scenic image manifest (which
+ * owns files, sizes, anchors). All positions are world-plane pixels at zoom 1
+ * (y-down). Pure data, no engine imports.
+ *
+ * Revision 2 (plan §4/§5): plots no longer tile the plane — every plot quad
+ * (228×142) sits inside its 300×180 ground cell and the belts between quads
+ * carry streets, ridges and vegetation. The river is a dedicated chain of
+ * whole cells outside the observed farm, connected through shared-edge
+ * midpoints; bridges sit only on straight-x water cells. The homestead is an
+ * environment region north-west of the home block on declared reserved cells. */
 
 /** Camera targets sit this far below the content center so fields clear the bottom HUD. */
 export const CAMERA_LIFT = 40;
-/** First screen (720×1280): homestead fully visible upper-left, six home plots recognizable. */
-export const DEFAULT_CAMERA: WorldCamera = { x: -220, y: -135, zoom: 1.05 };
-/** P4: limits now reach the east (1,0) and south (0,1) district centers plus the
- * southern river run and the bridge, so every connected area stays pannable. */
-export const CAMERA_LIMITS = { minX: -1150, maxX: 950, minY: -650, maxY: 820, minZoom: .8, maxZoom: 2.4 };
+/** First screen (720×1280): homestead upper-left (top slightly off-frame), the
+ * central home plots fully readable, west spring/south river run, one bridge,
+ * streets and vegetation all in frame (plan §5). */
+export const DEFAULT_CAMERA: WorldCamera = { x: -280, y: 30, zoom: .85 };
+/** Limits reach the east/south district centers, the whole river run from the
+ * courtyard spring to the southern exit, and the street ends. */
+export const CAMERA_LIMITS = { minX: -1250, maxX: 1250, minY: -850, maxY: 1250, minZoom: .8, maxZoom: 2.4 };
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 export function clampScenicCamera(camera: WorldCamera): WorldCamera {
@@ -22,10 +32,12 @@ export function clampScenicCamera(camera: WorldCamera): WorldCamera {
   };
 }
 
-/** Independent environment node north-west of the home plots; never replaces a plot's soil/crop/selection.
- * Footprint (−510..−50 × −594..−214) clears every initial plot diamond (x 1..5, y 1..4) and the river chain. */
+/** Independent environment region north-west of the home block. The footprint
+ * (460×380, anchor [0.5,0.8]) reserves the logical cells it covers: those cells
+ * keep their logical plots but render as courtyard ground, never as field quads
+ * (plan §4.1 — the space is reserved in the layout mapping, not painted over). */
 export interface HomesteadAnchor { world: ScenicWorldPoint; width: number; height: number; anchor: [number, number] }
-export const HOMESTEAD: HomesteadAnchor = { world: { x: -280, y: -290 }, width: 460, height: 380, anchor: [0.5, 0.8] };
+export const HOMESTEAD: HomesteadAnchor = { world: { x: -300, y: -440 }, width: 460, height: 380, anchor: [0.5, 0.8] };
 export function homesteadFootprint() {
   const h = HOMESTEAD;
   return {
@@ -33,124 +45,133 @@ export function homesteadFootprint() {
     top: h.world.y - h.anchor[1] * h.height, bottom: h.world.y + (1 - h.anchor[1]) * h.height
   };
 }
+function footprintPolygon(): ScenicWorldPoint[] {
+  const f = homesteadFootprint();
+  return [{ x: f.left, y: f.top }, { x: f.right, y: f.top }, { x: f.right, y: f.bottom }, { x: f.left, y: f.bottom }];
+}
+function quadIntersectsFootprint(center: ScenicWorldPoint): boolean {
+  const quad = plotQuad(center), rect = footprintPolygon(), f = homesteadFootprint();
+  if (quad.some(p => pointInPolygon(p, rect))) return true;
+  if (rect.some(p => pointInQuad(p, center))) return true;
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++)
+      if (segmentsCross(quad[i], quad[(i + 1) % 4], rect[j], rect[(j + 1) % 4])) return true;
+  return f.left <= center.x && center.x <= f.right && f.top <= center.y && center.y <= f.bottom;
+}
+const homesteadReserved = new Set<string>();
+for (let x = -12; x <= 12; x++) for (let y = -12; y <= 12; y++)
+  if (quadIntersectsFootprint(logicalToWorld({ x, y }))) homesteadReserved.add(x + ',' + y);
+/** Logical cells reserved as courtyard ground (homestead footprint coverage). */
+export const HOMESTEAD_RESERVED: ReadonlySet<string> = homesteadReserved;
+export function isHomesteadReservedCell(x: number, y: number): boolean { return homesteadReserved.has(x + ',' + y); }
 
-/** River chain along the far west edge: straight-y entry (long axis rotated 90°,
- * SPEC §6) flowing south on logical diagonal x−y=−5, then a zigzag of corner
- * segments down the x=−3 column to the south-west exit. Every cell is outside
- * the initial observed plot set (which extendsFarm grows to x −2..6, y −2..6)
- * and clears the homestead footprint, so the water is a continuous environment
- * feature and never hides under an interactive plot. Corner variants are
- * orientation flips of env.river.corner (base ports: left in → bottom out). */
-export interface RiverSegment { cell: LogicalPoint; kind: 'straight-x' | 'straight-y' | 'corner' | 'corner-fx' | 'corner-fy' | 'corner-fxy' }
+/** The decorative river: a dedicated chain of whole cells OUTSIDE the observed
+ * farm (no plots on river cells), connected through shared-edge midpoints.
+ * straight-x carries water along logical x (ports ul↔lr), straight-y along
+ * logical y (ports ur↔ll); the base corner bends ul↔ll and rotation 180 turns
+ * it into ur↔lr — the staircase chain only ever needs these two bends, so no
+ * mirrored corner art is required (light direction stays consistent). */
+export interface RiverSegment { cell: LogicalPoint; kind: 'straight-x' | 'straight-y' | 'corner'; rotation?: 0 | 180 }
 export type RiverKind = RiverSegment['kind'];
-/** Diamond corner ids used as water ports (SPEC §6: ports sit at the shared corners). */
-export type RiverPort = 'L' | 'R' | 'T' | 'B';
-/** Port assignment per art kind (world orientation; the base corner is left-in →
- * bottom-out per SPEC §6, the flips mirror it). Verified against the P3 west chain. */
+export type RiverPort = CellEdgeId;
 export const RIVER_KIND_PORTS: Record<RiverKind, [RiverPort, RiverPort]> = {
-  'straight-x': ['L', 'R'], 'straight-y': ['T', 'B'],
-  'corner': ['L', 'B'], 'corner-fx': ['R', 'B'], 'corner-fy': ['L', 'T'], 'corner-fxy': ['R', 'T']
+  'straight-x': ['ul', 'lr'], 'straight-y': ['ur', 'll'], 'corner': ['ul', 'll']
 };
-/** World position of a cell's diamond corner. */
-export function cellCorner(cell: LogicalPoint, port: RiverPort): ScenicWorldPoint {
-  const c = logicalToWorld(cell);
-  switch (port) {
-    case 'L': return { x: c.x - 130, y: c.y };
-    case 'R': return { x: c.x + 130, y: c.y };
-    case 'T': return { x: c.x, y: c.y - 65 };
-    case 'B': return { x: c.x, y: c.y + 65 };
-  }
-}
+const CORNER_ROTATED_PORTS: [RiverPort, RiverPort] = ['ur', 'lr'];
 export function riverPorts(seg: RiverSegment): [ScenicWorldPoint, ScenicWorldPoint] {
-  const [a, b] = RIVER_KIND_PORTS[seg.kind];
-  return [cellCorner(seg.cell, a), cellCorner(seg.cell, b)];
+  const [a, b] = seg.kind === 'corner' && seg.rotation === 180 ? CORNER_ROTATED_PORTS : RIVER_KIND_PORTS[seg.kind];
+  return [cellEdgeMidpoint(seg.cell, a), cellEdgeMidpoint(seg.cell, b)];
 }
 
-/** One continuous river (single connected chain, verified by test-ui):
- * enters from a spring pond in the far north-west, runs the west column south,
- * turns east south of the farm and exits off the east pan edge. Every cell stays
- * outside the initial observed plot set (x −2..6 × y −2..6); the water never
- * stops inside the pannable area (the north end is a spring source pool).
- * P4 extends the P3 courtyard chain with the entry pair, the south turn and the
- * east straight run (straight-x cells keep x+y=14, i.e. world y=650). */
+/** One continuous waterway (single connected component, verified by test-ui):
+ * a spring pond west of the courtyard feeds the west column flowing south,
+ * bends east along the south edge of the farm (both bridges live here), then
+ * turns south again and exits the pannable bounds. Every cell stays outside
+ * the initial observed plot set (x −2..6, y −2..6). */
 export const RIVER_SEGMENTS: RiverSegment[] = [
-  { cell: { x: -7, y: -2 }, kind: 'straight-y' },
-  { cell: { x: -6, y: -1 }, kind: 'straight-y' },
-  { cell: { x: -5, y: 0 }, kind: 'straight-y' },
-  { cell: { x: -4, y: 1 }, kind: 'straight-y' },
-  { cell: { x: -3, y: 2 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 3 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 4 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 5 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 6 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 7 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 8 }, kind: 'corner-fy' },
-  { cell: { x: -3, y: 9 }, kind: 'corner-fxy' },
-  { cell: { x: -2, y: 8 }, kind: 'corner' },
-  { cell: { x: -1, y: 9 }, kind: 'straight-y' },
-  { cell: { x: 0, y: 10 }, kind: 'corner-fxy' },
-  { cell: { x: 1, y: 9 }, kind: 'corner' },
-  { cell: { x: 2, y: 10 }, kind: 'straight-y' },
-  { cell: { x: 3, y: 11 }, kind: 'corner-fxy' },
-  { cell: { x: 4, y: 10 }, kind: 'straight-x' },
-  { cell: { x: 5, y: 9 }, kind: 'straight-x' },
-  { cell: { x: 6, y: 8 }, kind: 'straight-x' },
+  { cell: { x: -3, y: 2 }, kind: 'straight-y' },
+  { cell: { x: -3, y: 3 }, kind: 'straight-y' },
+  { cell: { x: -3, y: 4 }, kind: 'straight-y' },
+  { cell: { x: -3, y: 5 }, kind: 'straight-y' },
+  { cell: { x: -3, y: 6 }, kind: 'straight-y' },
+  { cell: { x: -3, y: 7 }, kind: 'corner', rotation: 180 },
+  { cell: { x: -2, y: 7 }, kind: 'straight-x' },
+  { cell: { x: -1, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 0, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 1, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 2, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 3, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 4, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 5, y: 7 }, kind: 'straight-x' },
+  { cell: { x: 6, y: 7 }, kind: 'straight-x' },
   { cell: { x: 7, y: 7 }, kind: 'straight-x' },
-  { cell: { x: 8, y: 6 }, kind: 'straight-x' },
-  { cell: { x: 9, y: 5 }, kind: 'straight-x' },
-  { cell: { x: 10, y: 4 }, kind: 'straight-x' },
-  { cell: { x: 11, y: 3 }, kind: 'straight-x' },
-  { cell: { x: 12, y: 2 }, kind: 'straight-x' },
-  { cell: { x: 13, y: 1 }, kind: 'straight-x' }
+  { cell: { x: 8, y: 7 }, kind: 'corner' },
+  { cell: { x: 8, y: 8 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 9 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 10 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 11 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 12 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 13 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 14 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 15 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 16 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 17 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 18 }, kind: 'straight-y' },
+  { cell: { x: 8, y: 19 }, kind: 'straight-y' }
 ];
-/** The river's source: a spring pond at the north end of the chain (a river may
- * begin at a spring — it must never end mid-field). */
-export const RIVER_SPRING: ScenicWorldPoint = cellCorner({ x: -7, y: -2 }, 'T');
+const riverCells = new Set(RIVER_SEGMENTS.map(s => s.cell.x + ',' + s.cell.y));
+export const RIVER_CELLS: ReadonlySet<string> = riverCells;
+export function isRiverCell(x: number, y: number): boolean { return riverCells.has(x + ',' + y); }
+/** The river's source: a spring pond at the north port of the first cell (a
+ * river may begin at a spring — it must never end mid-field). */
+export const RIVER_SPRING: ScenicWorldPoint = cellEdgeMidpoint({ x: -3, y: 2 }, 'ur');
 
-/** The bridge sits on a straight river cell where a street crosses the water:
- * the west trail on the west straight, the south street on the southern run. */
-export interface BridgeAnchor { world: ScenicWorldPoint; width: number; height: number; anchor: [number, number] }
+/** Bridges cross the water only on straight-x river cells, where a street
+ * passes through the cell center: the courtyard street at the south run and
+ * the east street further along it. */
+export interface BridgeAnchor { world: ScenicWorldPoint; width: number; height: number; anchor: [number, number]; cell: LogicalPoint }
 export const BRIDGES: BridgeAnchor[] = [
-  { world: logicalToWorld({ x: -4, y: 1 }), width: 260, height: 200, anchor: [0.5, 0.75] },
-  { world: logicalToWorld({ x: 7, y: 7 }), width: 260, height: 200, anchor: [0.5, 0.75] }
+  { world: logicalToWorld({ x: 4, y: 7 }), width: 260, height: 200, anchor: [0.5, 0.75], cell: { x: 4, y: 7 } },
+  { world: logicalToWorld({ x: 7, y: 7 }), width: 260, height: 200, anchor: [0.5, 0.75], cell: { x: 7, y: 7 } }
 ];
 
-/** Dirt streets hug the shared diamond edges between plot rows/columns (zigzag
- * vertices alternate between adjacent rows of plot corners), plus connectors to
- * the homestead gate, the two bridges and the east signpost. */
+/** Packed-earth streets own their width and live entirely in the environment
+ * belts between plot quads (validated by ScenicLayoutValidation): main streets
+ * follow the half-integer logical lines between cell rows/columns, cross at
+ * belt junctions, and reach the river only along shared bank edges or across
+ * the two bridge cells (the explicit bridge exception, plan §4.2). */
 export interface ScenicPath { points: ScenicWorldPoint[]; width: number }
 export const PATHS: ScenicPath[] = [
-  { width: 22, points: [{ x: -650, y: -65 }, { x: -590, y: -5 }, { x: -520, y: 65 }] },
-  { width: 24, points: [{ x: -520, y: 65 }, { x: -390, y: 0 }, { x: -260, y: 65 }, { x: -130, y: 0 }, { x: 0, y: 65 }, { x: 130, y: 0 }, { x: 260, y: 65 }, { x: 390, y: 0 }, { x: 520, y: 65 }, { x: 650, y: 0 }] },
-  { width: 24, points: [{ x: -520, y: 195 }, { x: -390, y: 130 }, { x: -260, y: 195 }, { x: -130, y: 130 }, { x: 0, y: 195 }, { x: 130, y: 130 }, { x: 260, y: 195 }, { x: 390, y: 130 }, { x: 520, y: 195 }, { x: 650, y: 130 }] },
-  { width: 22, points: [{ x: 0, y: -130 }, { x: -130, y: -65 }, { x: 0, y: 0 }, { x: -130, y: 65 }, { x: 0, y: 130 }, { x: -130, y: 195 }, { x: 0, y: 260 }] },
-  { width: 22, points: [{ x: 130, y: -260 }, { x: 0, y: -195 }, { x: 130, y: -130 }, { x: 0, y: -65 }, { x: 130, y: 0 }, { x: 0, y: 65 }, { x: 130, y: 130 }, { x: 0, y: 195 }, { x: 130, y: 260 }] },
-  { width: 20, points: [{ x: -300, y: -214 }, { x: -345, y: -105 }, { x: -390, y: 0 }] },
-  { width: 20, points: [{ x: -300, y: -214 }, { x: -460, y: -320 }, { x: -650, y: -440 }] },
-  { width: 18, points: [{ x: 390, y: 0 }, { x: 350, y: -65 }, { x: 310, y: -130 }] },
-  // P4 east continuation: the two courtyard streets run on across the district
-  // border toward the east pan edge (street network continues, plan §5.3).
-  { width: 24, points: [{ x: 650, y: 0 }, { x: 780, y: 65 }, { x: 910, y: 0 }, { x: 1040, y: 65 }, { x: 1170, y: 0 }, { x: 1300, y: 65 }] },
-  { width: 24, points: [{ x: 650, y: 130 }, { x: 780, y: 195 }, { x: 910, y: 130 }, { x: 1040, y: 195 }, { x: 1170, y: 130 }] },
-  // P4 south street: from the courtyard verticals across the south district
-  // border, over the south bridge (river cell 7,7 at world (0,650)) and on to
-  // the south pan edge.
-  { width: 22, points: [{ x: 0, y: 260 }, { x: -130, y: 325 }, { x: 0, y: 390 }, { x: -130, y: 455 }, { x: 0, y: 520 }, { x: -130, y: 585 }, { x: 0, y: 650 }, { x: -130, y: 715 }, { x: 0, y: 780 }, { x: -130, y: 845 }] }
+  // Main north street: courtyard gate → east pan edge (logical y = 0.5 belt).
+  { width: 26, points: [{ x: -450, y: -540 }, { x: 0, y: -270 }, { x: 450, y: 0 }, { x: 900, y: 270 }, { x: 1200, y: 450 }] },
+  // Homestead connector into the courtyard (reserved cells, no quads there).
+  { width: 20, points: [{ x: -300, y: -450 }, { x: -360, y: -420 }] },
+  // West street (logical x = 0.5 belt) down to the towpath.
+  { width: 24, points: [{ x: 0, y: -270 }, { x: -300, y: -90 }, { x: -600, y: 90 }, { x: -900, y: 270 }] },
+  // East street (logical x = 3.5 belt) to the south bridge, then the south bank.
+  { width: 24, points: [{ x: 450, y: 0 }, { x: 150, y: 180 }, { x: -150, y: 360 }, { x: -450, y: 540 }, { x: -450, y: 720 }, { x: -600, y: 810 }, { x: -750, y: 900 }] },
+  // River towpath along the north bank (logical y = 6.5 belt, shared bank edge).
+  { width: 22, points: [{ x: -1200, y: 90 }, { x: -900, y: 270 }, { x: -450, y: 540 }, { x: 0, y: 810 }, { x: 300, y: 990 }] },
+  // East connector street to the second bridge and the south bank.
+  { width: 24, points: [{ x: 900, y: 270 }, { x: 0, y: 810 }, { x: 0, y: 990 }, { x: -150, y: 1080 }, { x: -300, y: 1170 }] },
+  // Mid belts between the home plot rows.
+  { width: 22, points: [{ x: -300, y: -90 }, { x: 150, y: 180 }] },
+  { width: 22, points: [{ x: -600, y: 90 }, { x: -150, y: 360 }] }
 ];
 
 export interface SignpostAnchor { name: string; world: ScenicWorldPoint }
 export const SIGNPOSTS: SignpostAnchor[] = [
-  { name: '东侧田区', world: { x: 310, y: -130 } },
-  { name: '南侧田区', world: { x: -335, y: 345 } },
-  { name: '南桥', world: { x: 190, y: 540 } }
+  { name: '东侧田区', world: { x: 1050, y: 420 } },
+  { name: '南侧田区', world: { x: -560, y: 745 } },
+  { name: '河畔', world: { x: -1100, y: 80 } }
 ];
-export const FENCES: ScenicWorldPoint[] = [{ x: -350, y: -230 }, { x: -240, y: -222 }, { x: -280, y: 690 }, { x: 280, y: 700 }];
-/** Foreground trees: placed so the canopy never covers a plot diamond (checked
- * against the initial 5×4 grid); depth sorting uses the ground contact y.
- * P4 adds an east riverside tree and a south tree on free cells only. */
-export const TREES: ScenicWorldPoint[] = [{ x: -520, y: -390 }, { x: 760, y: 250 }, { x: 1170, y: 40 }, { x: -240, y: 560 }];
-/** Flower overlays on non-plot ground cells only. */
-export const FLOWER_CELLS: LogicalPoint[] = [{ x: -4, y: 4 }, { x: -4, y: 5 }, { x: -4, y: 2 }, { x: -4, y: 3 }, { x: 7, y: 3 }, { x: 7, y: 5 }, { x: 5, y: 7 }, { x: -5, y: 2 }];
+export const FENCES: ScenicWorldPoint[] = [{ x: -420, y: -560 }, { x: -240, y: -380 }, { x: -620, y: 400 }, { x: -380, y: 790 }];
+/** Foreground trees on free unobserved cells (they merge with the unknown
+ * ground and never cover an observed plot quad); depth sorting uses the
+ * ground contact y. */
+export const TREES: ScenicWorldPoint[] = [{ x: -700, y: -620 }, { x: -100, y: -600 }, { x: 1020, y: -420 }, { x: -1050, y: 580 }, { x: 390, y: 720 }];
+/** Flower overlays on free cells outside the observed farm. */
+export const FLOWER_CELLS: LogicalPoint[] = [{ x: -4, y: 3 }, { x: -4, y: 4 }, { x: -1, y: 8 }, { x: 1, y: 8 }, { x: 8, y: 3 }, { x: 5, y: -3 }];
 
 /** Navigation anchors only; plots keep global logical coordinates. */
 export interface ScenicDistrict { id: string; name: string; district: DistrictId }
