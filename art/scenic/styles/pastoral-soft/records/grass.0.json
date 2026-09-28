@@ -1,0 +1,12 @@
+{
+  "id": "grass.0",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex built-in image_gen (model not exposed), technical alpha and tonal normalization",
+  "original": "raw/32a9217244dc3b5a8aaf09340f36bf2bcb7ac363f3caf62caa8172adfc071325.png",
+  "originalHash": "32a9217244dc3b5a8aaf09340f36bf2bcb7ac363f3caf62caa8172adfc071325",
+  "sourceHash": "32a9217244dc3b5a8aaf09340f36bf2bcb7ac363f3caf62caa8172adfc071325",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T20:45:40.183Z"
+}

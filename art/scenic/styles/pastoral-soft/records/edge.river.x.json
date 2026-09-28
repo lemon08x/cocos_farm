@@ -1,0 +1,12 @@
+{
+  "id": "edge.river.x",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex built-in image_gen (model not exposed)",
+  "original": "raw/a70945ad42555604571143ba71a89d7420e56bf55dc77b49696e9492d99f01c9.png",
+  "originalHash": "a70945ad42555604571143ba71a89d7420e56bf55dc77b49696e9492d99f01c9",
+  "sourceHash": "0649998f675266428301e23cb8d87ababdfa15f6db35d133d925837517b34692",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": "0,94,2079,567",
+  "createdAt": "2026-09-28T20:09:42.401Z"
+}

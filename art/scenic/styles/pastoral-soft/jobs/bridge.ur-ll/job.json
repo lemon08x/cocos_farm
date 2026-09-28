@@ -1,0 +1,46 @@
+{
+  "id": "bridge.ur-ll",
+  "kind": "ground",
+  "entry": {
+    "id": "bridge.ur-ll",
+    "family": "bridge",
+    "layer": "ground",
+    "sockets": {
+      "ul": "river",
+      "ur": "road",
+      "lr": "river",
+      "ll": "road"
+    },
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "一格完整河流和跨河桥面；道路连接桥的两端，河水从另一对边穿过"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "templateHashes": [
+    "51c680c7092958f629dbf3acdc7c84d81a7f694615ce9683687ef6b38ab8ed78",
+    "a79430c9e6be18cbcbc310fb512f1856acf15acfaa1f2f3efdb1259378ae1e01"
+  ]
+}

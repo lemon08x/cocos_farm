@@ -1,0 +1,40 @@
+{
+  "id": "crop.default.growing",
+  "kind": "crop",
+  "entry": {
+    "id": "crop.default.growing",
+    "family": "crop",
+    "layer": "crop",
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "通用作物生长期；仅作物，背景及行间透明，无土壤底图"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "templateHashes": [
+    "bbc3a0ca2c8f5e510ede2ab8833eca647f2f62058081eae4c2118fa5db5bb15a",
+    "6b26227e5628046c5aad9bfde261951e10a4f6f77d2cebdfd5aa5f44bb09c33d"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "road.cross.ul-ur-lr-ll",
+  "kind": "ground",
+  "entry": {
+    "id": "road.cross.ul-ur-lr-ll",
+    "family": "road",
+    "layer": "ground",
+    "sockets": {
+      "ul": "road",
+      "ur": "road",
+      "lr": "road",
+      "ll": "road"
+    },
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "土路与两侧草地；仅指定的边开放路口"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "templateHashes": [
+    "d13c1ac504b08b1dc2df841e00d2c14b5bf86162c97bdead15a392ca890ac237",
+    "ee1442896ae6267e5192f0a54bbb121a0c1436d4cb3433cff3add2166f4e1a5f"
+  ]
+}

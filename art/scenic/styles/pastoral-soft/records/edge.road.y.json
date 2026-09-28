@@ -1,0 +1,12 @@
+{
+  "id": "edge.road.y",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex built-in image_gen (model not exposed)",
+  "original": "raw/1819797782334b46f153780f5634b6e8a350d2e2192ce87cadb50eaf93ef64ff.png",
+  "originalHash": "1819797782334b46f153780f5634b6e8a350d2e2192ce87cadb50eaf93ef64ff",
+  "sourceHash": "dab93048334c6777800b8e1e14e4be2e897fb37382360794f6cf9ed23d9ad8b4",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": "0,94,2079,567",
+  "createdAt": "2026-09-28T20:12:43.582Z"
+}

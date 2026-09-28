@@ -1,0 +1,15 @@
+{
+  "id": "edge.river.y",
+  "kind": "edge",
+  "socket": "river",
+  "axis": "y",
+  "width": 352,
+  "height": 96,
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "templateHashes": [
+    "8439fa8354f7cfafdd1b77b659e1c3e877677de9eb7325d8e9ccb3ad56709b1d",
+    "fa33f62df75fc5fccbc3583facb9736e3ad666bcedb0117a149da72567cdefa0"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "id": "pastoral-soft",
+  "name": "田园 · 柔绘",
+  "status": "draft",
+  "contract": "scenic-tiles@1",
+  "textureFilter": "linear",
+  "palette": {
+    "ink": "#29473c",
+    "muted": "#687c70",
+    "paper": "#f5f0e3",
+    "cream": "#e9dfc9",
+    "green": "#416752",
+    "gold": "#c9a158",
+    "line": "#d6cbb3",
+    "status": "#86a967",
+    "caption": "#7b8b77",
+    "disabled": "#b4bdad",
+    "warning": "#bd744e",
+    "shade": "#294d3f",
+    "base": "#839765",
+    "fog": "#b7c5b4",
+    "map.mist": "#b7c5b4",
+    "map.field": "#937154",
+    "map.water": "#729e98",
+    "map.green": "#839765",
+    "map.home": "#c4ad83",
+    "map.facility": "#947656",
+    "map.path": "#c4ad83",
+    "map.bridge": "#947353"
+  },
+  "generation": {
+    "description": "用户选定 01 柔和水粉。柔和哑光水粉与手绘田园插画，等距农场游戏素材。草地以橄榄绿和鼠尾草绿的低对比连续色面为主，中间色约 #839765、暗部约 #617650；少量宽笔触草簇只出现在局部。农舍、树冠和作物采用轮廓清楚的大形及成组笔触，统一细节尺度，主体比背景地纹更清晰。土路为暖灰土色约 #c4ad83，干土约 #937154，河水为克制的青绿色约 #729e98。左上柔光，右下短而柔和的阴影。参考目标场景的色彩、形体和疏密，不复制它的四块田、两座桥或远山布局；每张正式素材严格服从本任务 control/guide 的尺寸、四边接口、落点与透明区。以实际游戏缩放后的组合效果判断。",
+    "references": [
+      "art/expansion-previews/02-district-browse.png",
+      "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png"
+    ],
+    "negative": "不要像素画、照片质感、密集细草、均匀黄白亮点、颗粒噪声、锐化边缘、满屏等量细节、固定中心花纹、黑色描边、浮空厚土台、四周暗角、烘焙文字或 UI、棋盘格背景。不要把草地画成植物主体特写；不要绘制 guide 的线、标签和示意色。"
+  }
+}

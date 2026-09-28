@@ -1,0 +1,46 @@
+{
+  "id": "river.end.ul",
+  "kind": "ground",
+  "entry": {
+    "id": "river.end.ul",
+    "family": "river",
+    "layer": "ground",
+    "sockets": {
+      "ul": "river",
+      "ur": "grass",
+      "lr": "grass",
+      "ll": "grass"
+    },
+    "footprint": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "variant": 0,
+    "description": "河水与两侧河岸；仅指定的边开放水口，单口模块为封闭河源/水潭"
+  },
+  "width": 600,
+  "height": 360,
+  "origin": {
+    "x": 300,
+    "y": 180
+  },
+  "anchor": [
+    0.5,
+    0.5
+  ],
+  "centers": [
+    {
+      "x": 300,
+      "y": 180
+    }
+  ],
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "templateHashes": [
+    "087c6cfd52093129aa85d559d0e767e2f3addd8cc2d0b8babe837762f238c396",
+    "0cf73cc4e46b4bd2ba4c6eadcefb6780afaa3a815f7cd4dabb28ab8996d3c95c"
+  ]
+}

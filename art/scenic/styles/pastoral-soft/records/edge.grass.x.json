@@ -1,0 +1,12 @@
+{
+  "id": "edge.grass.x",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex built-in image_gen (model not exposed), technical seam tonal normalization",
+  "original": "raw/514d926e447ac6016b80e7b800a1609fe580ad886364b74389d01fe654e7d055.png",
+  "originalHash": "514d926e447ac6016b80e7b800a1609fe580ad886364b74389d01fe654e7d055",
+  "sourceHash": "514d926e447ac6016b80e7b800a1609fe580ad886364b74389d01fe654e7d055",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T20:48:38.642Z"
+}
