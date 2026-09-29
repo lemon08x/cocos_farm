@@ -1,0 +1,12 @@
+{
+  "id": "crop.default.growing",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex image_gen (model not exposed)",
+  "original": "raw/45817c739c9b0cce9cd0c758b4c2273d5e2f8a98208139d2971b7223100f6acd.png",
+  "originalHash": "45817c739c9b0cce9cd0c758b4c2273d5e2f8a98208139d2971b7223100f6acd",
+  "sourceHash": "90c9e701afd8b2d43b135131a5942c42656dbee93483c56337901f27f5d56edf",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": "2,1,1615,969",
+  "createdAt": "2026-09-28T22:01:12.350Z"
+}

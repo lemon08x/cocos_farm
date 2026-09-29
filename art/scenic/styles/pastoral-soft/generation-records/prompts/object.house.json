@@ -1,0 +1,12 @@
+{
+  "id": "object.house",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. One PRODUCTION CUTOUT for ID object.house: ONE complete modest rural farmhouse in 3/4 isometric view, 10:9 transparent canvas, not four houses. Matte soft gouache isometric farm game art, muted olive/sage grass, warm gray earth, unified upper-left soft light and short lower-right shadows. No photo sharpness, pixel art, black outline, noisy specks, text, UI or checkerboard. Image 1 target scene sets hand-painted gray ceramic roof, warm off-white plaster and timber frame style. Image 2 quiet grass sets detail scale. Image 3 is a placement control only; image 4 guide only, do not reproduce its lines/colors. The house sits over the lower half, with its ground-contact center aligned near 50% width / 50% height of canvas and roof rising into top half; footprint spans a 2×2 game-tile isometric diamond. Show one readable front entrance facing lower-right, a few wood posts and lattice windows, a simple coherent pitched gray tile roof. Keep clear silhouette and large painted planes, restrained details. Genuinely transparent surrounding pixels; no grass/soil/courtyard platform, fence, tree, people, shadow ground plate, text, UI, black contour or vignette.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/object.house/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/object.house/guide.png"
+  ],
+  "original": "generation-records/originals/object.house.png"
+}

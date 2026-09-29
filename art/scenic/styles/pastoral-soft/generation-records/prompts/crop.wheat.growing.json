@@ -1,0 +1,12 @@
+{
+  "id": "crop.wheat.growing",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production cutout ID crop.wheat.growing for isometric farm game, 5:3 transparent canvas. Image 1 selected target scene sets matte soft gouache style; Image 2 accepted dry field sets planting row positions, scale, and diagonal isometric row direction; Image 3 control shows the diamond planting region only; Image 4 technical guide only, never reproduce marks. Paint ONLY young green wheat plants: four parallel rows of small healthy grassy seedlings over the central field area, rooted along the same furrows as Image 2. Sprouts have clear grouped leaf shapes, moderate height, still immature with NO wheat ears or golden seed heads. They may overlap within each row but transparent spaces MUST show between rows and between plant clumps. Entire background transparent, including no soil, no grass diamond, no opaque field base, no shadow plate, no decorative flowers, no text/UI, no pots, no border. Camera consistent isometric view and upper-left soft light; leave generous transparent outer diamond margin. The plants are overlay cutouts, not an illustration of a field tile.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/field.dry.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.wheat.growing/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.wheat.growing/guide.png"
+  ],
+  "original": "generation-records/originals/crop.wheat.growing.png"
+}

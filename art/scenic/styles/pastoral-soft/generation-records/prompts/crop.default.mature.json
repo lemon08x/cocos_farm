@@ -1,0 +1,13 @@
+{
+  "id": "crop.default.mature",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production transparent overlay ID crop.default.mature for isometric farm game, exact 5:3 canvas. Image 1 selected matte soft-gouache farm scene for mature broadleaf vegetable palette and brushwork. Image 2 accepted crop.default.growing is DEFINITIVE for its four isometric planting rows, SAME plant root locations, row orientation, spacing, and transparency. Image 3 accepted dry field sets furrow alignment. Image 4 flat control is placement only; Image 5 guide technical only, never reproduce marks. Paint healthy mature generic leafy green vegetables, larger fuller clustered leaves than Image 2, with a few pale green inner leaves and deep sage outer leaves, while preserving every root position and open transparent gap between rows. No wheat ears, gold crop, soil, grass, field diamond, opaque greenery plate, shadow platform, flower, produce basket, border, text/UI or checkerboard. Genuinely transparent background and row gaps. Readable grouped gouache leaves, upper-left soft light, generous transparent outer margin.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/crop.default.growing.png",
+    "art/scenic/styles/pastoral-soft/sources/field.dry.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.default.mature/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.default.mature/guide.png"
+  ],
+  "original": "generation-records/originals/crop.default.mature.png"
+}

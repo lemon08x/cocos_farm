@@ -2,7 +2,7 @@
   "version": 1,
   "id": "pastoral-soft",
   "name": "田园 · 柔绘",
-  "status": "draft",
+  "status": "ready",
   "contract": "scenic-tiles@1",
   "textureFilter": "linear",
   "palette": {

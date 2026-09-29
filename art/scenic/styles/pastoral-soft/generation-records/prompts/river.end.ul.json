@@ -1,0 +1,13 @@
+{
+  "id": "river.end.ul",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production isometric game ground tile ID river.end.ul, exact 5:3 transparent canvas. Flat ground diamond touches top/right/bottom/left canvas midpoints, fully painted opaque inside and genuinely transparent outside. Image 1 selected farm scene for soft gouache style only; Image 2 accepted quiet olive/sage grass material; Image 3 THIS ID's flat control sets exact channel topology; Image 4 technical guide only, never copy marks/colors/labels; Image 5 accepted river edge master sets muted blue-green water #729E98, light earthen bank, and 40%-of-side centered mouth width. A single clear river channel enters at CENTER of upper-left side and broadens into a small natural source pool ending within the interior; all other sides quiet grass. Open ONLY upper-left centered side mouths, water opening 40% of each side; no extra openings. Water connects cleanly with broad calm teal shapes and just one or two restrained soft reflections, no dense white sparkle. Simplified consistent narrow banks with no cliff or thick stone line; grass quiet, low detail and same edge tone as Image 2. Uniform upper-left light. No floating sidewall, noisy grass tufts, bright green outline, blue hard border, waterfalls, bridge, rocks blocking mouth, text/UI, photo texture or checkerboard.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/river.end.ul/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/river.end.ul/guide.png",
+    "art/scenic/styles/pastoral-soft/sources/edge.river.x.png"
+  ],
+  "original": "generation-records/originals/river.end.ul.png"
+}

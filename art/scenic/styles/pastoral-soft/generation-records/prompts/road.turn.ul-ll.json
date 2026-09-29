@@ -1,0 +1,13 @@
+{
+  "id": "road.turn.ul-ll",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. Create ONE new production game ground tile asset ID road.turn.ul-ll, not a scene. Matte hand-painted soft gouache in muted olive/sage grass and warm-gray earth #C4AD83. Exact 5:3 transparent canvas with a flat isometric diamond touching the four canvas midpoints; every pixel inside diamond opaque, outside genuinely transparent. Image 1 selected target scene: style only. Image 2 accepted quiet grass source: match outer grass color and LOW DETAIL density. Image 3 this exact ID's flat control: authoritative topology and mouth placement, never copy its colors. Image 4 guide: geometry only, never copy labels or markings. Image 5 accepted road edge master: match 24%-of-side centered mouth width, warm earth color, and softly blended shoulders. ONE continuous warm-gray earth road connects the centered upper-left and lower-left side mouths through a smooth natural bend; other sides entirely grass. Each specified mouth is exactly centered on its side, 24% of side length, with no extra outlets. Interior path can gently bend and wear; road must stay visibly connected and width consistent. Broad quiet grass planes with very few indistinct marks, no scattered grass tufts, yellow speckles, border, bright rim, floating sidewall, hard black outline, cobble line, flowers, trees, text, UI, photo sharpness or checkerboard. Uniform upper-left soft light.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.turn.ul-ll/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.turn.ul-ll/guide.png",
+    "art/scenic/styles/pastoral-soft/sources/edge.road.x.png"
+  ],
+  "original": "generation-records/originals/road.turn.ul-ll.png"
+}

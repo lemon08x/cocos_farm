@@ -6,6 +6,11 @@
       "id": "pastoral",
       "name": "现有田园",
       "revision": "3ff139dd4844332de285eee073727d040fc1ca65312bcd4033bd4d716ac57646"
+    },
+    {
+      "id": "pastoral-soft",
+      "name": "田园 · 柔绘",
+      "revision": "cb0199bc40f32ee563d3be2d665b14c3277c9953be0a69bbf462f113e5ff0da4"
     }
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "id": "road.cross.ul-ur-lr-ll",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production ground source ID road.cross.ul-ur-lr-ll, matte soft-gouache isometric farm game tile, 5:3 canvas diamond touching all four midpoints, opaque painted inside and genuinely transparent outside. Image 1 target style; Image 2 accepted road straight for warm gray earth material and quiet olive grass; Image 3 flat control defines EXACT topology; Image 4 technical guide only, no labels/colors; Image 5 road edge master sets centered 24%-wide mouths. Four connected road arms meet in one smooth, slightly irregular central crossing and exit at centered UL, UR, LR and LL side mouths, all width consistent; grass fills four diamond corner sectors. Keep shoulders narrow and softly painted, broad subtle earth wear, no cobbles or artificial X outline, no flowers, high-density tufts, extra paths, floating sidewall, text, UI, checkerboard or photo sharpness.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/road.straight.ul-lr.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.cross.ul-ur-lr-ll/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.cross.ul-ur-lr-ll/guide.png",
+    "art/scenic/styles/pastoral-soft/sources/edge.road.x.png"
+  ],
+  "original": "generation-records/originals/road.cross.ul-ur-lr-ll.png"
+}

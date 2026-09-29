@@ -1,0 +1,12 @@
+{
+  "id": "crop.wheat.mature",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex image_gen (model not exposed)",
+  "original": "raw/8efed2570bb551ac5a3882c7617fb5f6cd0e0a014c2f426c964f546c6abf4e11.png",
+  "originalHash": "8efed2570bb551ac5a3882c7617fb5f6cd0e0a014c2f426c964f546c6abf4e11",
+  "sourceHash": "3524aaf10365dc0e713c05835863ef0159ad45b9f51e6dffe51fc56c29b30be4",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": "2,1,1615,969",
+  "createdAt": "2026-09-28T22:01:11.643Z"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "object.tree",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. One PRODUCTION CUTOUT ID object.tree: a single leafy mature farm tree, 5:6 transparent canvas, isometric view. Matte soft gouache isometric farm game art, muted olive/sage grass, warm gray earth, unified upper-left soft light and short lower-right shadows. No photo sharpness, pixel art, black outline, noisy specks, text, UI or checkerboard. Image 1 sets soft-gouache foliage and tree form; Image 2 quiet grass ground sets color/texture scale; image 3 is placement control only; image 4 technical guide only. Tree root/ground contact at 50% width, 75% canvas height; full canopy in upper 2/3. Layered grouped olive/sage/yellow-green leaf masses with strong readable canopy, warm brown trunk visible, upper-left light, lower-right short intrinsic shade. Sparse broad brush foliage, not individually outlined leaves. Truly transparent background, no grass diamond or soil platform, no second tree, rocks, flowers, fence, text, UI, black outline or photo texture.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/object.tree/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/object.tree/guide.png"
+  ],
+  "original": "generation-records/originals/object.tree.png"
+}

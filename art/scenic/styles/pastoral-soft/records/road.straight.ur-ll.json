@@ -1,0 +1,12 @@
+{
+  "id": "road.straight.ur-ll",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex image_gen (model not exposed); material color and mouth alignment",
+  "original": "raw/58f3ea73cf8452f61182cd9ab602140412d11e3d99c07f7e584c4e862e1ba116.png",
+  "originalHash": "58f3ea73cf8452f61182cd9ab602140412d11e3d99c07f7e584c4e862e1ba116",
+  "sourceHash": "58f3ea73cf8452f61182cd9ab602140412d11e3d99c07f7e584c4e862e1ba116",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T22:20:04.405Z"
+}

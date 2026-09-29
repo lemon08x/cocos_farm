@@ -1,0 +1,12 @@
+{
+  "id": "courtyard.0",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. One production source ID courtyard.0. Matte soft gouache isometric farm game art. Genuine transparent exterior, no checkerboard or baked UI. Image 1 is selected target scene for color and brushwork only; image 2 is accepted grass ground for olive/sage tone; image 3 is this ID's flat control for geometry only; image 4 is technical guide only, never copy labels, lines, or flat colors. Exact 5:3 canvas, flat ground diamond touching canvas at top/right/bottom/left midpoints, fully painted inside, transparent outside, no thick floating soil sidewall. Left-upper light, low texture noise, large readable forms at mobile size. Preserve quiet outer seam band, no border or bright rim. A simple packed earth farm courtyard in the interior, warm gray tan near #C4AD83, with only a few larger irregular flagstones near center and subtle worn gouache marks. Read as a calm walkable forecourt for a separate farmhouse; do not include a house, fence, tree, well, furniture, flowers or crop. Grass blend around all four outer edges matching image 2; no hard square paved border.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/courtyard.0/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/courtyard.0/guide.png"
+  ],
+  "original": "generation-records/originals/courtyard.0.png"
+}

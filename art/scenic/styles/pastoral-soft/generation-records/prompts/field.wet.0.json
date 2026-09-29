@@ -1,0 +1,13 @@
+{
+  "id": "field.wet.0",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. One production source ID field.wet.0. Matte soft gouache isometric farm game art. Genuine transparent exterior, no checkerboard or baked UI. Image 1 is selected target scene for color and brushwork only; image 2 is accepted grass ground for olive/sage tone; image 3 is this ID's flat control for geometry only; image 4 is technical guide only, never copy labels, lines, or flat colors. Exact 5:3 canvas, flat ground diamond touching canvas at top/right/bottom/left midpoints, fully painted inside, transparent outside, no thick floating soil sidewall. Left-upper light, low texture noise, large readable forms at mobile size. Preserve quiet outer seam band, no border or bright rim. Image 5 is the accepted field.dry.0 source: preserve its same field footprint, three broad parallel furrows and exact row orientation. Change soil only to visibly moist muted deeper brown with a few restrained broad soft reflections between furrows; no puddle lake, no crops. Narrow warm earthen rim and quiet grass outside. Four edges grass. No tiny pebbles, no flowers, no text.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/field.wet.0/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/field.wet.0/guide.png",
+    "art/scenic/styles/pastoral-soft/generation-records/originals/field.dry.0.png"
+  ],
+  "original": "generation-records/originals/field.wet.0.png"
+}

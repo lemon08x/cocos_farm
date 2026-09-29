@@ -1,15 +1,23 @@
-# 田园 · 柔绘：阶段生成报告
+# 田园 · 柔绘：素材生成报告
 
-日期：2026-09-29。状态：**10 张源图已登记，整包未完成**。用户选择 [01 柔和水粉](../../tiles-v1/style-previews/pastoral-soft-options/01-soft-gouache.png)；目标参考、配色与 50 份技术任务已固定。
+日期：2026-09-29。状态：**50/50 张源图完成，已导入并发布**。本包实现用户选定的 [01 柔和水粉](../../tiles-v1/style-previews/pastoral-soft-options/01-soft-gouache.png)，作为可切换的 `pastoral-soft` 独立风格；旧 `pastoral` 包、玩法和存档均保留。
 
 ## A：素材重制
 
-已生成并登记 10/50 张：A0 的 `corner.grass`、`edge.grass.x/y`、`edge.road.x/y`、`edge.river.x/y`，以及 A1 的 `grass.0/1/2`。均使用 Codex 内置 `image_gen` 绘制；工具未暴露模型名。原始图、初稿修订、实际提示词与技术处理见 [A0 来源记录](generation-records/A0.md) 和 [草地来源记录](generation-records/A1-grass.md)。逐 ID 登记哈希见 `records/`；技术处理输入由 `raw/` 备份。正式源图经 `tiles:normalize --style pastoral-soft` 校验后保存在 `sources/`。
+50 项包括 7 张公共母版、草地/田地/院落、15 张道路、14 张河流、2 张桥、农舍与树，以及 4 张作物。逐 ID 的正式文件、来源登记和导入输入分别位于 `sources/`、`records/`、`raw/`。50 张 AI 原稿保存在 `generation-records/originals/`；后续 40 张的实际提示词和参考输入保存在 `generation-records/prompts/`，前 10 张见 [A0 记录](generation-records/A0.md) 与 [草地记录](generation-records/A1-grass.md)。均使用 Codex 内置 `image_gen`；工具未暴露模型名。
 
-技术核对：顶点母版 80×80，六张接口母版 352×96，均为完整不透明矩形；三张草地源图 600×360，菱形内完整不透明、外透明。道路中心带在抽样行约 78–83 像素，规格目标为约 84；河流可见水面约 126–141 像素，规格目标为约 141，边缘包括柔和浅水与河岸过渡。已用本风格母版和正式合成函数制作 [5×5 草地拼接预览](generation-records/previews/grass-5x5-display.png)（地面一格显示 300×180，**非游戏截图**）。初稿的重复草簇和明显拼缝经回修减轻；仍可见少量大面积明暗变化。道路、河流的多格接缝、实际镜头缩放及游戏状态画面尚未验证，河口上缘略窄也需在后续连接样板中重点复核。
+处理过程保存在 `generation-records/processed/` 及同目录脚本中。地面源图按契约处理菱形外透明区，物件和作物按锚点、落点及根部处理。A1 检查发现草地重复草簇和明暗拼缝，随后调整草地与公共母版；A2 检查发现道路、水面和桥头接口偏窄或色调不齐，统一材质色调后用 `warp-ground-mouths.mjs` 对齐端口。正式登记采用 `*-mouth-warped.png` 处理结果；`*-edge-harmonized.png` 等保留为未采用的试验稿。
 
-未完成：A1 其余 9 张局部样板素材、A2 的 31 张扩展素材、道路/河流/院落组合预览、完整导入、发布和实际游戏同状态截图。`style.json` 保持 `draft`，不会出现在游戏风格菜单中。阶段性原图和源图不代表游戏效果。
+使用正式 `composeGround()` 生成了 [5×5 草地](generation-records/previews/grass-5x5-display.png)、[农舍与田地](generation-records/previews/farm-material-display.png)、[道路](generation-records/previews/road-material-display.png)、[河桥方向一](generation-records/previews/bridge-ur-ll-material-display.png)、[河桥方向二](generation-records/previews/bridge-ul-lr-material-display.png)及道路、河流联系图。它们是**素材拼接预览，非游戏截图**。端口回修后，预览中的直路、转角、桥头连接明显更连贯；草地仍有少量大范围明暗变化。
+
+`npm run tiles:import -- --style pastoral-soft` 成功；`style.json` 已设为 `ready`；`npm run tiles:publish` 将新旧两个包发布至 `assets/resources/art-packs/`。新包 manifest revision：`cb0199bc40f32ee563d3be2d665b14c3277c9953be0a69bbf462f113e5ff0da4`。`npm run build` 成功生成 Web Mobile 构建。
+
+### 实际游戏核对范围
+
+在本地 Web Mobile 游戏的同一存档、同一选中地块“院前田”和未移动的镜头下，从“现有田园”切换至“田园 · 柔绘”。保存了[旧风格游戏截图](generation-records/previews/game-old-style.png)与[新风格游戏截图](generation-records/previews/game-soft-style.png)；浏览器视口为 1281×1188、设备像素比 1。旧包 revision 为 `3ff139dd4844332de285eee073727d040fc1ca65312bcd4033bd4d716ac57646`，新包 revision 如上。截图中草地由密集亮纹变为较平静色面，土路、树和田地换为新素材；浅色未知地块与顶部黑色缺口依旧可见。此处未取得镜头坐标和 zoom 数值。
+
+应用户要求，停止进一步游戏检查。农舍完整视角、实际河桥位置和远近缩放尚未进行游戏内对比；对应素材仅完成离线拼接预览，不能视为这些场景已在游戏里验证。成熟作物也只以素材图核对，没有修改存档或推进农时。
 
 ## B：呈现修正
 
-未知区域、文字牌、选择反馈、边缘覆盖及场景布置尚未实施；仍以 [重制方案 §7](../../../../docs/scenic-art-refresh-plan.md) 为后续代码任务依据。A 项图片不能代替这些渲染修正。
+未知区域、文字牌、选择反馈、边缘覆盖和场景布置仍按[重制方案 §7](../../../../docs/scenic-art-refresh-plan.md)留待后续代码任务。A 项素材及游戏内风格切换不代表这些渲染问题已经解决。

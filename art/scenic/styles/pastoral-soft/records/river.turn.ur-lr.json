@@ -1,0 +1,12 @@
+{
+  "id": "river.turn.ur-lr",
+  "styleId": "pastoral-soft",
+  "styleDigest": "75316ea8ac0c703ab0428b427d13e7940ab4bc5600efa5771b36f9ada9f5eea6",
+  "generator": "Codex image_gen (model not exposed); material color and mouth alignment",
+  "original": "raw/7ed14a5bd75edb9d752bdc7d156b094b4a4413f0c955835c0ad1cc826002290c.png",
+  "originalHash": "7ed14a5bd75edb9d752bdc7d156b094b4a4413f0c955835c0ad1cc826002290c",
+  "sourceHash": "7ed14a5bd75edb9d752bdc7d156b094b4a4413f0c955835c0ad1cc826002290c",
+  "contractDigest": "9a0340fa0fb912b97a9fd119655370287fa4f34f73a961562ca2dfaf88f24c06",
+  "crop": null,
+  "createdAt": "2026-09-28T22:20:10.457Z"
+}

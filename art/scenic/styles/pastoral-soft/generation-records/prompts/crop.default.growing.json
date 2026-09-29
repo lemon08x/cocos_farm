@@ -1,0 +1,13 @@
+{
+  "id": "crop.default.growing",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production transparent overlay ID crop.default.growing, exact 5:3 canvas for an isometric farm game. Image 1 selected matte soft-gouache farm scene sets broadleaf vegetable style. Image 2 accepted dry field sets four parallel isometric planting rows and root positions. Image 3 accepted young wheat overlay shows scale and genuine row transparency, but paint a DISTINCT generic leafy vegetable crop with small round and pointed green leaves, not wheat grass. Image 4 flat control is placement only; Image 5 technical guide only, no markings. Four parallel rows of modest young leafy plants rooted along field furrows, gaps between plants and rows genuinely transparent, no opaque greenery carpet. All background transparent, no soil, grass, field diamond, flower, harvest produce, shadow platform, text/UI, border or checkerboard. Upper-left gentle light and clear grouped brush leaves.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/field.dry.0.png",
+    "art/scenic/styles/pastoral-soft/sources/crop.wheat.growing.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.default.growing/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.default.growing/guide.png"
+  ],
+  "original": "generation-records/originals/crop.default.growing.png"
+}

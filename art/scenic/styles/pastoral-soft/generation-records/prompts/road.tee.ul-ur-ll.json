@@ -1,0 +1,13 @@
+{
+  "id": "road.tee.ul-ur-ll",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE distinct production isometric ground tile, ID road.tee.ul-ur-ll, exact 5:3 transparent canvas. Flat diamond touches top/right/bottom/left canvas midpoints; paint entire diamond opaque and leave exterior genuinely transparent. Image 1 selected soft-gouache farm scene for style only; Image 2 accepted grass source for LOW DETAIL olive/sage grass; Image 3 this ID's flat control is authoritative topology; Image 4 technical guide for geometry only, do not copy labels or guide colors; Image 5 accepted road-edge master for muted warm-gray earth material and exact 24%-of-side centered mouth width. A single connected three-way T junction joins upper-left, upper-right, lower-left side mouths. Open ONLY the upper-left, upper-right, lower-left sides, each at its center with 24% width; every other side must be continuous grass. Road width remains consistent and connectivity unambiguous through center. Narrow softly feathered shoulders, a few broad wear marks; quiet grass with very few indistinct marks. Do not rotate another tile's painted lighting. No extra outlets, black outline, bright perimeter, cobbled line, flower clusters, grass tufts, floating soil sidewall, text/UI, photographic detail or checkerboard.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.tee.ul-ur-ll/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/road.tee.ul-ur-ll/guide.png",
+    "art/scenic/styles/pastoral-soft/sources/edge.road.x.png"
+  ],
+  "original": "generation-records/originals/road.tee.ul-ur-ll.png"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "river.turn.lr-ll",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE independent production isometric game ground tile ID river.turn.lr-ll, exact 5:3 canvas with flat diamond touching four midpoints, opaque paint inside and genuine transparency outside. Image 1 target soft-gouache style scene; Image 2 accepted quiet olive/sage grass; Image 3 THIS ID's flat control is authoritative topology; Image 4 guide is technical only, do not reproduce labels or flat colors; Image 5 accepted river edge master sets muted teal blue-green water and centered 40%-of-side mouths. One broad gently curving channel joins adjacent lower-right and lower-left side mouths. Open ONLY lower-right, lower-left centered mouths at exactly 40% of side length; all remaining sides quiet grass. Channel stays connected and close to same width, banks narrow and softly irregular with earthy tan edge, not heavy rocks or cliff. Water uses broad calm teal #729E98 planes with only one or two soft reflections, not dense white waves, bright cyan or high noise. Match grass to image 2 with sparse detail, no yellow flecks. Do not rotate a painted tile. No bridges, obstacles, extra openings, floating sidewall, bright perimeter, hard outline, flowers, text/UI, photo sharpness or checkerboard.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/river.turn.lr-ll/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/river.turn.lr-ll/guide.png",
+    "art/scenic/styles/pastoral-soft/sources/edge.river.x.png"
+  ],
+  "original": "generation-records/originals/river.turn.lr-ll.png"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "bridge.ur-ll",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE independently painted production isometric game ground tile ID bridge.ur-ll. Exact 5:3 canvas, flat opaque painted diamond touching all four midpoints, genuinely transparent exterior. Image 1 selected matte soft-gouache farm scene sets brushwork; Image 2 accepted muted earth road sets road color and 24%-side mouth width; Image 3 accepted teal river sets water and 40%-side mouth width; Image 4 flat control is authoritative four-port geometry; Image 5 technical guide only, do not reproduce labels/colors. A continuous teal river enters at centered UL side and exits opposite LR side. A short coherent WOODEN PLANK BRIDGE crosses over it, connecting warm gray dirt road from centered UR to opposite LL side. Bridge deck one simple grouped 4 or 5 plank structure in proper isometric perspective, moderate width, restrained posts only if not blocking road. Water visible under both sides. Grass fills four corners. Exact centered ports, no disconnection, no rotation of painted light from another tile, second bridge, floating island, white water noise, rocks in mouths, text/UI, black outline or checkerboard. Upper-left soft light.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/road.straight.ur-ll.png",
+    "art/scenic/styles/pastoral-soft/sources/river.straight.ul-lr.png",
+    "art/scenic/styles/pastoral-soft/jobs/bridge.ur-ll/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/bridge.ur-ll/guide.png"
+  ],
+  "original": "generation-records/originals/bridge.ur-ll.png"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "field.dry.0",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. Create ONE production source image ID field.dry.0 for an isometric farm game. Canvas aspect 5:3, flat diamond touching the midpoints of all four sides; genuine transparent outer corners. Image 1 is palette and brushwork reference only. Image 2 is accepted quiet olive/sage grass tile and sets the outer grass color. Image 3 is the flat geometry control only; Image 4 is technical guide only; do not copy its lines, labels or flat colors. Inside the diamond, paint a large centered dry cultivated field with 3 or 4 broad parallel furrows running along the isometric row direction, warm muted brown soil near #937154, low noise, restrained brush texture. Narrow soft earthen bank and grass margin; all four edges stay continuous quiet olive/sage grass around #839765 and match Image 2. No crops. Same layout will be used for wet field variant. No sidewall, shadow outside, flowers, dense grass, tiny soil pebbles, text, UI, border, bright outline or checkerboard. Matte soft gouache, upper-left light, clear large forms at mobile size.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/grass.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/field.dry.0/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/field.dry.0/guide.png"
+  ],
+  "original": "generation-records/originals/field.dry.0.png"
+}

@@ -1,6 +1,6 @@
 # 田园场景美术重制：具体方案与素材 agent 交接
 
-日期：2026-09-29。实现基线：`889a994`。状态：**已选定 01 柔和水粉，正式素材待制作**；本文件不代表图块、拼接预览、发布或渲染修正已经完成。
+日期：2026-09-29。实现基线：`889a994`。状态：**已选定 01 柔和水粉，A 项 50 张正式素材、拼接预览、导入与发布已完成**；游戏内完成同存档、同选中地块和同镜头的初步风格切换对比，完整河桥及远近缩放尚未核对。详见[生成报告](../art/scenic/styles/pastoral-soft/GENERATION-REPORT.md)。B 项渲染修正尚未实施。
 
 本轮目标：消除满屏细碎草纹、重复拼块和功能占位感，在保留现有玩法与图块几何的前提下，做出主体清楚、植被有疏密、材质统一的手绘农场。优先实现“农舍—院落—田地”的视觉关系，再扩展全套素材。
 
@@ -8,7 +8,7 @@
 
 用户于 2026-09-29 从三张同构图预览中选择 [01 柔和水粉](../art/scenic/tiles-v1/style-previews/pastoral-soft-options/01-soft-gouache.png)。它是 `pastoral-soft` 的**色彩、笔触与疏密参考**：哑光水粉、橄榄绿与鼠尾草绿的平静地面、暖灰土路、克制的青绿河水、清楚的大形和局部成组植被。与 02 清润淡彩相比保留更多主体对比度；与 03 温暖绘本相比减少偏黄高光和背景细节。继续以第 3 节及各 job 的几何要求为准。
 
-已将该图作为 [目标场景概念参考](../art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png)，并固定在 `art/scenic/styles/pastoral-soft/style.json`。图中的四块田、两座小桥和远山属于概念构图，不成为地块数量、道路拓扑或场景布局要求。正式素材仍逐 ID 生成、校验和拼接；该图不能直接裁成图块或宣称为游戏效果。
+已将该图作为 [目标场景概念参考](../art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png)，并固定在 `art/scenic/styles/pastoral-soft/style.json`。图中的四块田、两座小桥和远山属于概念构图，不成为地块数量、道路拓扑或场景布局要求。正式素材已逐 ID 生成、校验和拼接；该图不能直接裁成图块或宣称为游戏效果。
 
 ## 1. 执行入口与范围
 

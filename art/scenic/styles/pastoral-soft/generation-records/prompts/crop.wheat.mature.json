@@ -1,0 +1,13 @@
+{
+  "id": "crop.wheat.mature",
+  "tool": "Codex image_gen (model not exposed)",
+  "prompt": "Use case: stylized-concept. ONE production transparent overlay ID crop.wheat.mature, exact 5:3 canvas. Image 1 selected matte soft-gouache farm scene for wheat color and grouped brushwork. Image 2 accepted crop.wheat.growing: keep its SAME four parallel isometric planting rows, same plant positions and transparent gaps. Image 3 accepted dry field shows furrow alignment. Image 4 flat control shows region only; Image 5 technical guide only, no labels/colors. Paint mature golden wheat plants with clearly readable grouped ears and green-to-gold lower leaves, taller and fuller than young wheat but rooted at same locations. Row spaces must remain genuinely transparent; ALL other background transparent, no soil, grass diamond, flat yellow plate, shadow platform, border, UI, text or checkerboard. Keep outer diamond margin and upper-left soft light. Do not change crop row orientation.",
+  "references": [
+    "art/scenic/styles/pastoral-soft/generation-records/references/target-scene.png",
+    "art/scenic/styles/pastoral-soft/sources/crop.wheat.growing.png",
+    "art/scenic/styles/pastoral-soft/sources/field.dry.0.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.wheat.mature/control.png",
+    "art/scenic/styles/pastoral-soft/jobs/crop.wheat.mature/guide.png"
+  ],
+  "original": "generation-records/originals/crop.wheat.mature.png"
+}
